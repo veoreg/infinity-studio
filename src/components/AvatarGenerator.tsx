@@ -4,6 +4,7 @@ import { Camera, Download, RefreshCw, User, CloudUpload, Layers, Sparkles } from
 import GamificationDashboard from './GamificationDashboard';
 import UserGallery from './UserGallery';
 import HolidayPromo from './HolidayPromo';
+import ImageUploadZone from './ImageUploadZone';
 
 // Webhook URL (Proxied via Vite)
 const WEBHOOK_URL = "/api/avatar";
@@ -369,14 +370,12 @@ const AvatarGenerator: React.FC = () => {
                                 <label className="block text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2 flex items-center gap-2">
                                     <User size={14} /> Face Reference (Required)
                                 </label>
-                                <div className="flex gap-2 relative">
-                                    <input type="url" value={faceImageUrl} onChange={(e) => setFaceImageUrl(e.target.value)}
-                                        placeholder="https://..."
-                                        className="w-full bg-[#0a0a0a] border border-[#d2ac47]/30 text-[#F9F1D8] p-4 focus:outline-none focus:border-[#d2ac47] rounded-xl transition-all focus:shadow-[0_0_20px_rgba(210,172,71,0.1)]" />
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[#d2ac47]/50 pointer-events-none">
-                                        <CloudUpload size={18} />
-                                    </div>
-                                </div>
+                                {/* Drag & Drop Zone Replaces Simple Input */}
+                                <ImageUploadZone
+                                    onImageUpload={setFaceImageUrl}
+                                    currentUrl={faceImageUrl}
+                                    placeholder="Upload Face Photo"
+                                />
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
