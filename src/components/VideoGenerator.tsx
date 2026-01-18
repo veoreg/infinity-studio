@@ -377,46 +377,46 @@ const VideoGenerator: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Right Col: Output & Stats & Coins */}
-            <div className="lg:col-span-12 xl:col-span-3 flex flex-col gap-4">
 
-                {/* 1. Coins / Credits Widget */}
-                <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl p-4 flex flex-col items-center justify-center shadow-lg relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#d2ac47]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <span className="text-[#d2ac47]/60 text-[9px] uppercase tracking-[0.3em] mb-1">Balance</span>
-                    <div className="flex items-center gap-2 text-[#F9F1D8] drop-shadow-[0_0_10px_rgba(210,172,71,0.5)]">
-                        {/* Gold Coin Icon */}
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ffd700] via-[#fbeea4] to-[#b8860b] border border-[#fbeea4] shadow-[0_0_15px_rgba(255,215,0,0.6)] flex items-center justify-center mr-2" style={{ animation: 'spinY 5s linear infinite' }}>
-                            <div className="w-5 h-5 rounded-full border border-[#b8860b]/50"></div>
+                {/* Right Col: Output & Stats & Coins */}
+                <div className="lg:col-span-12 xl:col-span-3 flex flex-col gap-4">
+
+                    {/* 1. Coins / Credits Widget */}
+                    <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl p-4 flex flex-col items-center justify-center shadow-lg relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#d2ac47]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <span className="text-[#d2ac47]/60 text-[9px] uppercase tracking-[0.3em] mb-1">Balance</span>
+                        <div className="flex items-center gap-2 text-[#F9F1D8] drop-shadow-[0_0_10px_rgba(210,172,71,0.5)]">
+                            {/* Gold Coin Icon */}
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ffd700] via-[#fbeea4] to-[#b8860b] border border-[#fbeea4] shadow-[0_0_15px_rgba(255,215,0,0.6)] flex items-center justify-center mr-2" style={{ animation: 'spinY 5s linear infinite' }}>
+                                <div className="w-5 h-5 rounded-full border border-[#b8860b]/50"></div>
+                            </div>
+                            <span className="text-4xl font-serif font-bold">2,450</span>
+                            <div className="flex flex-col leading-none">
+                                <span className="text-xs text-[#d2ac47] font-bold uppercase tracking-wider">Credits</span>
+                                <span className="text-[9px] text-[#d2ac47]/60 uppercase tracking-widest">Available</span>
+                            </div>
                         </div>
-                        <span className="text-4xl font-serif font-bold">2,450</span>
-                        <div className="flex flex-col leading-none">
-                            <span className="text-xs text-[#d2ac47] font-bold uppercase tracking-wider">Credits</span>
-                            <span className="text-[9px] text-[#d2ac47]/60 uppercase tracking-widest">Available</span>
+                        <button className="mt-2 px-3 py-1 border border-[#d2ac47]/30 text-[#d2ac47] text-[7px] uppercase tracking-[0.2em] hover:bg-[#d2ac47] hover:text-black transition-all rounded-full">
+                            Add Funds
+                        </button>
+                    </div>
+
+                    {/* 2. Gamification Stats (Moved here) */}
+                    <GamificationDashboard />
+
+                    {/* 3. History / Gallery (Dump) - Moved to Bottom Right */}
+                    <div className="flex-1 bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-4 shadow-2xl relative min-h-[500px] md:min-h-[300px] flex flex-col">
+                        <div className="mb-2 flex items-center justify-between">
+                            <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em]">History</span>
                         </div>
+                        <UserGallery newItems={galleryItems} />
                     </div>
-                    <button className="mt-2 px-3 py-1 border border-[#d2ac47]/30 text-[#d2ac47] text-[7px] uppercase tracking-[0.2em] hover:bg-[#d2ac47] hover:text-black transition-all rounded-full">
-                        Add Funds
-                    </button>
                 </div>
-
-                {/* 2. Gamification Stats (Moved here) */}
-                <GamificationDashboard />
-
-                {/* 3. History / Gallery (Dump) - Moved to Bottom Right */}
-                <div className="flex-1 bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-4 shadow-2xl relative min-h-[500px] md:min-h-[300px] flex flex-col">
-                    <div className="mb-2 flex items-center justify-between">
-                        <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em]">History</span>
-                    </div>
-                    <UserGallery newItems={galleryItems} />
-                </div>
-            </div>
-        </div >
+            </div >
 
 
-    );
+            );
 };
 
-export default VideoGenerator;
+            export default VideoGenerator;
