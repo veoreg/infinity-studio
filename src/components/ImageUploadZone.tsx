@@ -6,9 +6,10 @@ interface ImageUploadZoneProps {
     onImageUpload: (url: string) => void;
     currentUrl?: string;
     placeholder?: string;
+    className?: string;
 }
 
-const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, currentUrl, placeholder = "Drag & drop or click to upload" }) => {
+const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, currentUrl, placeholder = "Drag & drop or click to upload", className = "" }) => {
     const [isDragging, setIsDragging] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [preview, setPreview] = useState<string | null>(currentUrl || null);
@@ -75,6 +76,7 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
             className={`relative group w-full transition-all duration-300 rounded-xl overflow-hidden border-2 border-dashed 
                 ${isDragging ? 'border-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/30 bg-[#0a0a0a]'}
                 ${preview ? 'border-none' : 'hover:border-[#d2ac47]/60'}
+                ${className}
             `}
             onDrop={onDrop}
             onDragOver={onDragOver}
