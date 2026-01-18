@@ -382,269 +382,186 @@ const AvatarGenerator: React.FC = () => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    {/* Body Reference Toggle */}
-                                    <div className={`border rounded-2xl p-6 transition-all duration-300 group/body flex flex-col overflow-hidden ${grabBody ? 'border-[#d2ac47] bg-[#0a0a0a] h-[350px]' : 'border-[#d2ac47]/20 bg-transparent hover:border-[#d2ac47]/40 h-auto'} `}>
-                                        <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => setGrabBody(!grabBody)}>
-                                            <button
-                                                className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabBody ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/30 text-[#d2ac47]/50 hover:text-[#d2ac47] hover:border-[#d2ac47]'} `}>
-                                                <Camera size={16} />
-                                            </button>
-                                            <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabBody ? 'text-[#d2ac47]' : 'text-[#d2ac47]/60'}`}>
-                                                Pose & Body Ref
-                                            </span>
-                                        </div>
-                                        {grabBody && (
-                                            <div className="animate-fade-in flex-1 relative overflow-hidden rounded-xl">
-                                                <ImageUploadZone
-                                                    onImageUpload={setBodyRefUrl}
-                                                    currentUrl={bodyRefUrl}
-                                                    placeholder="Upload Body/Pose Photo"
-                                                    className="h-full w-full"
-                                                />
-                                            </div>
-                                        )}
+                                {/* Body Reference Toggle */}
+                                <div className={`border rounded-2xl p-6 transition-all duration-300 group/body flex flex-col overflow-hidden ${grabBody ? 'border-[#d2ac47] bg-[#0a0a0a] h-[350px]' : 'border-[#d2ac47]/20 bg-transparent hover:border-[#d2ac47]/40 h-auto'} `}>
+                                    <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => setGrabBody(!grabBody)}>
+                                        <button
+                                            className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabBody ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/30 text-[#d2ac47]/50 hover:text-[#d2ac47] hover:border-[#d2ac47]'} `}>
+                                            <Camera size={16} />
+                                        </button>
+                                        <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabBody ? 'text-[#d2ac47]' : 'text-[#d2ac47]/60'}`}>
+                                            Pose & Body Ref
+                                        </span>
                                     </div>
-
-                                    {/* Composition Reference Toggle */}
-                                    <div className={`border rounded-2xl p-6 transition-all duration-300 group/comp flex flex-col overflow-hidden ${grabComposition ? 'border-[#d2ac47] bg-[#0a0a0a] h-[350px]' : 'border-[#d2ac47]/20 bg-transparent hover:border-[#d2ac47]/40 h-auto'} `}>
-                                        <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => setGrabComposition(!grabComposition)}>
-                                            <button
-                                                className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabComposition ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/30 text-[#d2ac47]/50 hover:text-[#d2ac47] hover:border-[#d2ac47]'} `}>
-                                                <Layers size={16} />
-                                            </button>
-                                            <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabComposition ? 'text-[#d2ac47]' : 'text-[#d2ac47]/60'}`}>
-                                                Composition Ref
-                                            </span>
-                                        </div>
-                                        {grabComposition && (
-                                            <div className="animate-fade-in flex-1 relative">
-                                                <ImageUploadZone
-                                                    onImageUpload={setCompositionUrl}
-                                                    currentUrl={compositionUrl}
-                                                    placeholder="Upload Background/Comp"
-                                                    className="h-full w-full"
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* 3. Style & Prompt - Art Deco Panel */}
-                        <div className="bg-[#121212] border border-[#d2ac47]/20 rounded-3xl p-8 relative shadow-2xl transition-all hover:border-[#d2ac47]/40">
-                            <div className="absolute top-0 left-0 px-6 py-2 bg-[#d2ac47] text-black text-[10px] font-bold tracking-[0.2em] uppercase rounded-tl-3xl rounded-br-2xl shadow-lg">
-                                Fine Tuning
-                            </div>
-
-                            <div className="mt-6 space-y-6">
-                                {/* Art Style Dropdown */}
-                                <div>
-                                    <CustomSelect
-                                        label="Art Style"
-                                        value={artStyle}
-                                        onChange={(val) => setArtStyle(val)}
-                                        options={[
-                                            { label: 'Realistic RAW', value: 'Realistic RAW' },
-                                            { label: 'Vintage Pin-Up', value: 'Vintage Pin-Up' },
-                                            { label: 'Private Polaroid', value: 'Private Polaroid' },
-                                            { label: 'Analogue Film', value: 'Analogue Film' },
-                                            { label: 'Anime / Manga', value: 'Anime / Manga' },
-                                            { label: 'Hentai / NSFW', value: 'Hentai / NSFW' },
-                                            { label: 'Fashion Editorial', value: 'Fashion Editorial' },
-                                            { label: 'Gothic Noir', value: 'Gothic Noir' }
-                                        ]}
-                                    />
-                                </div>
-
-                                <div>
-                                    <div className="flex justify-between text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2">
-                                        <span>Likeness Strength</span>
-                                        <span>{instantIdWeight}</span>
-                                    </div>
-                                    <input type="range" min="0" max="1" step="0.05" value={instantIdWeight} onChange={(e) => setInstantIdWeight(Number(e.target.value))}
-                                        className="w-full h-1 bg-[#d2ac47]/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-[#d2ac47] [&::-webkit-slider-thumb]:rounded-full" />
-                                </div>
-
-                                <div>
-                                    <label className="text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2 block">Prompt Details</label>
-                                    <textarea value={userPrompt} onChange={(e) => setUserPrompt(e.target.value)}
-                                        className="w-full bg-[#0a0a0a] border border-[#d2ac47]/30 text-[#F9F1D8] p-3 text-sm h-24 focus:outline-none focus:border-[#d2ac47] rounded-xl shadow-inner"
-                                        placeholder="Describe specific details..." />
-                                    {/* Advanced Controls: Seed & Raw Mode */}
-                                    {/* Layout Refactor: Seed Row, Then Toggles Row */}
-                                    <div className="flex flex-col gap-3 mt-3">
-                                        {/* Row 1: Seed Control (Full Width) */}
-                                        <div className="w-full flex items-center gap-2 bg-[#0a0a0a] border border-[#d2ac47]/20 p-2 px-3 rounded-xl">
-                                            <span className="text-[#d2ac47] text-[9px] uppercase tracking-wider whitespace-nowrap">Seed:</span>
-                                            <input
-                                                type="number"
-                                                value={seed === -1 ? '' : seed}
-                                                placeholder="Random"
-                                                onChange={(e) => setSeed(e.target.value === '' ? -1 : parseInt(e.target.value))}
-                                                className="bg-transparent text-[#F9F1D8] text-xs font-mono w-full focus:outline-none placeholder-[#d2ac47]/30"
+                                    {grabBody && (
+                                        <div className="animate-fade-in flex-1 relative overflow-hidden rounded-xl">
+                                            <ImageUploadZone
+                                                onImageUpload={setBodyRefUrl}
+                                                currentUrl={bodyRefUrl}
+                                                placeholder="Upload Body/Pose Photo"
+                                                className="h-full w-full"
                                             />
-                                            <button
-                                                onClick={() => setSeed(Math.floor(Math.random() * 2147483647))}
-                                                className="text-[#d2ac47]/50 hover:text-[#d2ac47] transition-colors"
-                                                title="Spin Random Seed"
-                                            >
-                                                <RefreshCw size={14} className="active:animate-spin" />
-                                            </button>
                                         </div>
+                                    )}
+                                </div>
 
-                                        {/* Row 2: Toggles (Split Width) */}
-                                        <div className="flex items-center gap-3">
-                                            {/* Raw Prompt Toggle */}
-                                            <button
-                                                onClick={() => setRawPromptMode(!rawPromptMode)}
-                                                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border transition-all rounded-xl ${rawPromptMode ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
-                                            >
-                                                <div className={`w-2 h-2 rounded-full ${rawPromptMode ? 'bg-black' : 'bg-[#d2ac47]/50'}`}></div>
-                                                <span className="text-[9px] uppercase tracking-widest font-bold">Raw Prompt</span>
-                                            </button>
-
-                                            {/* Upscale Toggle */}
-                                            <button
-                                                onClick={() => setUpscale(!upscale)}
-                                                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border transition-all rounded-xl ${upscale ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
-                                            >
-                                                <Sparkles size={12} className={upscale ? 'text-black' : ''} />
-                                                <span className="text-[9px] uppercase tracking-widest font-bold">Upscale</span>
-                                            </button>
-                                        </div>
+                                {/* Composition Reference Toggle */}
+                                <div className={`border rounded-2xl p-6 transition-all duration-300 group/comp flex flex-col overflow-hidden ${grabComposition ? 'border-[#d2ac47] bg-[#0a0a0a] h-[350px]' : 'border-[#d2ac47]/20 bg-transparent hover:border-[#d2ac47]/40 h-auto'} `}>
+                                    <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => setGrabComposition(!grabComposition)}>
+                                        <button
+                                            className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabComposition ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/30 text-[#d2ac47]/50 hover:text-[#d2ac47] hover:border-[#d2ac47]'} `}>
+                                            <Layers size={16} />
+                                        </button>
+                                        <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabComposition ? 'text-[#d2ac47]' : 'text-[#d2ac47]/60'}`}>
+                                            Composition Ref
+                                        </span>
                                     </div>
+                                    {grabComposition && (
+                                        <div className="animate-fade-in flex-1 relative">
+                                            <ImageUploadZone
+                                                onImageUpload={setCompositionUrl}
+                                                currentUrl={compositionUrl}
+                                                placeholder="Upload Background/Comp"
+                                                className="h-full w-full"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
-
-                        {/* Generate Button */}
-                        <button
-                            onClick={handleGenerate}
-                            disabled={loading}
-                            className={`w-full bg-gold-gradient text-black font-bold uppercase tracking-[0.3em] py-5 rounded-xl shadow-[0_0_20px_rgba(210,172,71,0.4)] transition-all flex items-center justify-center gap-3 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
-                        >
-                            {loading ? <RefreshCw className="animate-spin" /> : <Sparkles />}
-                            {loading ? "Forging Identity..." : "Generate Avatar"}
-                        </button>
-
-                        {error && <div className="text-red-400 text-center font-serif italic bg-red-950/30 p-4 border border-red-900/50">{error}</div>}
-
-                        {/* MOBILE ONLY: Image Output (Moved up per user request) */}
-                        <div className="lg:hidden mt-8 mb-8">
-                            <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl aspect-[9/16] relative flex items-center justify-center overflow-hidden shadow-2xl group flex-col min-h-[500px]">
-                                {/* 1. LAYER: Generated Image (Bottom) */}
-                                {generatedImage && (
-                                    <>
-                                        <img src={generatedImage} alt="Generated Avatar" className="w-full h-full object-contain bg-black/80" />
-                                        {/* Deco Corners */}
-                                        <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-[#d2ac47] pointer-events-none"></div>
-                                        <div className="absolute top-2 right-2 w-4 h-4 border-t border-r border-[#d2ac47] pointer-events-none"></div>
-                                        <div className="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-[#d2ac47] pointer-events-none"></div>
-                                        <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-[#d2ac47] pointer-events-none"></div>
-                                    </>
-                                )}
-                                {/* 2. LAYER: Loading Logger */}
-                                {loading && (
-                                    <div className={`flex flex-col items-center justify-center ${generatedImage ? 'absolute inset-0 z-20 bg-black/50 backdrop-blur-sm' : 'w-full h-full'}`}>
-                                        <AvatarLogger />
-                                    </div>
-                                )}
-                                {/* 3. LAYER: Action Buttons */}
-                                {generatedImage && (
-                                    <div className="absolute top-12 left-0 w-full z-30 flex justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        <button onClick={handleGenerate} disabled={loading} className="btn-gold px-6 py-3 text-xs tracking-widest uppercase flex items-center gap-2 border border-[#d2ac47]/50 rounded-xl hover:bg-[#d2ac47] hover:text-black shadow-[0_4px_10px_rgba(0,0,0,0.5)]">
-                                            <RefreshCw size={16} className={loading ? "animate-spin" : ""} /> Regenerate
-                                        </button>
-                                        <button onClick={handleDownload} className="btn-gold px-6 py-3 text-xs tracking-widest uppercase flex items-center gap-2 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.5)]">
-                                            <Download size={16} /> Download
-                                        </button>
-                                    </div>
-                                )}
-                                {/* 4. LAYER: Placeholder */}
-                                {!generatedImage && !loading && (
-                                    <div className="text-[#d2ac47]/20 flex flex-col items-center gap-2">
-                                        <Camera size={48} strokeWidth={1} />
-                                        <span className="text-[9px] tracking-[0.3em] uppercase">Output Ready</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Gallery Moved to Bottom Center */}
-                        <div className="mt-8 border-t border-[#d2ac47]/10 pt-4">
-                            <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em] mb-4 block">Recent Creations</span>
-                            <UserGallery newItems={galleryItems} columns={3} />
-                        </div>
-
                     </div>
 
-                    {/* RIGHT COLUMN: Output - High Density Panel */}
-                    <div className="lg:col-span-4 sticky top-32 z-10 space-y-4">
-
-                        {/* 1. Coins / Credits Widget */}
-                        <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl p-6 flex flex-col items-center justify-center shadow-lg relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-b from-[#d2ac47]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            <span className="text-[#d2ac47]/60 text-[9px] uppercase tracking-[0.3em] mb-1">Balance</span>
-                            <div className="flex items-center gap-2 text-[#F9F1D8] drop-shadow-[0_0_10px_rgba(210,172,71,0.5)]">
-                                {/* Gold Coin Icon */}
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ffd700] via-[#fbeea4] to-[#b8860b] border border-[#fbeea4] shadow-[0_0_15px_rgba(255,215,0,0.6)] flex items-center justify-center mr-2" style={{ animation: 'spinY 5s linear infinite' }}>
-                                    <div className="w-5 h-5 rounded-full border border-[#b8860b]/50"></div>
-                                </div>
-                                <span className="text-3xl font-serif font-bold">2,450</span>
-                                <div className="flex flex-col leading-none">
-                                    <span className="text-xs text-[#d2ac47] font-bold uppercase tracking-wider">Credits</span>
-                                    <span className="text-[9px] text-[#d2ac47]/60 uppercase tracking-widest">Available</span>
-                                </div>
-                            </div>
-                            <button className="mt-2 px-4 py-1.5 border border-[#d2ac47]/30 rounded-full text-[#d2ac47] text-[7px] uppercase tracking-[0.2em] hover:bg-[#d2ac47] hover:text-black transition-all">
-                                Add Funds
-                            </button>
+                    {/* 3. Style & Prompt - Art Deco Panel */}
+                    <div className="bg-[#121212] border border-[#d2ac47]/20 rounded-3xl p-8 relative shadow-2xl transition-all hover:border-[#d2ac47]/40">
+                        <div className="absolute top-0 left-0 px-6 py-2 bg-[#d2ac47] text-black text-[10px] font-bold tracking-[0.2em] uppercase rounded-tl-3xl rounded-br-2xl shadow-lg">
+                            Fine Tuning
                         </div>
 
-                        {/* 2. Stats Dashboard (Top) */}
-                        <GamificationDashboard />
+                        <div className="mt-6 space-y-6">
+                            {/* Art Style Dropdown */}
+                            <div>
+                                <CustomSelect
+                                    label="Art Style"
+                                    value={artStyle}
+                                    onChange={(val) => setArtStyle(val)}
+                                    options={[
+                                        { label: 'Realistic RAW', value: 'Realistic RAW' },
+                                        { label: 'Vintage Pin-Up', value: 'Vintage Pin-Up' },
+                                        { label: 'Private Polaroid', value: 'Private Polaroid' },
+                                        { label: 'Analogue Film', value: 'Analogue Film' },
+                                        { label: 'Anime / Manga', value: 'Anime / Manga' },
+                                        { label: 'Hentai / NSFW', value: 'Hentai / NSFW' },
+                                        { label: 'Fashion Editorial', value: 'Fashion Editorial' },
+                                        { label: 'Gothic Noir', value: 'Gothic Noir' }
+                                    ]}
+                                />
+                            </div>
 
-                        {/* 3. Image Output (Bottom) - DESKTOP ONLY (Hidden on mobile to show upper copy) */}
-                        <div className="hidden lg:flex bg-[#050505] border border-[#d2ac47]/20 rounded-3xl aspect-[9/16] relative items-center justify-center overflow-hidden shadow-2xl group flex-col min-h-[500px]">
+                            <div>
+                                <div className="flex justify-between text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2">
+                                    <span>Likeness Strength</span>
+                                    <span>{instantIdWeight}</span>
+                                </div>
+                                <input type="range" min="0" max="1" step="0.05" value={instantIdWeight} onChange={(e) => setInstantIdWeight(Number(e.target.value))}
+                                    className="w-full h-1 bg-[#d2ac47]/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-[#d2ac47] [&::-webkit-slider-thumb]:rounded-full" />
+                            </div>
+
+                            <div>
+                                <label className="text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2 block">Prompt Details</label>
+                                <textarea value={userPrompt} onChange={(e) => setUserPrompt(e.target.value)}
+                                    className="w-full bg-[#0a0a0a] border border-[#d2ac47]/30 text-[#F9F1D8] p-3 text-sm h-24 focus:outline-none focus:border-[#d2ac47] rounded-xl shadow-inner"
+                                    placeholder="Describe specific details..." />
+                                {/* Advanced Controls: Seed & Raw Mode */}
+                                {/* Layout Refactor: Seed Row, Then Toggles Row */}
+                                <div className="flex flex-col gap-3 mt-3">
+                                    {/* Row 1: Seed Control (Full Width) */}
+                                    <div className="w-full flex items-center gap-2 bg-[#0a0a0a] border border-[#d2ac47]/20 p-2 px-3 rounded-xl">
+                                        <span className="text-[#d2ac47] text-[9px] uppercase tracking-wider whitespace-nowrap">Seed:</span>
+                                        <input
+                                            type="number"
+                                            value={seed === -1 ? '' : seed}
+                                            placeholder="Random"
+                                            onChange={(e) => setSeed(e.target.value === '' ? -1 : parseInt(e.target.value))}
+                                            className="bg-transparent text-[#F9F1D8] text-xs font-mono w-full focus:outline-none placeholder-[#d2ac47]/30"
+                                        />
+                                        <button
+                                            onClick={() => setSeed(Math.floor(Math.random() * 2147483647))}
+                                            className="text-[#d2ac47]/50 hover:text-[#d2ac47] transition-colors"
+                                            title="Spin Random Seed"
+                                        >
+                                            <RefreshCw size={14} className="active:animate-spin" />
+                                        </button>
+                                    </div>
+
+                                    {/* Row 2: Toggles (Split Width) */}
+                                    <div className="flex items-center gap-3">
+                                        {/* Raw Prompt Toggle */}
+                                        <button
+                                            onClick={() => setRawPromptMode(!rawPromptMode)}
+                                            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border transition-all rounded-xl ${rawPromptMode ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
+                                        >
+                                            <div className={`w-2 h-2 rounded-full ${rawPromptMode ? 'bg-black' : 'bg-[#d2ac47]/50'}`}></div>
+                                            <span className="text-[9px] uppercase tracking-widest font-bold">Raw Prompt</span>
+                                        </button>
+
+                                        {/* Upscale Toggle */}
+                                        <button
+                                            onClick={() => setUpscale(!upscale)}
+                                            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border transition-all rounded-xl ${upscale ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
+                                        >
+                                            <Sparkles size={12} className={upscale ? 'text-black' : ''} />
+                                            <span className="text-[9px] uppercase tracking-widest font-bold">Upscale</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Generate Button */}
+                    <button
+                        onClick={handleGenerate}
+                        disabled={loading}
+                        className={`w-full bg-gold-gradient text-black font-bold uppercase tracking-[0.3em] py-5 rounded-xl shadow-[0_0_20px_rgba(210,172,71,0.4)] transition-all flex items-center justify-center gap-3 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    >
+                        {loading ? <RefreshCw className="animate-spin" /> : <Sparkles />}
+                        {loading ? "Forging Identity..." : "Generate Avatar"}
+                    </button>
+
+                    {error && <div className="text-red-400 text-center font-serif italic bg-red-950/30 p-4 border border-red-900/50">{error}</div>}
+
+                    {/* MOBILE ONLY: Image Output (Moved up per user request) */}
+                    <div className="lg:hidden mt-8 mb-8">
+                        <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl aspect-[9/16] relative flex items-center justify-center overflow-hidden shadow-2xl group flex-col min-h-[500px]">
                             {/* 1. LAYER: Generated Image (Bottom) */}
                             {generatedImage && (
                                 <>
                                     <img src={generatedImage} alt="Generated Avatar" className="w-full h-full object-contain bg-black/80" />
-                                    {/* Buttons moved to separate layer */}
-                                    {/* Deco Corners for Image */}
+                                    {/* Deco Corners */}
                                     <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-[#d2ac47] pointer-events-none"></div>
                                     <div className="absolute top-2 right-2 w-4 h-4 border-t border-r border-[#d2ac47] pointer-events-none"></div>
                                     <div className="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-[#d2ac47] pointer-events-none"></div>
                                     <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-[#d2ac47] pointer-events-none"></div>
                                 </>
                             )}
-
-                            {/* 2. LAYER: Loading Logger (Overlay or Main) */}
+                            {/* 2. LAYER: Loading Logger */}
                             {loading && (
                                 <div className={`flex flex-col items-center justify-center ${generatedImage ? 'absolute inset-0 z-20 bg-black/50 backdrop-blur-sm' : 'w-full h-full'}`}>
                                     <AvatarLogger />
                                 </div>
                             )}
-
-                            {/* 3. LAYER: Action Buttons (Top Overlay) */}
+                            {/* 3. LAYER: Action Buttons */}
                             {generatedImage && (
                                 <div className="absolute top-12 left-0 w-full z-30 flex justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <button
-                                        onClick={handleGenerate}
-                                        disabled={loading}
-                                        className={`btn-gold px-6 py-3 text-xs tracking-widest uppercase flex items-center gap-2 border border-[#d2ac47]/50 rounded-xl hover:bg-[#d2ac47] hover:text-black shadow-[0_4px_10px_rgba(0,0,0,0.5)] ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    >
-                                        <RefreshCw size={16} className={loading ? "animate-spin" : ""} /> {loading ? "Processing..." : "Regenerate"}
+                                    <button onClick={handleGenerate} disabled={loading} className="btn-gold px-6 py-3 text-xs tracking-widest uppercase flex items-center gap-2 border border-[#d2ac47]/50 rounded-xl hover:bg-[#d2ac47] hover:text-black shadow-[0_4px_10px_rgba(0,0,0,0.5)]">
+                                        <RefreshCw size={16} className={loading ? "animate-spin" : ""} /> Regenerate
                                     </button>
                                     <button onClick={handleDownload} className="btn-gold px-6 py-3 text-xs tracking-widest uppercase flex items-center gap-2 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.5)]">
                                         <Download size={16} /> Download
                                     </button>
                                 </div>
                             )}
-
-                            {/* 4. LAYER: Placeholder (Only if nothing else) */}
+                            {/* 4. LAYER: Placeholder */}
                             {!generatedImage && !loading && (
                                 <div className="text-[#d2ac47]/20 flex flex-col items-center gap-2">
                                     <Camera size={48} strokeWidth={1} />
@@ -654,17 +571,99 @@ const AvatarGenerator: React.FC = () => {
                         </div>
                     </div>
 
+                    {/* Gallery Moved to Bottom Center */}
+                    <div className="mt-8 border-t border-[#d2ac47]/10 pt-4">
+                        <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em] mb-4 block">Recent Creations</span>
+                        <UserGallery newItems={galleryItems} columns={3} />
+                    </div>
+
                 </div>
 
-                <style>{`
+                {/* RIGHT COLUMN: Output - High Density Panel */}
+                <div className="lg:col-span-4 sticky top-32 z-10 space-y-4">
+
+                    {/* 1. Coins / Credits Widget */}
+                    <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl p-6 flex flex-col items-center justify-center shadow-lg relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#d2ac47]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <span className="text-[#d2ac47]/60 text-[9px] uppercase tracking-[0.3em] mb-1">Balance</span>
+                        <div className="flex items-center gap-2 text-[#F9F1D8] drop-shadow-[0_0_10px_rgba(210,172,71,0.5)]">
+                            {/* Gold Coin Icon */}
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ffd700] via-[#fbeea4] to-[#b8860b] border border-[#fbeea4] shadow-[0_0_15px_rgba(255,215,0,0.6)] flex items-center justify-center mr-2" style={{ animation: 'spinY 5s linear infinite' }}>
+                                <div className="w-5 h-5 rounded-full border border-[#b8860b]/50"></div>
+                            </div>
+                            <span className="text-3xl font-serif font-bold">2,450</span>
+                            <div className="flex flex-col leading-none">
+                                <span className="text-xs text-[#d2ac47] font-bold uppercase tracking-wider">Credits</span>
+                                <span className="text-[9px] text-[#d2ac47]/60 uppercase tracking-widest">Available</span>
+                            </div>
+                        </div>
+                        <button className="mt-2 px-4 py-1.5 border border-[#d2ac47]/30 rounded-full text-[#d2ac47] text-[7px] uppercase tracking-[0.2em] hover:bg-[#d2ac47] hover:text-black transition-all">
+                            Add Funds
+                        </button>
+                    </div>
+
+                    {/* 2. Stats Dashboard (Top) */}
+                    <GamificationDashboard />
+
+                    {/* 3. Image Output (Bottom) - DESKTOP ONLY (Hidden on mobile to show upper copy) */}
+                    <div className="hidden lg:flex bg-[#050505] border border-[#d2ac47]/20 rounded-3xl aspect-[9/16] relative items-center justify-center overflow-hidden shadow-2xl group flex-col min-h-[500px]">
+                        {/* 1. LAYER: Generated Image (Bottom) */}
+                        {generatedImage && (
+                            <>
+                                <img src={generatedImage} alt="Generated Avatar" className="w-full h-full object-contain bg-black/80" />
+                                {/* Buttons moved to separate layer */}
+                                {/* Deco Corners for Image */}
+                                <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-[#d2ac47] pointer-events-none"></div>
+                                <div className="absolute top-2 right-2 w-4 h-4 border-t border-r border-[#d2ac47] pointer-events-none"></div>
+                                <div className="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-[#d2ac47] pointer-events-none"></div>
+                                <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-[#d2ac47] pointer-events-none"></div>
+                            </>
+                        )}
+
+                        {/* 2. LAYER: Loading Logger (Overlay or Main) */}
+                        {loading && (
+                            <div className={`flex flex-col items-center justify-center ${generatedImage ? 'absolute inset-0 z-20 bg-black/50 backdrop-blur-sm' : 'w-full h-full'}`}>
+                                <AvatarLogger />
+                            </div>
+                        )}
+
+                        {/* 3. LAYER: Action Buttons (Top Overlay) */}
+                        {generatedImage && (
+                            <div className="absolute top-12 left-0 w-full z-30 flex justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <button
+                                    onClick={handleGenerate}
+                                    disabled={loading}
+                                    className={`btn-gold px-6 py-3 text-xs tracking-widest uppercase flex items-center gap-2 border border-[#d2ac47]/50 rounded-xl hover:bg-[#d2ac47] hover:text-black shadow-[0_4px_10px_rgba(0,0,0,0.5)] ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    <RefreshCw size={16} className={loading ? "animate-spin" : ""} /> {loading ? "Processing..." : "Regenerate"}
+                                </button>
+                                <button onClick={handleDownload} className="btn-gold px-6 py-3 text-xs tracking-widest uppercase flex items-center gap-2 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.5)]">
+                                    <Download size={16} /> Download
+                                </button>
+                            </div>
+                        )}
+
+                        {/* 4. LAYER: Placeholder (Only if nothing else) */}
+                        {!generatedImage && !loading && (
+                            <div className="text-[#d2ac47]/20 flex flex-col items-center gap-2">
+                                <Camera size={48} strokeWidth={1} />
+                                <span className="text-[9px] tracking-[0.3em] uppercase">Output Ready</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+            </div>
+
+            <style>{`
                 @keyframes spinY {
                     0% { transform: rotateY(0deg); }
                     100% { transform: rotateY(360deg); }
                 }
             `}</style>
-                <HolidayPromo />
-            </div >
-            );
+            <HolidayPromo />
+        </div >
+    );
 };
 
-            export default AvatarGenerator;
+export default AvatarGenerator;
