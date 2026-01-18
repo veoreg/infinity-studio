@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Play, Loader2, Zap, Download, Wand2, ShieldCheck, Flame, Layers, Video, ImageIcon, XCircle } from 'lucide-react';
+import { Play, Loader2, Download, Wand2, ShieldCheck, Flame, Layers, Video, ImageIcon, XCircle } from 'lucide-react';
 import GamificationDashboard from './GamificationDashboard';
 import UserGallery from './UserGallery';
 
@@ -67,7 +67,6 @@ const VideoGenerator: React.FC = () => {
     const [safeMode, setSafeMode] = useState(true);
     const [loading, setLoading] = useState(false);
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
-    const [nsfwFlag, setNsfwFlag] = useState<boolean | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [galleryItems, setGalleryItems] = useState<any[]>([]);
     const abortControllerRef = React.useRef<AbortController | null>(null);
@@ -114,7 +113,6 @@ const VideoGenerator: React.FC = () => {
         setLoading(true);
         setError(null);
         setVideoUrl(null);
-        setNsfwFlag(null);
 
         try {
             // Cancel any previous request
@@ -135,9 +133,6 @@ const VideoGenerator: React.FC = () => {
             });
 
             const isNsfwHeader = response.headers['x-is-nsfw'];
-            if (isNsfwHeader !== undefined) {
-                setNsfwFlag(isNsfwHeader === 'true');
-            }
 
             const url = URL.createObjectURL(new Blob([response.data], { type: 'video/mp4' }));
             setVideoUrl(url);

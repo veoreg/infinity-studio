@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import VideoGenerator from './components/VideoGenerator'
 import AvatarGenerator from './components/AvatarGenerator'
 import GoldenDust from './components/GoldenDust'
