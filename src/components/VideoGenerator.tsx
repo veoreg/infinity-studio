@@ -132,7 +132,7 @@ const VideoGenerator: React.FC = () => {
                 signal: abortControllerRef.current.signal
             });
 
-            const isNsfwHeader = response.headers['x-is-nsfw'];
+
 
             const url = URL.createObjectURL(new Blob([response.data], { type: 'video/mp4' }));
             setVideoUrl(url);
