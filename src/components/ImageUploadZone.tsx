@@ -98,8 +98,8 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
             )}
 
             {preview ? (
-                <div className="relative w-full aspect-square group/preview">
-                    <img src={preview} alt="Upload Preview" className="w-full h-full object-cover" />
+                <div className="relative w-full h-full bg-black flex items-center justify-center group/preview overflow-hidden rounded-xl">
+                    <img src={preview} alt="Upload Preview" className="w-full h-full object-contain" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover/preview:opacity-100 transition-all flex flex-col justify-end p-4">
                         <span className="text-[#d2ac47] text-xs font-bold uppercase tracking-widest">Image Uploaded</span>
                     </div>
