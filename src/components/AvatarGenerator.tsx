@@ -127,7 +127,7 @@ const AvatarGenerator: React.FC = () => {
     const [nationality, setNationality] = useState('Russian');
     const [bodyType, setBodyType] = useState('fitness model');
     const [clothing, setClothing] = useState('dressed');
-    const [role, setRole] = useState('');
+    const [role, setRole] = useState('Seductive Teacher');
     const [artStyle, setArtStyle] = useState('Realistic RAW');
 
     // Visual Sources
