@@ -7,6 +7,8 @@ const compressImage = (file: File): Promise<File> => {
     return new Promise((resolve) => {
         const maxWidth = 2048;
         const maxHeight = 2048;
+        const minWidth = 1024; // User requested interpolation for small images
+        const minHeight = 1024;
         const quality = 0.85;
 
         const reader = new FileReader();
@@ -18,14 +20,31 @@ const compressImage = (file: File): Promise<File> => {
                 let width = img.width;
                 let height = img.height;
 
-                // Scale down if too large
+                // Logic: 
+                // 1. Downscale if > 2048
+                // 2. Upscale (Interpolate) if < 1024
+
                 if (width > maxWidth || height > maxHeight) {
+                    // Downscale
                     if (width > height) {
                         height = Math.round((height * maxWidth) / width);
                         width = maxWidth;
                     } else {
                         width = Math.round((width * maxHeight) / height);
                         height = maxHeight;
+                    }
+                } else if (width < minWidth || height < minHeight) {
+                    // Upscale (Interpolate)
+                    const scale = Math.max(minWidth / width, minHeight / height);
+                    // Limit upscale to avoid extreme blur (e.g. icon to 2k)
+                    // But user asked for it, so we do it nicely.
+                    width = Math.round(width * scale);
+                    height = Math.round(height * scale);
+
+                    // Cap at max if upscale overshoot
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
                     }
                 }
 
@@ -34,28 +53,31 @@ const compressImage = (file: File): Promise<File> => {
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 if (!ctx) {
-                    resolve(file); // Fail safe: return original
+                    resolve(file);
                     return;
                 }
+
+                // Use better interpolation for upscaling
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, 0, 0, width, height);
 
                 canvas.toBlob((blob) => {
                     if (blob) {
-                        // Create new file from blob
                         const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
                             type: 'image/jpeg',
                             lastModified: Date.now(),
                         });
-                        console.log(`Compressed: ${(file.size / 1024 / 1024).toFixed(2)}MB -> ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+                        console.log(`Processed: ${img.width}x${img.height} -> ${width}x${height} | ${(file.size / 1024 / 1024).toFixed(2)}MB -> ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
                         resolve(compressedFile);
                     } else {
-                        resolve(file); // Fail safe
+                        resolve(file);
                     }
                 }, 'image/jpeg', quality);
             };
-            img.onerror = () => resolve(file); // Fail safe
+            img.onerror = () => resolve(file);
         };
-        reader.onerror = () => resolve(file); // Fail safe
+        reader.onerror = () => resolve(file);
     });
 };
 

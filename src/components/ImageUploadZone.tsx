@@ -25,17 +25,16 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
         }
 
         setUploading(true);
-        // Create local preview immediately
-        const objectUrl = URL.createObjectURL(file);
-        setPreview(objectUrl);
+        // Don't show raw preview to avoid rendering huge files (lag).
+        // Wait for compression & upload (~1-2s).
 
         try {
             const url = await uploadToImgBB(file);
             onImageUpload(url);
-            setPreview(url); // Confirm final URL
+            setPreview(url); // Show optimized image from server
         } catch (error) {
             alert('Upload failed. Please try again.');
-            setPreview(null); // Clear on fail
+            setPreview(null);
         } finally {
             setUploading(false);
         }
