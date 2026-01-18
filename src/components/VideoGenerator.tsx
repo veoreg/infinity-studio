@@ -234,6 +234,22 @@ const VideoGenerator: React.FC = () => {
                                     </div>
 
                                 </div>
+
+                                {/* Prompt Input Frame */}
+                                <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 flex flex-col rounded-2xl overflow-hidden">
+                                    <div className="absolute top-0 left-0 bg-[#d2ac47] text-black text-[9px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] z-20 rounded-br-xl">
+                                        Vision Prompt
+                                    </div>
+                                    <textarea
+                                        value={textPrompt}
+                                        onChange={(e) => setTextPrompt(e.target.value)}
+                                        placeholder="Describe the motion, atmosphere, and desire..."
+                                        className="w-full h-full bg-transparent p-6 pt-10 text-[#F9F1D8] placeholder-[#d2ac47]/50 font-sans font-light text-sm resize-none focus:outline-none"
+                                    />
+                                    <div className="absolute bottom-4 right-4 text-[#d2ac47]/50 pointer-events-none group-focus-within:text-[#d2ac47]/80 transition-colors">
+                                        <Wand2 size={24} />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
