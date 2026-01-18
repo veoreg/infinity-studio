@@ -392,13 +392,11 @@ const AvatarGenerator: React.FC = () => {
                                     </div>
                                     {grabBody && (
                                         <div className="animate-fade-in">
-                                            <div className="animate-fade-in">
-                                                <ImageUploadZone
-                                                    onImageUpload={setBodyRefUrl}
-                                                    currentUrl={bodyRefUrl}
-                                                    placeholder="Upload Body/Pose Photo"
-                                                />
-                                            </div>
+                                            <ImageUploadZone
+                                                onImageUpload={setBodyRefUrl}
+                                                currentUrl={bodyRefUrl}
+                                                placeholder="Upload Body/Pose Photo"
+                                            />
                                         </div>
                                     )}
                                 </div>
@@ -416,13 +414,11 @@ const AvatarGenerator: React.FC = () => {
                                     </div>
                                     {grabComposition && (
                                         <div className="animate-fade-in">
-                                            <div className="animate-fade-in">
-                                                <ImageUploadZone
-                                                    onImageUpload={setCompositionUrl}
-                                                    currentUrl={compositionUrl}
-                                                    placeholder="Upload Background/Comp"
-                                                />
-                                            </div>
+                                            <ImageUploadZone
+                                                onImageUpload={setCompositionUrl}
+                                                currentUrl={compositionUrl}
+                                                placeholder="Upload Background/Comp"
+                                            />
                                         </div>
                                     )}
                                 </div>
