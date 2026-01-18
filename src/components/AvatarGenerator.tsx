@@ -464,9 +464,10 @@ const AvatarGenerator: React.FC = () => {
                                     className="w-full bg-[#0a0a0a] border border-[#d2ac47]/30 text-[#F9F1D8] p-3 text-sm h-24 focus:outline-none focus:border-[#d2ac47] rounded-xl shadow-inner"
                                     placeholder="Describe specific details..." />
                                 {/* Advanced Controls: Seed & Raw Mode */}
-                                <div className="flex items-center gap-4 mt-3">
-                                    {/* Seed Control */}
-                                    <div className="flex-1 flex items-center gap-2 bg-[#0a0a0a] border border-[#d2ac47]/20 p-2 px-3 rounded-xl">
+                                {/* Layout Refactor: Seed Row, Then Toggles Row */}
+                                <div className="flex flex-col gap-3 mt-3">
+                                    {/* Row 1: Seed Control (Full Width) */}
+                                    <div className="w-full flex items-center gap-2 bg-[#0a0a0a] border border-[#d2ac47]/20 p-2 px-3 rounded-xl">
                                         <span className="text-[#d2ac47] text-[9px] uppercase tracking-wider whitespace-nowrap">Seed:</span>
                                         <input
                                             type="number"
@@ -484,23 +485,26 @@ const AvatarGenerator: React.FC = () => {
                                         </button>
                                     </div>
 
-                                    {/* Raw Prompt Toggle */}
-                                    <button
-                                        onClick={() => setRawPromptMode(!rawPromptMode)}
-                                        className={`flex items-center gap-2 px-3 py-2 border transition-all rounded-xl ${rawPromptMode ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
-                                    >
-                                        <div className={`w-2 h-2 rounded-full ${rawPromptMode ? 'bg-black' : 'bg-[#d2ac47]/50'}`}></div>
-                                        <span className="text-[9px] uppercase tracking-widest font-bold">Raw Prompt</span>
-                                    </button>
+                                    {/* Row 2: Toggles (Split Width) */}
+                                    <div className="flex items-center gap-3">
+                                        {/* Raw Prompt Toggle */}
+                                        <button
+                                            onClick={() => setRawPromptMode(!rawPromptMode)}
+                                            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border transition-all rounded-xl ${rawPromptMode ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
+                                        >
+                                            <div className={`w-2 h-2 rounded-full ${rawPromptMode ? 'bg-black' : 'bg-[#d2ac47]/50'}`}></div>
+                                            <span className="text-[9px] uppercase tracking-widest font-bold">Raw Prompt</span>
+                                        </button>
 
-                                    {/* Upscale Toggle */}
-                                    <button
-                                        onClick={() => setUpscale(!upscale)}
-                                        className={`flex items-center gap-2 px-3 py-2 border transition-all rounded-xl ${upscale ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
-                                    >
-                                        {upscale ? <Sparkles size={12} fill="black" /> : <Sparkles size={12} />}
-                                        <span className="text-[9px] uppercase tracking-widest font-bold">Upscale</span>
-                                    </button>
+                                        {/* Upscale Toggle */}
+                                        <button
+                                            onClick={() => setUpscale(!upscale)}
+                                            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border transition-all rounded-xl ${upscale ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
+                                        >
+                                            <Sparkles size={12} className={upscale ? 'text-black' : ''} />
+                                            <span className="text-[9px] uppercase tracking-widest font-bold">Upscale</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -510,7 +514,7 @@ const AvatarGenerator: React.FC = () => {
                     <button
                         onClick={handleGenerate}
                         disabled={loading}
-                        className="w-full btn-gold py-6 text-sm tracking-[0.4em] font-bold uppercase flex items-center justify-center gap-4 transition-all hover:scale-[1.01] shadow-[0_0_30px_rgba(210,172,71,0.2)] rounded-2xl"
+                        className={`w-full bg-gold-gradient text-black font-bold uppercase tracking-[0.3em] py-5 rounded-xl shadow-[0_0_20px_rgba(210,172,71,0.4)] transition-all flex items-center justify-center gap-3 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                     >
                         {loading ? <RefreshCw className="animate-spin" /> : <Sparkles />}
                         {loading ? "Forging Identity..." : "Generate Avatar"}
