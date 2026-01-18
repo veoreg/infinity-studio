@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Upload, Loader2, Image as ImageIcon, X } from 'lucide-react';
+import { Upload, Loader2, X } from 'lucide-react';
 import { uploadToImgBB } from '../utils/imageUpload';
 
 interface ImageUploadZoneProps {

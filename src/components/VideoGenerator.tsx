@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Play, Loader2, Download, Wand2, ShieldCheck, Flame, Layers, Video, ImageIcon, XCircle } from 'lucide-react';
+import { Play, Loader2, Download, Wand2, ShieldCheck, Flame, Layers, Video, XCircle } from 'lucide-react';
 import GamificationDashboard from './GamificationDashboard';
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';

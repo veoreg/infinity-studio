@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Camera, Download, RefreshCw, User, CloudUpload, Layers, Sparkles } from "lucide-react";
+import { Camera, Download, RefreshCw, User, Layers, Sparkles } from "lucide-react";
 import GamificationDashboard from './GamificationDashboard';
 import UserGallery from './UserGallery';
 import HolidayPromo from './HolidayPromo';
