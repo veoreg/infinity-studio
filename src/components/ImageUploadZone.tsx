@@ -115,7 +115,7 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
                     </div>
                     <div>
                         <p className="text-[#F9F1D8] text-xs font-bold uppercase tracking-widest mb-1">
-                            {isDragging ? "Drop to Upload" : "Click or Drag Image"}
+                            {isDragging ? "Drop to Upload" : placeholder}
                         </p>
                         <p className="text-[#d2ac47]/50 text-[10px] uppercase tracking-wider">
                             Supports JPG, PNG, WEBP
