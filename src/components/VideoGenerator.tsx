@@ -317,24 +317,26 @@ const VideoGenerator: React.FC = () => {
                             )}
 
 
-                            {/* 3. Output / Generation Result (Center Stage) */}
-                            <div className="mt-4 flex-1 bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-2 shadow-2xl relative group w-full aspect-square xl:min-h-[600px] flex flex-col overflow-hidden">
+                            {/* 3. Output / Generation Result (Dynamic Aspect Ratio) */}
+                            <div className="mt-4 flex-1 bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-2 shadow-2xl relative group w-full min-h-[500px] flex flex-col justify-center overflow-hidden transition-all duration-500">
                                 <div className="absolute inset-0 w-full h-full bg-[#050505] flex items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#1a1a1a] to-[#050505] rounded-2xl">
-                                    {/* Art Deco Corners - Strict Luxury (Moved in as requested) */}
-                                    <div className="absolute top-6 left-6 w-4 h-4 border-t border-l border-[#d2ac47] pointer-events-none z-10 rounded-tl-lg"></div>
-                                    <div className="absolute top-6 right-6 w-4 h-4 border-t border-r border-[#d2ac47] pointer-events-none z-10 rounded-tr-lg"></div>
-                                    <div className="absolute bottom-6 left-6 w-4 h-4 border-b border-l border-[#d2ac47] pointer-events-none z-10 rounded-bl-lg"></div>
-                                    <div className="absolute bottom-6 right-6 w-4 h-4 border-b border-r border-[#d2ac47] pointer-events-none z-10 rounded-br-lg"></div>
+                                    {/* Art Deco Corners */}
+                                    <div className="absolute top-6 left-6 w-4 h-4 border-t border-l border-[#d2ac47] pointer-events-none z-10 rounded-tl-lg opacity-50"></div>
+                                    <div className="absolute top-6 right-6 w-4 h-4 border-t border-r border-[#d2ac47] pointer-events-none z-10 rounded-tr-lg opacity-50"></div>
+                                    <div className="absolute bottom-6 left-6 w-4 h-4 border-b border-l border-[#d2ac47] pointer-events-none z-10 rounded-bl-lg opacity-50"></div>
+                                    <div className="absolute bottom-6 right-6 w-4 h-4 border-b border-r border-[#d2ac47] pointer-events-none z-10 rounded-br-lg opacity-50"></div>
 
                                     {loading ? (
                                         <GenerationLogger />
                                     ) : videoUrl ? (
-                                        <div className="relative w-full h-full">
-                                            <video src={videoUrl} controls autoPlay loop className="w-full h-full object-cover" />
-                                            {/* Overlay moved to top to avoid blocking controls */}
-                                            <div className="absolute top-0 left-0 w-full p-6 bg-gradient-to-b from-black/80 to-transparent flex justify-between items-start opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                                                <div>
-                                                    <p className="text-[#d2ac47] font-serif italic text-xl drop-shadow-md">Masterpiece Ready</p>
+                                        <div className="relative w-full h-full flex items-center justify-center">
+                                            {/* Use object-contain to preserve natural aspect ratio dynamically */}
+                                            <video src={videoUrl} controls autoPlay loop className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
+
+                                            {/* Top Overlay: Text Center, Button Right */}
+                                            <div className="absolute top-0 left-0 w-full p-6 bg-gradient-to-b from-black/80 to-transparent flex items-start justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                                                <div className="absolute left-1/2 transform -translate-x-1/2 top-6">
+                                                    <p className="text-[#d2ac47] font-serif italic text-xl drop-shadow-md opacity-50 cursor-default pointer-events-auto">Masterpiece Ready</p>
                                                 </div>
                                                 <button onClick={handleDownload} className="flex items-center gap-2 bg-[#d2ac47] text-black px-6 py-2 text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors shadow-[0_0_15px_rgba(210,172,71,0.4)] rounded-xl pointer-events-auto">
                                                     <Download size={16} /> DOWNLOAD
