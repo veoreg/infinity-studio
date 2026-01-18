@@ -7,8 +7,6 @@ const compressImage = (file: File): Promise<File> => {
     return new Promise((resolve) => {
         const maxWidth = 2048;
         const maxHeight = 2048;
-        const minWidth = 1024; // User requested interpolation for small images
-        const minHeight = 1024;
         const quality = 0.85;
 
         const reader = new FileReader();
@@ -21,8 +19,8 @@ const compressImage = (file: File): Promise<File> => {
                 let height = img.height;
 
                 // Logic: 
-                // 1. Downscale if > 2048
-                // 2. Upscale (Interpolate) if < 1024
+                // Only Downscale if > 2048 (Optimization)
+                // Do NOT Upscale small images (leave for backend/ComfyUI)
 
                 if (width > maxWidth || height > maxHeight) {
                     // Downscale
@@ -32,19 +30,6 @@ const compressImage = (file: File): Promise<File> => {
                     } else {
                         width = Math.round((width * maxHeight) / height);
                         height = maxHeight;
-                    }
-                } else if (width < minWidth || height < minHeight) {
-                    // Upscale (Interpolate)
-                    const scale = Math.max(minWidth / width, minHeight / height);
-                    // Limit upscale to avoid extreme blur (e.g. icon to 2k)
-                    // But user asked for it, so we do it nicely.
-                    width = Math.round(width * scale);
-                    height = Math.round(height * scale);
-
-                    // Cap at max if upscale overshoot
-                    if (width > maxWidth) {
-                        height = Math.round((height * maxWidth) / width);
-                        width = maxWidth;
                     }
                 }
 
@@ -57,9 +42,6 @@ const compressImage = (file: File): Promise<File> => {
                     return;
                 }
 
-                // Use better interpolation for upscaling
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, 0, 0, width, height);
 
                 canvas.toBlob((blob) => {
