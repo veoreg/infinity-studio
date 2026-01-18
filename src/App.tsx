@@ -36,8 +36,7 @@ function App() {
               </div>
             </div>
 
-            {/* TAB SWITCHER - Art Deco Pill */}
-            <div className="hidden md:flex items-center p-1 bg-[#0f0f0f] border border-[#d2ac47]/30 rounded-full shadow-inner relative">
+            <div className="flex items-center p-1 bg-[#0f0f0f] border border-[#d2ac47]/30 rounded-full shadow-inner relative w-full md:w-auto justify-center mx-4 md:mx-0">
               <button
                 onClick={() => setActiveTab('video')}
                 className={`px-8 py-3 rounded-full text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all duration-300 ${activeTab === 'video' ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)]' : 'text-[#d2ac47]/50 hover:text-[#d2ac47]'}`}
