@@ -366,21 +366,24 @@ const AvatarGenerator: React.FC = () => {
 
                         <div className="space-y-6 mt-6">
                             {/* Main Face Input */}
-                            <div className="group">
+                            <div className="group h-[350px] flex flex-col">
                                 <label className="block text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2 flex items-center gap-2">
                                     <User size={14} /> Face Reference (Required)
                                 </label>
                                 {/* Drag & Drop Zone Replaces Simple Input */}
-                                <ImageUploadZone
-                                    onImageUpload={setFaceImageUrl}
-                                    currentUrl={faceImageUrl}
-                                    placeholder="Upload Face Photo"
-                                />
+                                <div className="flex-1 relative">
+                                    <ImageUploadZone
+                                        onImageUpload={setFaceImageUrl}
+                                        currentUrl={faceImageUrl}
+                                        placeholder="Upload Face Photo"
+                                        className="h-full w-full"
+                                    />
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 {/* Body Reference Toggle */}
-                                <div className={`border rounded-2xl p-6 transition-all duration-300 group/body ${grabBody ? 'border-[#d2ac47] bg-[#0a0a0a]' : 'border-[#d2ac47]/20 bg-transparent hover:border-[#d2ac47]/40'} `}>
+                                <div className={`border rounded-2xl p-6 transition-all duration-300 group/body flex flex-col ${grabBody ? 'border-[#d2ac47] bg-[#0a0a0a] min-h-[350px]' : 'border-[#d2ac47]/20 bg-transparent hover:border-[#d2ac47]/40 h-auto'} `}>
                                     <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => setGrabBody(!grabBody)}>
                                         <button
                                             className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabBody ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/30 text-[#d2ac47]/50 hover:text-[#d2ac47] hover:border-[#d2ac47]'} `}>
@@ -391,18 +394,19 @@ const AvatarGenerator: React.FC = () => {
                                         </span>
                                     </div>
                                     {grabBody && (
-                                        <div className="animate-fade-in">
+                                        <div className="animate-fade-in flex-1 relative">
                                             <ImageUploadZone
                                                 onImageUpload={setBodyRefUrl}
                                                 currentUrl={bodyRefUrl}
                                                 placeholder="Upload Body/Pose Photo"
+                                                className="h-full w-full"
                                             />
                                         </div>
                                     )}
                                 </div>
 
                                 {/* Composition Reference Toggle */}
-                                <div className={`border rounded-2xl p-6 transition-all duration-300 group/comp ${grabComposition ? 'border-[#d2ac47] bg-[#0a0a0a]' : 'border-[#d2ac47]/20 bg-transparent hover:border-[#d2ac47]/40'} `}>
+                                <div className={`border rounded-2xl p-6 transition-all duration-300 group/comp flex flex-col ${grabComposition ? 'border-[#d2ac47] bg-[#0a0a0a] min-h-[350px]' : 'border-[#d2ac47]/20 bg-transparent hover:border-[#d2ac47]/40 h-auto'} `}>
                                     <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => setGrabComposition(!grabComposition)}>
                                         <button
                                             className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabComposition ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/30 text-[#d2ac47]/50 hover:text-[#d2ac47] hover:border-[#d2ac47]'} `}>
@@ -413,11 +417,12 @@ const AvatarGenerator: React.FC = () => {
                                         </span>
                                     </div>
                                     {grabComposition && (
-                                        <div className="animate-fade-in">
+                                        <div className="animate-fade-in flex-1 relative">
                                             <ImageUploadZone
                                                 onImageUpload={setCompositionUrl}
                                                 currentUrl={compositionUrl}
                                                 placeholder="Upload Background/Comp"
+                                                className="h-full w-full"
                                             />
                                         </div>
                                     )}
