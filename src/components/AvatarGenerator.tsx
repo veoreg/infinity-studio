@@ -364,13 +364,19 @@ const AvatarGenerator: React.FC = () => {
                             Visual Source
                         </div>
 
-                        <div className="space-y-6 mt-6">
-                            {/* Main Face Input */}
-                            <div className="group h-[350px] flex flex-col overflow-hidden">
-                                <label className="block text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2 flex items-center gap-2">
-                                    <User size={14} /> Face Reference (Required)
-                                </label>
-                                {/* Drag & Drop Zone Replaces Simple Input */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                            {/* 1. Main Face Input */}
+                            {/* 1. Main Face Input */}
+                            <div className="border rounded-2xl p-6 border-[#d2ac47] bg-[#0a0a0a] h-[350px] flex flex-col group overflow-hidden transition-all hover:border-[#d2ac47]/60">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-8 h-8 border border-[#d2ac47] rounded-full flex items-center justify-center bg-[#d2ac47]/10 text-[#d2ac47]">
+                                        <User size={16} />
+                                    </div>
+                                    <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#d2ac47]">
+                                        Face Reference (Required)
+                                    </span>
+                                </div>
+                                {/* Drag & Drop Zone */}
                                 <div className="flex-1 relative overflow-hidden rounded-xl">
                                     <ImageUploadZone
                                         onImageUpload={setFaceImageUrl}
@@ -381,52 +387,50 @@ const AvatarGenerator: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {/* Body Reference Toggle */}
-                                <div className={`border rounded-2xl p-6 transition-all duration-300 group/body flex flex-col overflow-hidden ${grabBody ? 'border-[#d2ac47] bg-[#0a0a0a] h-[350px]' : 'border-[#d2ac47]/20 bg-transparent hover:border-[#d2ac47]/40 h-auto'} `}>
-                                    <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => setGrabBody(!grabBody)}>
-                                        <button
-                                            className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabBody ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/30 text-[#d2ac47]/50 hover:text-[#d2ac47] hover:border-[#d2ac47]'} `}>
-                                            <Camera size={16} />
-                                        </button>
-                                        <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabBody ? 'text-[#d2ac47]' : 'text-[#d2ac47]/60'}`}>
-                                            Pose & Body Ref
-                                        </span>
-                                    </div>
-                                    {grabBody && (
-                                        <div className="animate-fade-in flex-1 relative overflow-hidden rounded-xl">
-                                            <ImageUploadZone
-                                                onImageUpload={setBodyRefUrl}
-                                                currentUrl={bodyRefUrl}
-                                                placeholder="Upload Body/Pose Photo"
-                                                className="h-full w-full"
-                                            />
-                                        </div>
-                                    )}
+                            {/* 2. Body Reference Toggle */}
+                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/body flex flex-col overflow-hidden ${grabBody ? 'border-[#d2ac47] bg-[#0a0a0a] h-[350px]' : 'border-[#d2ac47]/20 bg-transparent hover:border-[#d2ac47]/40 h-auto'} `}>
+                                <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => setGrabBody(!grabBody)}>
+                                    <button
+                                        className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabBody ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/30 text-[#d2ac47]/50 hover:text-[#d2ac47] hover:border-[#d2ac47]'} `}>
+                                        <Camera size={16} />
+                                    </button>
+                                    <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabBody ? 'text-[#d2ac47]' : 'text-[#d2ac47]/60'}`}>
+                                        Pose & Body Ref
+                                    </span>
                                 </div>
+                                {grabBody && (
+                                    <div className="animate-fade-in flex-1 relative overflow-hidden rounded-xl">
+                                        <ImageUploadZone
+                                            onImageUpload={setBodyRefUrl}
+                                            currentUrl={bodyRefUrl}
+                                            placeholder="Upload Body/Pose Photo"
+                                            className="h-full w-full"
+                                        />
+                                    </div>
+                                )}
+                            </div>
 
-                                {/* Composition Reference Toggle */}
-                                <div className={`border rounded-2xl p-6 transition-all duration-300 group/comp flex flex-col overflow-hidden ${grabComposition ? 'border-[#d2ac47] bg-[#0a0a0a] h-[350px]' : 'border-[#d2ac47]/20 bg-transparent hover:border-[#d2ac47]/40 h-auto'} `}>
-                                    <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => setGrabComposition(!grabComposition)}>
-                                        <button
-                                            className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabComposition ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/30 text-[#d2ac47]/50 hover:text-[#d2ac47] hover:border-[#d2ac47]'} `}>
-                                            <Layers size={16} />
-                                        </button>
-                                        <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabComposition ? 'text-[#d2ac47]' : 'text-[#d2ac47]/60'}`}>
-                                            Composition Ref
-                                        </span>
-                                    </div>
-                                    {grabComposition && (
-                                        <div className="animate-fade-in flex-1 relative overflow-hidden rounded-xl">
-                                            <ImageUploadZone
-                                                onImageUpload={setCompositionUrl}
-                                                currentUrl={compositionUrl}
-                                                placeholder="Upload Background/Comp"
-                                                className="h-full w-full"
-                                            />
-                                        </div>
-                                    )}
+                            {/* 3. Composition Reference Toggle */}
+                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/comp flex flex-col overflow-hidden ${grabComposition ? 'border-[#d2ac47] bg-[#0a0a0a] h-[350px]' : 'border-[#d2ac47]/20 bg-transparent hover:border-[#d2ac47]/40 h-auto'} `}>
+                                <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => setGrabComposition(!grabComposition)}>
+                                    <button
+                                        className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabComposition ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/30 text-[#d2ac47]/50 hover:text-[#d2ac47] hover:border-[#d2ac47]'} `}>
+                                        <Layers size={16} />
+                                    </button>
+                                    <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabComposition ? 'text-[#d2ac47]' : 'text-[#d2ac47]/60'}`}>
+                                        Composition Ref
+                                    </span>
                                 </div>
+                                {grabComposition && (
+                                    <div className="animate-fade-in flex-1 relative overflow-hidden rounded-xl">
+                                        <ImageUploadZone
+                                            onImageUpload={setCompositionUrl}
+                                            currentUrl={compositionUrl}
+                                            placeholder="Upload Background/Comp"
+                                            className="h-full w-full"
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
