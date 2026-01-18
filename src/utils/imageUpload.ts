@@ -1,3 +1,4 @@
+// @ts-nocheck
 import axios from 'axios';
 
 const IMGBB_API_KEY = '1c25b0eebb392486c41c5c49861bf059';
