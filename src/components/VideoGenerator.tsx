@@ -418,7 +418,7 @@ const VideoGenerator: React.FC = () => {
                     <GamificationDashboard />
 
                     {/* 3. History / Gallery (Dump) - Moved to Bottom Right */}
-                    <div className="flex-1 bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-4 shadow-2xl relative min-h-[300px] flex flex-col">
+                    <div className="flex-1 bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-4 shadow-2xl relative min-h-[500px] md:min-h-[300px] flex flex-col">
                         <div className="mb-2 flex items-center justify-between">
                             <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em]">History</span>
                         </div>
