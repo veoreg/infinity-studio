@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Play, Loader2, Download, Wand2, ShieldCheck, Flame, Layers, Video, ImageIcon, XCircle } from 'lucide-react';
 import GamificationDashboard from './GamificationDashboard';
 import UserGallery from './UserGallery';
+import ImageUploadZone from './ImageUploadZone';
 
 // Simulated Progress Logger for UX
 const GenerationLogger = () => {
@@ -238,12 +239,10 @@ const VideoGenerator: React.FC = () => {
 
                                     {/* URL Input at Bottom */}
                                     <div className="border-t border-[#d2ac47]/30 p-2 bg-[#080808] relative z-30">
-                                        <input
-                                            type="text"
-                                            value={imageUrl}
-                                            onChange={(e) => setImageUrl(e.target.value)}
-                                            placeholder="Paste Image URL..."
-                                            className="w-full bg-transparent text-[#F9F1D8] text-[10px] font-serif placeholder-[#d2ac47]/60 focus:outline-none text-center"
+                                        <ImageUploadZone
+                                            onImageUpload={setImageUrl}
+                                            currentUrl={imageUrl}
+                                            placeholder="Upload Source Image"
                                         />
                                     </div>
                                 </div>
