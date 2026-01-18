@@ -242,7 +242,7 @@ const AvatarGenerator: React.FC = () => {
 
     return (
         <div className="w-full relative animate-fade-in pb-20">
-            <HolidayPromo />
+
 
             {/* Header */}
             <div className="text-center mb-12 relative z-10">
@@ -608,6 +608,7 @@ const AvatarGenerator: React.FC = () => {
                     100% { transform: rotateY(360deg); }
                 }
             `}</style>
+            <HolidayPromo />
         </div >
     );
 };
