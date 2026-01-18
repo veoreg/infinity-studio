@@ -1,6 +1,7 @@
+```
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Play, Loader2, Download, Wand2, ShieldCheck, Flame, Layers, Video, Image as ImageIcon, XCircle } from 'lucide-react';
+import { Play, Loader2, XCircle, ShieldCheck, Flame, Download, Layers, Wand2, Video, Sparkles } from 'lucide-react';
 import GamificationDashboard from './GamificationDashboard';
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
@@ -41,7 +42,7 @@ const GenerationLogger = () => {
             <div className="w-full max-w-md space-y-2">
                 {logs.map((log, i) => (
                     <div key={i} className="text-[#d2ac47] animate-fade-in-up flex items-center gap-2">
-                        <span className="text-[#d2ac47]/50">{`>`}</span>
+                        <span className="text-[#d2ac47]/50">{`> `}</span>
                         <span className={i === logs.length - 1 ? "animate-pulse font-bold" : "opacity-70"}>{log}</span>
                     </div>
                 ))}
@@ -50,11 +51,11 @@ const GenerationLogger = () => {
                 </div>
             </div>
             <style>{`
-                @keyframes growWidth {
-                    0% { width: 0%; }
-                    100% { width: 100%; }
-                }
-            `}</style>
+@keyframes growWidth {
+    0 % { width: 0 %; }
+    100 % { width: 100 %; }
+}
+`}</style>
         </div>
     );
 };
@@ -87,7 +88,7 @@ const VideoGenerator: React.FC = () => {
         // Mock download
         const link = document.createElement('a');
         link.href = videoUrl;
-        link.download = `infinity_video_${Date.now()}.mp4`;
+        link.download = `infinity_video_${ Date.now() }.mp4`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -143,12 +144,12 @@ const VideoGenerator: React.FC = () => {
             let errorMessage = 'Failed to generate video. Please check your inputs and try again.';
 
             if (err.response) {
-                errorMessage = `Server Error (${err.response.status}): ${err.response.statusText}`;
+                errorMessage = `Server Error(${ err.response.status }): ${ err.response.statusText } `;
                 if (err.response.data instanceof Blob) {
                     try {
                         const text = await err.response.data.text();
                         const json = JSON.parse(text);
-                        if (json.message) errorMessage += ` - ${json.message}`;
+                        if (json.message) errorMessage += ` - ${ json.message } `;
                     } catch (e) { /* ignore blob parse error */ }
                 }
             } else if (err.request) {
@@ -262,11 +263,11 @@ const VideoGenerator: React.FC = () => {
                                 onClick={() => setSafeMode(!safeMode)}
                                 className="cursor-pointer group flex items-center border border-[#d2ac47] w-fit transition-all hover:scale-105 shadow-[0_0_15px_rgba(210,172,71,0.1)] bg-black rounded-xl overflow-hidden"
                             >
-                                <div className={`px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center gap-3 ${safeMode ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-[#d2ac47]/10 hover:text-[#d2ac47]'}`}>
+                                <div className={`px - 6 py - 3 text - xs font - bold uppercase tracking - [0.25em] transition - all flex items - center gap - 3 ${ safeMode ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-[#d2ac47]/10 hover:text-[#d2ac47]' } `}>
                                     <ShieldCheck size={16} strokeWidth={2.5} /> SAFE
                                 </div>
                                 <div className="w-[1px] h-full bg-[#d2ac47]/30"></div>
-                                <div className={`px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center gap-3 ${!safeMode ? 'bg-gradient-to-r from-red-600 to-red-900 text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-red-900/30 hover:text-red-500'}`}>
+                                <div className={`px - 6 py - 3 text - xs font - bold uppercase tracking - [0.25em] transition - all flex items - center gap - 3 ${ !safeMode ? 'bg-gradient-to-r from-red-600 to-red-900 text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-red-900/30 hover:text-red-500' } `}>
                                     <Flame size={16} strokeWidth={2.5} /> SPICY
                                 </div>
                             </div>
@@ -283,7 +284,7 @@ const VideoGenerator: React.FC = () => {
                             <button
                                 onClick={handleGenerate}
                                 disabled={loading}
-                                className={`flex-1 md:flex-none py-4 px-8 text-[10px] tracking-[0.3em] font-bold uppercase flex items-center justify-center gap-3 min-w-[200px] group rounded-xl transition-all duration-300 ${loading ? 'opacity-50 cursor-not-allowed bg-[#d2ac47]/20 text-[#d2ac47]/50' : 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] hover:scale-[1.02]'}`}
+                                className={`flex - 1 md: flex - none py - 4 px - 8 text - [10px] tracking - [0.3em] font - bold uppercase flex items - center justify - center gap - 3 min - w - [200px] group rounded - xl transition - all duration - 300 ${ loading ? 'opacity-50 cursor-not-allowed bg-[#d2ac47]/20 text-[#d2ac47]/50' : 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] hover:scale-[1.02]' } `}
                             >
                                 {loading ? (
                                     <><Loader2 className="animate-spin" size={14} /> Forging...</>
