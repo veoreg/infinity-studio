@@ -34,7 +34,7 @@ const HolidayPromo: React.FC = () => {
           }
         `}
             </style>
-            <div className="w-full flex justify-center py-6 mt-12 relative z-10 lg:fixed lg:bottom-8 lg:right-8 lg:w-auto lg:mt-0 lg:py-0">
+            <div className="w-full flex justify-center py-6 mt-12 relative z-10 lg:fixed lg:bottom-8 lg:right-8 lg:w-auto lg:mt-0 lg:py-0 lg:scale-[0.85] lg:origin-bottom-right">
                 <div
                     className="relative group pointer-events-auto cursor-pointer"
                     onMouseEnter={() => setIsHovered(true)}

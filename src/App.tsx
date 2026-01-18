@@ -21,7 +21,7 @@ function App() {
           <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-24 py-4 md:py-0 gap-4 md:gap-0">
             {/* Logo Section */}
             <div className="flex items-center gap-3 group cursor-pointer mb-2 md:mb-0">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-[#d2ac47] rounded-sm rotate-45 flex items-center justify-center shadow-[0_0_15px_rgba(210,172,71,0.2)] group-hover:shadow-[0_0_25px_rgba(210,172,71,0.4)] transition-all duration-500">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-[#d2ac47] rounded-sm rotate-45 flex items-center justify-center shadow-[0_0_15px_rgba(210,172,71,0.2)] group-hover:shadow-[0_0_25px_rgba(210,172,71,0.4)] transition-all duration-500 animate-pulse">
                 <Video className="text-[#d2ac47] -rotate-45 group-hover:scale-110 transition-transform duration-500" size={20} />
               </div>
               <div className="ml-4 flex flex-col">
