@@ -1,0 +1,615 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+import { Upload, X, Zap, Check, AlertCircle, Camera, Repeat, Share2, Download, RefreshCw, User, CloudUpload, Layers, Sparkles } from "lucide-react";
+import GamificationDashboard from './GamificationDashboard';
+import UserGallery from './UserGallery';
+import HolidayPromo from './HolidayPromo';
+
+// Webhook URL (Proxied via Vite)
+const WEBHOOK_URL = "/api/avatar";
+
+interface CustomSelectProps {
+    label: string;
+    value: string | number;
+    onChange: (val: string) => void;
+    options: { label: string, value: string | number }[];
+}
+
+// Reusable Dropdown Component
+const CustomSelect: React.FC<CustomSelectProps> = ({ label, value, onChange, options }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+    // Close on click outside
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    return (
+        <div className="relative group" ref={dropdownRef}>
+            <label className="text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2 block">{label}</label>
+            <div
+                className={`w-full bg-[#0a0a0a] border ${isOpen ? 'border-[#d2ac47]' : 'border-[#d2ac47]/30'} text-[#F9F1D8] p-3 rounded-xl cursor-pointer flex justify-between items-center transition-all hover:border-[#d2ac47]/60`}
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                <span className="truncate text-xs font-bold tracking-widest uppercase">{options.find(o => o.value == value)?.label || value}</span>
+                <span className="text-[#d2ac47] text-[10px] transition-transform duration-300 transform" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+            </div>
+
+            {/* Dropdown Options - Absolute positioned with high Z-index */}
+            {isOpen && (
+                <div className="absolute top-full left-0 w-full bg-[#050505] border border-[#d2ac47] z-[100] shadow-[0_10px_40px_rgba(0,0,0,0.9)] animate-fade-in-down mt-2 rounded-xl overflow-hidden">
+                    {options.map((opt) => (
+                        <div
+                            key={opt.value}
+                            className={`p-2 text-xs cursor-pointer transition-all border-b border-[#d2ac47]/10 last:border-0 uppercase tracking-wider
+                                ${opt.value == value
+                                    ? 'bg-[#d2ac47] text-black font-bold shadow-[inset_0_0_10px_rgba(0,0,0,0.2)]'
+                                    : 'text-[#e0e0e0] hover:bg-[#d2ac47]/10 hover:text-[#fbeea4] hover:pl-2'
+                                }
+                            `}
+                            onClick={() => {
+                                onChange(opt.value.toString());
+                                setIsOpen(false);
+                            }}
+                        >
+                            {opt.label}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
+const AvatarLogger: React.FC = () => {
+    const [log, setLog] = useState("Initializing Neural Network...");
+
+    React.useEffect(() => {
+        const steps = [
+            { msg: "Analyzing Face Topology...", delay: 2000 },
+            { msg: "Mapping Facial Features...", delay: 6000 },
+            { msg: "Aligning Body Reference...", delay: 12000 },
+            { msg: "Synthesizing Skin Texture...", delay: 18000 },
+            { msg: "Applying Lighting & Shadows...", delay: 26000 },
+            { msg: "Finalizing Composition...", delay: 34000 },
+            { msg: "Rendering Output...", delay: 38000 }
+        ];
+
+        let timeouts: any[] = [];
+
+        steps.forEach(({ msg, delay }) => {
+            const timeout = setTimeout(() => {
+                setLog(msg);
+            }, delay);
+            timeouts.push(timeout);
+        });
+
+        return () => {
+            timeouts.forEach(clearTimeout);
+        };
+    }, []);
+
+    return (
+        <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-4 animate-fade-in drop-shadow-[0_4px_4px_rgba(0,0,0,0.9)]">
+            <RefreshCw className="w-12 h-12 text-[#d2ac47] animate-spin" />
+            <div className="font-mono text-[#d2ac47] text-xs uppercase tracking-widest font-bold">
+                {">"} {log}
+            </div>
+            {/* Progress Bar Simulation */}
+            <div className="w-48 h-1 bg-[#d2ac47]/20 rounded-full overflow-hidden mt-4 bg-black/40 backdrop-blur-sm">
+                <div className="h-full bg-[#d2ac47] animate-[growWidth_40s_ease-out_forwards]" style={{ width: '0%' }}></div>
+            </div>
+            <style>{`
+                @keyframes growWidth {
+                    0% { width: 0%; }
+                    100% { width: 100%; }
+                }
+            `}</style>
+        </div>
+    );
+};
+
+const AvatarGenerator: React.FC = () => {
+    const [loading, setLoading] = useState(false);
+    const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    // Identity Specs
+    const [gender, setGender] = useState('female');
+    const [age, setAge] = useState(24);
+    const [nationality, setNationality] = useState('Russian');
+    const [bodyType, setBodyType] = useState('fitness model');
+    const [clothing, setClothing] = useState('dressed');
+    const [role, setRole] = useState('');
+    const [artStyle, setArtStyle] = useState('Realistic RAW');
+
+    // Visual Sources
+    const [faceImageUrl, setFaceImageUrl] = useState('');
+    const [bodyRefUrl, setBodyRefUrl] = useState('');
+    const [compositionUrl, setCompositionUrl] = useState('');
+
+    // Toggles
+    const [grabBody, setGrabBody] = useState(false);
+    const [grabComposition, setGrabComposition] = useState(false);
+
+    // Fine Tuning
+    const [instantIdWeight, setInstantIdWeight] = useState(0.85);
+    const [userPrompt, setUserPrompt] = useState('beautiful woman, detailed skin texture, cinematic lighting');
+
+    // Advanced Controls
+    const [seed, setSeed] = useState<number>(-1); // -1 = Random
+    const [rawPromptMode, setRawPromptMode] = useState(false);
+    const [upscale, setUpscale] = useState(false);
+
+    // Gallery State
+    const [galleryItems, setGalleryItems] = useState<any[]>([]);
+
+    const handleDownload = () => {
+        if (!generatedImage) return;
+
+        // Trigger Download
+        const link = document.createElement('a');
+        link.href = generatedImage;
+        link.download = `infinity_avatar_${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Add to Gallery
+        const newItem = {
+            id: Date.now(),
+            type: 'photo',
+            url: generatedImage,
+            thumb: generatedImage,
+            label: 'Identity Forged',
+            privacy: 'private',
+            date: 'Just now'
+        };
+        setGalleryItems(prev => [newItem, ...prev]);
+    };
+
+    const handleGenerate = async () => {
+        if (!faceImageUrl) {
+            setError("Face Image URL is required.");
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        // reset image only if we want to clear the canvas, 
+        // but users might like to see the old one while waiting. 
+        // Let's clear it to show "working" state clearly or use a loader overlay.
+        // setGeneratedImage(null); 
+
+        try {
+            const payload = {
+                gender,
+                age,
+                nationality,
+                body_type: bodyType,
+                clothing,
+                role: role,
+                art_style: artStyle,
+                face_image_url: faceImageUrl,
+                body_reference_image_url: grabBody ? bodyRefUrl : undefined,
+                composition_image_url: grabComposition ? compositionUrl : undefined,
+                grab_body_from_image: grabBody,
+                grab_composition: grabComposition,
+                instantid_weight: instantIdWeight,
+                style_token: rawPromptMode ? userPrompt : `Style: ${artStyle}. Role: ${role}. ${userPrompt} `,
+                user_prompt: userPrompt,
+                seed: seed === -1 ? Math.floor(Math.random() * 2147483647) : seed,
+                upscale: upscale,
+                safe_mode: 3 // Strictly 3 as requested
+            };
+
+            // Request Blob to handle binary image response
+            const response = await axios.post(WEBHOOK_URL, payload, {
+                responseType: 'blob',
+                headers: { 'Content-Type': 'application/json' },
+                timeout: 240000 // 4 minutes timeout for avatar generation
+            });
+
+            // Create Object URL from the blob
+            const imageUrl = URL.createObjectURL(new Blob([response.data]));
+            setGeneratedImage(imageUrl);
+
+        } catch (err: any) {
+            console.error("Generation Error:", err);
+            let errMsg = "Failed to generate avatar. Please check inputs and try again.";
+
+            // Try to read error blob as text
+            if (err.response && err.response.data instanceof Blob) {
+                try {
+                    const text = await err.response.data.text();
+                    const json = JSON.parse(text);
+                    if (json.message) errMsg = json.message;
+                } catch (e) { /* ignore */ }
+            }
+            setError(errMsg);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="w-full relative animate-fade-in pb-20">
+            <HolidayPromo />
+
+            {/* Header */}
+            <div className="text-center mb-12 relative z-10">
+                <div className="inline-flex items-center gap-4 mb-4">
+                    <div className="h-[1px] w-12 bg-[#d2ac47]"></div>
+                    <span className="text-[#d2ac47] text-[10px] font-bold tracking-[0.4em] uppercase">Identity Forge</span>
+                    <div className="h-[1px] w-12 bg-[#d2ac47]"></div>
+                </div>
+                <h2 className="text-4xl md:text-6xl font-serif text-[#F9F1D8] mb-4 drop-shadow-[0_0_15px_rgba(210,172,71,0.2)]">
+                    Create Your <span className="text-gold-luxury italic">Avatar</span>
+                </h2>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+                {/* LEFT COLUMN: Controls */}
+                <div className="lg:col-span-8 space-y-8 relative z-10">
+
+                    {/* 1. Identity Matrix - Art Deco Panel */}
+                    <div className="bg-[#121212] border border-[#d2ac47]/20 rounded-3xl p-8 relative shadow-2xl group transition-all hover:border-[#d2ac47]/40">
+                        <div className="absolute top-0 left-0 px-6 py-2 bg-[#d2ac47] text-black text-[10px] font-bold tracking-[0.2em] uppercase rounded-tl-3xl rounded-br-2xl shadow-lg">
+                            Identity Matrix
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                            <div className="space-y-2">
+                                <CustomSelect
+                                    label="Gender"
+                                    value={gender}
+                                    onChange={(val) => setGender(val)}
+                                    options={[
+                                        { label: 'Female', value: 'female' },
+                                        { label: 'Male', value: 'male' },
+                                        { label: 'Transgender', value: 'transgender' }
+                                    ]}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase">Age</label>
+                                <input type="number" value={age} onChange={(e) => setAge(Number(e.target.value))}
+                                    className="w-full bg-[#0a0a0a] border border-[#d2ac47]/30 text-[#F9F1D8] p-3 focus:outline-none focus:border-[#d2ac47] rounded-xl" />
+                            </div>
+                            <div className="space-y-2">
+                                <CustomSelect
+                                    label="Nationality"
+                                    value={nationality}
+                                    onChange={(val) => setNationality(val)}
+                                    options={[
+                                        { label: 'Russian', value: 'Russian' },
+                                        { label: 'European', value: 'European' },
+                                        { label: 'American', value: 'American' },
+                                        { label: 'Latina', value: 'Latina' },
+                                        { label: 'Asian', value: 'Asian' },
+                                        { label: 'Japanese', value: 'Japanese' },
+                                        { label: 'Korean', value: 'Korean' },
+                                        { label: 'Indian', value: 'Indian' },
+                                        { label: 'Arab', value: 'Arab' },
+                                        { label: 'African', value: 'African' },
+                                        { label: 'Scandinavian', value: 'Scandinavian' },
+                                        { label: 'Brazilian', value: 'Brazilian' }
+                                    ]}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <CustomSelect
+                                    label="Body Type"
+                                    value={bodyType}
+                                    onChange={(val) => setBodyType(val)}
+                                    options={[
+                                        { label: 'Fitness Model', value: 'fitness model' },
+                                        { label: 'Thin / Model', value: 'thin' },
+                                        { label: 'Athletic', value: 'athletic' },
+                                        { label: 'Curvy', value: 'curvy' },
+                                        { label: 'Thick', value: 'thick' },
+                                        { label: 'Chubby', value: 'chubby' },
+                                        { label: 'Obese / BBW', value: 'obese' },
+                                        { label: 'Muscular', value: 'muscular' }
+                                    ]}
+                                />
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
+                                <CustomSelect
+                                    label="Clothing Style"
+                                    value={clothing}
+                                    onChange={(val) => setClothing(val)}
+                                    options={[
+                                        { label: 'Dressed (Full Outfit)', value: 'dressed' },
+                                        { label: 'Semi-Dressed (Lingerie/Bikini)', value: 'semi-dressed' },
+                                        { label: 'Nude (Artistic)', value: 'nude' }
+                                    ]}
+                                />
+                            </div>
+                            <div className="space-y-2 md:col-span-3">
+                                <CustomSelect
+                                    label="Character Role / Archetype"
+                                    value={role}
+                                    onChange={(val) => setRole(val)}
+                                    options={[
+                                        { label: 'Seductive Teacher', value: 'Seductive Teacher' },
+                                        { label: 'Submissive Maid', value: 'Submissive Maid' },
+                                        { label: 'Insatiable Flight Attendant', value: 'Insatiable Flight Attendant' },
+                                        { label: 'Strict Boss / CEO', value: 'Strict Boss' },
+                                        { label: 'Naughty Nun', value: 'Naughty Nun' },
+                                        { label: 'Yoga Instructor', value: 'Yoga Instructor' },
+                                        { label: 'Gothic Vixen', value: 'Gothic Vixen' },
+                                        { label: 'Cyberpunk Rebel', value: 'Cyberpunk Rebel' },
+                                        { label: 'Office Secretary', value: 'Office Secretary' },
+                                        { label: 'Fitness Influencer', value: 'Fitness Influencer' }
+                                    ]}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 2. Visual Sources - Art Deco Panel */}
+                    <div className="bg-[#121212] border border-[#d2ac47]/20 rounded-3xl p-8 relative shadow-2xl transition-all hover:border-[#d2ac47]/40">
+                        <div className="absolute top-0 left-0 px-6 py-2 bg-[#d2ac47] text-black text-[10px] font-bold tracking-[0.2em] uppercase rounded-tl-3xl rounded-br-2xl shadow-lg">
+                            Visual Source
+                        </div>
+
+                        <div className="space-y-6 mt-6">
+                            {/* Main Face Input */}
+                            <div className="group">
+                                <label className="block text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2 flex items-center gap-2">
+                                    <User size={14} /> Face Reference (Required)
+                                </label>
+                                <div className="flex gap-2 relative">
+                                    <input type="url" value={faceImageUrl} onChange={(e) => setFaceImageUrl(e.target.value)}
+                                        placeholder="https://..."
+                                        className="w-full bg-[#0a0a0a] border border-[#d2ac47]/30 text-[#F9F1D8] p-4 focus:outline-none focus:border-[#d2ac47] rounded-xl transition-all focus:shadow-[0_0_20px_rgba(210,172,71,0.1)]" />
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[#d2ac47]/50 pointer-events-none">
+                                        <CloudUpload size={18} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* Body Reference Toggle */}
+                                <div className={`border rounded-2xl p-6 transition-all duration-300 group/body ${grabBody ? 'border-[#d2ac47] bg-[#0a0a0a]' : 'border-[#d2ac47]/20 bg-transparent hover:border-[#d2ac47]/40'} `}>
+                                    <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => setGrabBody(!grabBody)}>
+                                        <button
+                                            className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabBody ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/30 text-[#d2ac47]/50 hover:text-[#d2ac47] hover:border-[#d2ac47]'} `}>
+                                            <Camera size={16} />
+                                        </button>
+                                        <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabBody ? 'text-[#d2ac47]' : 'text-[#d2ac47]/60'}`}>
+                                            Pose & Body Ref
+                                        </span>
+                                    </div>
+                                    {grabBody && (
+                                        <div className="animate-fade-in">
+                                            <input type="url" value={bodyRefUrl} onChange={(e) => setBodyRefUrl(e.target.value)}
+                                                placeholder="Body Reference URL"
+                                                className="w-full bg-[#080808] border border-[#d2ac47]/30 text-[#F9F1D8] p-3 text-xs focus:outline-none focus:border-[#d2ac47] rounded-xl" />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Composition Reference Toggle */}
+                                <div className={`border rounded-2xl p-6 transition-all duration-300 group/comp ${grabComposition ? 'border-[#d2ac47] bg-[#0a0a0a]' : 'border-[#d2ac47]/20 bg-transparent hover:border-[#d2ac47]/40'} `}>
+                                    <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => setGrabComposition(!grabComposition)}>
+                                        <button
+                                            className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabComposition ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/30 text-[#d2ac47]/50 hover:text-[#d2ac47] hover:border-[#d2ac47]'} `}>
+                                            <Layers size={16} />
+                                        </button>
+                                        <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabComposition ? 'text-[#d2ac47]' : 'text-[#d2ac47]/60'}`}>
+                                            Composition Ref
+                                        </span>
+                                    </div>
+                                    {grabComposition && (
+                                        <div className="animate-fade-in">
+                                            <input type="url" value={compositionUrl} onChange={(e) => setCompositionUrl(e.target.value)}
+                                                placeholder="Composition / BG Reference URL"
+                                                className="w-full bg-[#080808] border border-[#d2ac47]/30 text-[#F9F1D8] p-3 text-xs focus:outline-none focus:border-[#d2ac47] rounded-xl" />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 3. Style & Prompt - Art Deco Panel */}
+                    <div className="bg-[#121212] border border-[#d2ac47]/20 rounded-3xl p-8 relative shadow-2xl transition-all hover:border-[#d2ac47]/40">
+                        <div className="absolute top-0 left-0 px-6 py-2 bg-[#d2ac47] text-black text-[10px] font-bold tracking-[0.2em] uppercase rounded-tl-3xl rounded-br-2xl shadow-lg">
+                            Fine Tuning
+                        </div>
+
+                        <div className="mt-6 space-y-6">
+                            {/* Art Style Dropdown */}
+                            <div>
+                                <CustomSelect
+                                    label="Art Style"
+                                    value={artStyle}
+                                    onChange={(val) => setArtStyle(val)}
+                                    options={[
+                                        { label: 'Realistic RAW', value: 'Realistic RAW' },
+                                        { label: 'Vintage Pin-Up', value: 'Vintage Pin-Up' },
+                                        { label: 'Private Polaroid', value: 'Private Polaroid' },
+                                        { label: 'Analogue Film', value: 'Analogue Film' },
+                                        { label: 'Anime / Manga', value: 'Anime / Manga' },
+                                        { label: 'Hentai / NSFW', value: 'Hentai / NSFW' },
+                                        { label: 'Fashion Editorial', value: 'Fashion Editorial' },
+                                        { label: 'Gothic Noir', value: 'Gothic Noir' }
+                                    ]}
+                                />
+                            </div>
+
+                            <div>
+                                <div className="flex justify-between text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2">
+                                    <span>Likeness Strength</span>
+                                    <span>{instantIdWeight}</span>
+                                </div>
+                                <input type="range" min="0" max="1" step="0.05" value={instantIdWeight} onChange={(e) => setInstantIdWeight(Number(e.target.value))}
+                                    className="w-full h-1 bg-[#d2ac47]/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-[#d2ac47] [&::-webkit-slider-thumb]:rounded-full" />
+                            </div>
+
+                            <div>
+                                <label className="text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2 block">Prompt Details</label>
+                                <textarea value={userPrompt} onChange={(e) => setUserPrompt(e.target.value)}
+                                    className="w-full bg-[#0a0a0a] border border-[#d2ac47]/30 text-[#F9F1D8] p-3 text-sm h-24 focus:outline-none focus:border-[#d2ac47] rounded-xl shadow-inner"
+                                    placeholder="Describe specific details..." />
+                                {/* Advanced Controls: Seed & Raw Mode */}
+                                <div className="flex items-center gap-4 mt-3">
+                                    {/* Seed Control */}
+                                    <div className="flex-1 flex items-center gap-2 bg-[#0a0a0a] border border-[#d2ac47]/20 p-2 px-3 rounded-xl">
+                                        <span className="text-[#d2ac47] text-[9px] uppercase tracking-wider whitespace-nowrap">Seed:</span>
+                                        <input
+                                            type="number"
+                                            value={seed === -1 ? '' : seed}
+                                            placeholder="Random"
+                                            onChange={(e) => setSeed(e.target.value === '' ? -1 : parseInt(e.target.value))}
+                                            className="bg-transparent text-[#F9F1D8] text-xs font-mono w-full focus:outline-none placeholder-[#d2ac47]/30"
+                                        />
+                                        <button
+                                            onClick={() => setSeed(Math.floor(Math.random() * 2147483647))}
+                                            className="text-[#d2ac47]/50 hover:text-[#d2ac47] transition-colors"
+                                            title="Spin Random Seed"
+                                        >
+                                            <RefreshCw size={14} className="active:animate-spin" />
+                                        </button>
+                                    </div>
+
+                                    {/* Raw Prompt Toggle */}
+                                    <button
+                                        onClick={() => setRawPromptMode(!rawPromptMode)}
+                                        className={`flex items-center gap-2 px-3 py-2 border transition-all rounded-xl ${rawPromptMode ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
+                                    >
+                                        <div className={`w-2 h-2 rounded-full ${rawPromptMode ? 'bg-black' : 'bg-[#d2ac47]/50'}`}></div>
+                                        <span className="text-[9px] uppercase tracking-widest font-bold">Raw Prompt</span>
+                                    </button>
+
+                                    {/* Upscale Toggle */}
+                                    <button
+                                        onClick={() => setUpscale(!upscale)}
+                                        className={`flex items-center gap-2 px-3 py-2 border transition-all rounded-xl ${upscale ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
+                                    >
+                                        {upscale ? <Sparkles size={12} fill="black" /> : <Sparkles size={12} />}
+                                        <span className="text-[9px] uppercase tracking-widest font-bold">Upscale</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Generate Button */}
+                    <button
+                        onClick={handleGenerate}
+                        disabled={loading}
+                        className="w-full btn-gold py-6 text-sm tracking-[0.4em] font-bold uppercase flex items-center justify-center gap-4 transition-all hover:scale-[1.01] shadow-[0_0_30px_rgba(210,172,71,0.2)] rounded-2xl"
+                    >
+                        {loading ? <RefreshCw className="animate-spin" /> : <Sparkles />}
+                        {loading ? "Forging Identity..." : "Generate Avatar"}
+                    </button>
+
+                    {error && <div className="text-red-400 text-center font-serif italic bg-red-950/30 p-4 border border-red-900/50">{error}</div>}
+
+                    {/* Gallery Moved to Bottom Center */}
+                    <div className="mt-8 border-t border-[#d2ac47]/10 pt-4">
+                        <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em] mb-4 block">Recent Creations</span>
+                        <UserGallery newItems={galleryItems} columns={3} />
+                    </div>
+
+                </div>
+
+                {/* RIGHT COLUMN: Output - High Density Panel */}
+                <div className="lg:col-span-4 sticky top-32 z-10 space-y-4">
+
+                    {/* 1. Coins / Credits Widget */}
+                    <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl p-6 flex flex-col items-center justify-center shadow-lg relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#d2ac47]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <span className="text-[#d2ac47]/60 text-[9px] uppercase tracking-[0.3em] mb-1">Balance</span>
+                        <div className="flex items-center gap-2 text-[#F9F1D8] drop-shadow-[0_0_10px_rgba(210,172,71,0.5)]">
+                            {/* Gold Coin Icon */}
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ffd700] via-[#fbeea4] to-[#b8860b] border border-[#fbeea4] shadow-[0_0_15px_rgba(255,215,0,0.6)] flex items-center justify-center mr-2" style={{ animation: 'spinY 5s linear infinite' }}>
+                                <div className="w-5 h-5 rounded-full border border-[#b8860b]/50"></div>
+                            </div>
+                            <span className="text-3xl font-serif font-bold">2,450</span>
+                            <div className="flex flex-col leading-none">
+                                <span className="text-xs text-[#d2ac47] font-bold uppercase tracking-wider">Credits</span>
+                                <span className="text-[9px] text-[#d2ac47]/60 uppercase tracking-widest">Available</span>
+                            </div>
+                        </div>
+                        <button className="mt-2 px-4 py-1.5 border border-[#d2ac47]/30 rounded-full text-[#d2ac47] text-[7px] uppercase tracking-[0.2em] hover:bg-[#d2ac47] hover:text-black transition-all">
+                            Add Funds
+                        </button>
+                    </div>
+
+                    {/* 2. Stats Dashboard (Top) */}
+                    <GamificationDashboard />
+
+                    {/* 3. Image Output (Bottom) - Static Placeholders if empty */}
+                    <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl aspect-[9/16] relative flex items-center justify-center overflow-hidden shadow-2xl group flex-col min-h-[500px]">
+                        {/* 1. LAYER: Generated Image (Bottom) */}
+                        {generatedImage && (
+                            <>
+                                <img src={generatedImage} alt="Generated Avatar" className="w-full h-full object-contain bg-black/80" />
+                                {/* Buttons moved to separate layer */}
+                                {/* Deco Corners for Image */}
+                                <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-[#d2ac47] pointer-events-none"></div>
+                                <div className="absolute top-2 right-2 w-4 h-4 border-t border-r border-[#d2ac47] pointer-events-none"></div>
+                                <div className="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-[#d2ac47] pointer-events-none"></div>
+                                <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-[#d2ac47] pointer-events-none"></div>
+                            </>
+                        )}
+
+                        {/* 2. LAYER: Loading Logger (Overlay or Main) */}
+                        {loading && (
+                            <div className={`flex flex-col items-center justify-center ${generatedImage ? 'absolute inset-0 z-20 bg-black/50 backdrop-blur-sm' : 'w-full h-full'}`}>
+                                <AvatarLogger />
+                            </div>
+                        )}
+
+                        {/* 3. LAYER: Action Buttons (Top Overlay) */}
+                        {generatedImage && (
+                            <div className="absolute top-12 left-0 w-full z-30 flex justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <button
+                                    onClick={handleGenerate}
+                                    disabled={loading}
+                                    className={`btn-gold px-6 py-3 text-xs tracking-widest uppercase flex items-center gap-2 border border-[#d2ac47]/50 rounded-xl hover:bg-[#d2ac47] hover:text-black shadow-[0_4px_10px_rgba(0,0,0,0.5)] ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    <RefreshCw size={16} className={loading ? "animate-spin" : ""} /> {loading ? "Processing..." : "Regenerate"}
+                                </button>
+                                <button onClick={handleDownload} className="btn-gold px-6 py-3 text-xs tracking-widest uppercase flex items-center gap-2 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.5)]">
+                                    <Download size={16} /> Download
+                                </button>
+                            </div>
+                        )}
+
+                        {/* 4. LAYER: Placeholder (Only if nothing else) */}
+                        {!generatedImage && !loading && (
+                            <div className="text-[#d2ac47]/20 flex flex-col items-center gap-2">
+                                <Camera size={48} strokeWidth={1} />
+                                <span className="text-[9px] tracking-[0.3em] uppercase">Output Ready</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+            </div>
+
+            <style>{`
+                @keyframes spinY {
+                    0% { transform: rotateY(0deg); }
+                    100% { transform: rotateY(360deg); }
+                }
+            `}</style>
+        </div >
+    );
+};
+
+export default AvatarGenerator;

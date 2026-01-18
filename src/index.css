@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold-light: #fbeea4;
+  --color-gold-med: #d2ac47;
+  /* Sharper Antique Gold */
+  --color-gold-dark: #8c6a25;
+  --color-velvet-black: #080808;
+  --color-velvet-depth: #0f0f0f;
+  /* Slightly lighter for panels */
+
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-fade-in: fadeIn 1s ease-out forwards;
+  --animate-fade-in-up: fadeInUp 1s ease-out forwards;
+}
+
+
+
+@layer base {
+  body {
+    background-color: var(--color-velvet-black);
+    color: #F9F1D8;
+    /* Champagne text */
+    font-family: "Outfit", sans-serif;
+    overflow-x: hidden;
+  }
+}
+
+@layer components {
+
+  /* Gatsby/Art Deco Gold Gradient */
+  .text-gold-luxury {
+    background: linear-gradient(180deg, #fbeea4 0%, #d2ac47 45%, #8c6a25 55%, #d2ac47 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.05em;
+  }
+
+  /* Sharp Art Deco Geometrics */
+  .border-art-deco {
+    border: 1px solid transparent;
+    border-image: linear-gradient(135deg, #d2ac47 0%, #fbeea4 50%, #8c6a25 100%) 1;
+    position: relative;
+  }
+
+  /* Geometric Overlay Pattern */
+  .bg-pattern-deco {
+    background-color: var(--color-velvet-depth);
+    background-image: linear-gradient(30deg, #151515 12%, transparent 12.5%, transparent 87%, #151515 87.5%, #151515),
+      linear-gradient(150deg, #151515 12%, transparent 12.5%, transparent 87%, #151515 87.5%, #151515),
+      linear-gradient(30deg, #151515 12%, transparent 12.5%, transparent 87%, #151515 87.5%, #151515),
+      linear-gradient(150deg, #151515 12%, transparent 12.5%, transparent 87%, #151515 87.5%, #151515),
+      linear-gradient(60deg, #1a1a1a 25%, transparent 25.5%, transparent 75%, #1a1a1a 75%, #1a1a1a),
+      linear-gradient(60deg, #1a1a1a 25%, transparent 25.5%, transparent 75%, #1a1a1a 75%, #1a1a1a);
+    background-size: 80px 140px;
+    background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
+    opacity: 0.8;
+  }
+
+  .bg-gold-gradient {
+    background: linear-gradient(135deg, #d2ac47 0%, #fbeea4 50%, #8c6a25 100%);
+  }
+
+  /* Velvet Surface */
+  .bg-velvet-depth {
+    background-color: rgba(15, 15, 15, 0.95);
+    backdrop-filter: blur(8px);
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8);
+  }
+
+  /* Strict Luxury Button */
+  .btn-gold {
+    background: linear-gradient(180deg, #d2ac47 0%, #8c6a25 100%);
+    border: 1px solid #fbeea4;
+    color: #000;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    box-shadow: 0 4px 0 #5e4616, 0 5px 10px rgba(0, 0, 0, 0.5);
+    transition: all 0.2s ease;
+  }
+
+  .btn-gold:hover {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #5e4616, 0 3px 5px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(180deg, #e4bf5e 0%, #a27b2e 100%);
+  }
+
+  .btn-gold:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #5e4616, inset 0 2px 5px rgba(0, 0, 0, 0.3);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
