@@ -4,7 +4,7 @@ const IMGBB_API_KEY = '1c25b0eebb392486c41c5c49861bf059';
 
 // Client-side compression helper
 const compressImage = (file: File): Promise<File> => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         const maxWidth = 2048;
         const maxHeight = 2048;
         const quality = 0.85;
@@ -53,9 +53,9 @@ const compressImage = (file: File): Promise<File> => {
                     }
                 }, 'image/jpeg', quality);
             };
-            img.onerror = (err) => resolve(file); // Fail safe
+            img.onerror = () => resolve(file); // Fail safe
         };
-        reader.onerror = (err) => resolve(file); // Fail safe
+        reader.onerror = () => resolve(file); // Fail safe
     });
 };
 
