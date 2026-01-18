@@ -223,12 +223,13 @@ const VideoGenerator: React.FC = () => {
                                     </div>
 
                                     {/* Main Upload Zone */}
-                                    <div className="flex-1 p-0 relative h-full">
+                                    <div className="flex-1 p-0 relative h-full flex flex-col">
                                         <div className="absolute inset-0">
                                             <ImageUploadZone
                                                 onImageUpload={setImageUrl}
                                                 currentUrl={imageUrl}
                                                 placeholder="CLICK OR DRAG IMAGE"
+                                                className="h-full w-full"
                                             />
                                         </div>
                                     </div>
@@ -236,7 +237,7 @@ const VideoGenerator: React.FC = () => {
                                 </div>
 
                                 {/* Prompt Input Frame */}
-                                <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 flex flex-col rounded-2xl overflow-hidden">
+                                <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 flex flex-col rounded-2xl overflow-hidden min-h-[250px]">
                                     <div className="absolute top-0 left-0 bg-[#d2ac47] text-black text-[9px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] z-20 rounded-br-xl">
                                         Vision Prompt
                                     </div>
@@ -257,17 +258,16 @@ const VideoGenerator: React.FC = () => {
                     {/* Controls - The Toggle */}
                     <div className="border-t border-[#d2ac47]/10 pt-4 flex flex-col md:flex-row items-center justify-between gap-4">
 
-                        {/* Mode Toggle - Strict Rectangles */}
                         {/* Mode Toggle - Strict Rectangles (Larger & Clearer) */}
                         <div
                             onClick={() => setSafeMode(!safeMode)}
                             className="cursor-pointer group flex items-center border border-[#d2ac47] w-fit transition-all hover:scale-105 shadow-[0_0_15px_rgba(210,172,71,0.1)] bg-black rounded-xl overflow-hidden"
                         >
-                            <div className={`px - 6 py - 3 text - xs font - bold uppercase tracking - [0.25em] transition - all flex items - center gap - 3 ${safeMode ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-[#d2ac47]/10 hover:text-[#d2ac47]'} `}>
+                            <div className={`px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center gap-3 ${safeMode ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-[#d2ac47]/10 hover:text-[#d2ac47]'} `}>
                                 <ShieldCheck size={16} strokeWidth={2.5} /> SAFE
                             </div>
                             <div className="w-[1px] h-full bg-[#d2ac47]/30"></div>
-                            <div className={`px - 6 py - 3 text - xs font - bold uppercase tracking - [0.25em] transition - all flex items - center gap - 3 ${!safeMode ? 'bg-gradient-to-r from-red-600 to-red-900 text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-red-900/30 hover:text-red-500'} `}>
+                            <div className={`px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center gap-3 ${!safeMode ? 'bg-gradient-to-r from-red-600 to-red-900 text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-red-900/30 hover:text-red-500'} `}>
                                 <Flame size={16} strokeWidth={2.5} /> SPICY
                             </div>
                         </div>
@@ -284,7 +284,7 @@ const VideoGenerator: React.FC = () => {
                         <button
                             onClick={handleGenerate}
                             disabled={loading}
-                            className={`flex - 1 md: flex - none py - 4 px - 8 text - [10px] tracking - [0.3em] font - bold uppercase flex items - center justify - center gap - 3 min - w - [200px] group rounded - xl transition - all duration - 300 ${loading ? 'opacity-50 cursor-not-allowed bg-[#d2ac47]/20 text-[#d2ac47]/50' : 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] hover:scale-[1.02]'} `}
+                            className={`flex-1 md:flex-none py-4 px-8 text-[10px] tracking-[0.3em] font-bold uppercase flex items-center justify-center gap-3 min-w-[200px] group rounded-xl transition-all duration-300 ${loading ? 'opacity-50 cursor-not-allowed bg-[#d2ac47]/20 text-[#d2ac47]/50' : 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] hover:scale-[1.02]'} `}
                         >
                             {loading ? (
                                 <><Loader2 className="animate-spin" size={14} /> Forging...</>
