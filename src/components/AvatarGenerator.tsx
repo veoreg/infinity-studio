@@ -521,6 +521,47 @@ const AvatarGenerator: React.FC = () => {
 
                     {error && <div className="text-red-400 text-center font-serif italic bg-red-950/30 p-4 border border-red-900/50">{error}</div>}
 
+                    {/* MOBILE ONLY: Image Output (Moved up per user request) */}
+                    <div className="lg:hidden mt-8 mb-8">
+                        <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl aspect-[9/16] relative flex items-center justify-center overflow-hidden shadow-2xl group flex-col min-h-[500px]">
+                            {/* 1. LAYER: Generated Image (Bottom) */}
+                            {generatedImage && (
+                                <>
+                                    <img src={generatedImage} alt="Generated Avatar" className="w-full h-full object-contain bg-black/80" />
+                                    {/* Deco Corners */}
+                                    <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-[#d2ac47] pointer-events-none"></div>
+                                    <div className="absolute top-2 right-2 w-4 h-4 border-t border-r border-[#d2ac47] pointer-events-none"></div>
+                                    <div className="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-[#d2ac47] pointer-events-none"></div>
+                                    <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-[#d2ac47] pointer-events-none"></div>
+                                </>
+                            )}
+                            {/* 2. LAYER: Loading Logger */}
+                            {loading && (
+                                <div className={`flex flex-col items-center justify-center ${generatedImage ? 'absolute inset-0 z-20 bg-black/50 backdrop-blur-sm' : 'w-full h-full'}`}>
+                                    <AvatarLogger />
+                                </div>
+                            )}
+                            {/* 3. LAYER: Action Buttons */}
+                            {generatedImage && (
+                                <div className="absolute top-12 left-0 w-full z-30 flex justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <button onClick={handleGenerate} disabled={loading} className="btn-gold px-6 py-3 text-xs tracking-widest uppercase flex items-center gap-2 border border-[#d2ac47]/50 rounded-xl hover:bg-[#d2ac47] hover:text-black shadow-[0_4px_10px_rgba(0,0,0,0.5)]">
+                                        <RefreshCw size={16} className={loading ? "animate-spin" : ""} /> Regenerate
+                                    </button>
+                                    <button onClick={handleDownload} className="btn-gold px-6 py-3 text-xs tracking-widest uppercase flex items-center gap-2 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.5)]">
+                                        <Download size={16} /> Download
+                                    </button>
+                                </div>
+                            )}
+                            {/* 4. LAYER: Placeholder */}
+                            {!generatedImage && !loading && (
+                                <div className="text-[#d2ac47]/20 flex flex-col items-center gap-2">
+                                    <Camera size={48} strokeWidth={1} />
+                                    <span className="text-[9px] tracking-[0.3em] uppercase">Output Ready</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
                     {/* Gallery Moved to Bottom Center */}
                     <div className="mt-8 border-t border-[#d2ac47]/10 pt-4">
                         <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em] mb-4 block">Recent Creations</span>
@@ -555,8 +596,8 @@ const AvatarGenerator: React.FC = () => {
                     {/* 2. Stats Dashboard (Top) */}
                     <GamificationDashboard />
 
-                    {/* 3. Image Output (Bottom) - Static Placeholders if empty */}
-                    <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl aspect-[9/16] relative flex items-center justify-center overflow-hidden shadow-2xl group flex-col min-h-[500px]">
+                    {/* 3. Image Output (Bottom) - DESKTOP ONLY (Hidden on mobile to show upper copy) */}
+                    <div className="hidden lg:flex bg-[#050505] border border-[#d2ac47]/20 rounded-3xl aspect-[9/16] relative items-center justify-center overflow-hidden shadow-2xl group flex-col min-h-[500px]">
                         {/* 1. LAYER: Generated Image (Bottom) */}
                         {generatedImage && (
                             <>
