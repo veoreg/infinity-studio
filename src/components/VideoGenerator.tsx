@@ -414,9 +414,10 @@ const VideoGenerator: React.FC = () => {
                     </div>
                 </div>
             </div >
+        </div >
 
 
-            );
+    );
 };
 
-            export default VideoGenerator;
+export default VideoGenerator;
