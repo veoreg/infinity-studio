@@ -366,12 +366,12 @@ const AvatarGenerator: React.FC = () => {
 
                         <div className="space-y-6 mt-6">
                             {/* Main Face Input */}
-                            <div className="group h-[350px] flex flex-col">
+                            <div className="group h-[350px] flex flex-col overflow-hidden">
                                 <label className="block text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2 flex items-center gap-2">
                                     <User size={14} /> Face Reference (Required)
                                 </label>
                                 {/* Drag & Drop Zone Replaces Simple Input */}
-                                <div className="flex-1 relative">
+                                <div className="flex-1 relative overflow-hidden rounded-xl">
                                     <ImageUploadZone
                                         onImageUpload={setFaceImageUrl}
                                         currentUrl={faceImageUrl}
@@ -417,7 +417,7 @@ const AvatarGenerator: React.FC = () => {
                                         </span>
                                     </div>
                                     {grabComposition && (
-                                        <div className="animate-fade-in flex-1 relative">
+                                        <div className="animate-fade-in flex-1 relative overflow-hidden rounded-xl">
                                             <ImageUploadZone
                                                 onImageUpload={setCompositionUrl}
                                                 currentUrl={compositionUrl}
