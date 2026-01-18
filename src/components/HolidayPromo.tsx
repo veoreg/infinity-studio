@@ -40,11 +40,17 @@ const HolidayPromo: React.FC = () => {
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
                     onClick={() => {
-                        // Click "Pleasure/Discount" Logic
+                        // Toggle animation state manually for mobile control
+                        setIsHovered(!isHovered);
+
+                        // Only copy/alert if we are turning it ON (or always? User wants toggle. Let's just copy always but toggle visual)
                         const discountCode = "PLEASURE50";
                         navigator.clipboard.writeText(discountCode);
-                        alert(`Discount Code ${discountCode} Copied! Enjoy.`); // Simple temporary feedback or could be a toast
-                        // Trigger massive explosion here visually by unmounting/remounting or just visual feedback style
+
+                        // Optional: Debounce alert? No, keeps it simple.
+                        if (!isHovered) { // If it WAS off, and we turn it on -> alert
+                            alert(`Discount Code ${discountCode} Copied! Enjoy.`);
+                        }
                     }}
                 >
                     {/* Golden Sparks Explosion (Thicker & denser) */}
