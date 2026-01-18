@@ -415,17 +415,7 @@ const VideoGenerator: React.FC = () => {
             </div>
         </div>
 
-                {/* Keyframes for breathing effect embedded */ }
-    <style>{`
-                @keyframes breathe {
-                    0% { transform: scale(1.0); }
-                    100% { transform: scale(1.05); }
-                }
-                @keyframes spinY {
-                    0% { transform: rotateY(0deg); }
-                    100% { transform: rotateY(360deg); }
-                }
-            `}</style>
+
             </div >
             );
 };
