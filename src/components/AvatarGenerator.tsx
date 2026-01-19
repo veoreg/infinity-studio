@@ -217,7 +217,7 @@ const AvatarGenerator: React.FC = () => {
         try {
             const payload = {
                 gender,
-                age,
+                age: Number(age) || 18, // Fallback to 18 if empty/invalid
                 nationality,
                 body_type: bodyType,
                 clothing,
@@ -321,9 +321,21 @@ const AvatarGenerator: React.FC = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase">Age</label>
-                                <input type="number" value={age} onChange={(e) => setAge(Number(e.target.value))}
-                                    className="w-full bg-[#0a0a0a] border border-[#d2ac47]/30 text-[#F9F1D8] p-3 focus:outline-none focus:border-[#d2ac47] rounded-xl" />
+                                <div className="flex justify-between">
+                                    <label className="text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase">Age</label>
+                                </div>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
+                                    value={age}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === '') setAge('');
+                                        else if (/^\d+$/.test(val)) setAge(Number(val));
+                                    }}
+                                    className="w-full bg-[#0a0a0a] border border-[#d2ac47]/30 text-[#F9F1D8] p-3 focus:outline-none focus:border-[#d2ac47] rounded-xl font-mono"
+                                />
                             </div>
                             <div className="space-y-2">
                                 <CustomSelect
