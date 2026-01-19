@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Upload, Loader2, X } from 'lucide-react';
-import { uploadToImgBB } from '../utils/imageUpload';
+import { supabase } from '../lib/supabaseClient';
 
 interface ImageUploadZoneProps {
     onImageUpload: (data: { url: string; fileName: string }) => void;
@@ -26,14 +26,28 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
         }
 
         setUploading(true);
-        // Don't show raw preview to avoid rendering huge files (lag).
-        // Wait for compression & upload (~1-2s).
 
         try {
-            const url = await uploadToImgBB(file);
-            onImageUpload({ url, fileName: file.name });
-            setPreview(url); // Show optimized image from server
+            // Generate unique filename to avoid collisions
+            const fileExt = file.name.split('.').pop();
+            const uniqueName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+            // Upload to Supabase 'generations' bucket
+            const { error: uploadError } = await supabase.storage
+                .from('generations')
+                .upload(uniqueName, file);
+
+            if (uploadError) throw uploadError;
+
+            // Get Public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('generations')
+                .getPublicUrl(uniqueName);
+
+            onImageUpload({ url: publicUrl, fileName: file.name });
+            setPreview(publicUrl);
         } catch (error) {
+            console.error('Upload failed:', error);
             alert('Upload failed. Please try again.');
             setPreview(null);
         } finally {
