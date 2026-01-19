@@ -69,9 +69,43 @@ const VideoGenerator: React.FC = () => {
     const [textPrompt, setTextPrompt] = useState('');
     const [safeMode, setSafeMode] = useState(true);
     const [loading, setLoading] = useState(false);
-    // ... (rest of state)
+    const [videoUrl, setVideoUrl] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [galleryItems, setGalleryItems] = useState<any[]>([]);
+    const abortControllerRef = React.useRef<AbortController | null>(null);
 
-    // ... (handleCancel, handleDownload)
+    const handleCancel = () => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+            abortControllerRef.current = null;
+            setLoading(false);
+            setError('Generation cancelled by user.');
+        }
+    };
+
+    const handleDownload = () => {
+        if (!videoUrl) return;
+
+        // Mock download
+        const link = document.createElement('a');
+        link.href = videoUrl;
+        link.download = `infinity_video_${Date.now()}.mp4`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Add to gallery
+        const newItem = {
+            id: Date.now(),
+            type: 'video',
+            url: videoUrl,
+            thumb: '/luxury-right-2.png', // Placeholder thumb for now
+            label: 'New Masterpiece',
+            privacy: 'private',
+            date: 'Just now'
+        };
+        setGalleryItems(prev => [newItem, ...prev]);
+    };
 
     const handleGenerate = async () => {
         if (!imageUrl || !textPrompt) {
