@@ -224,6 +224,13 @@ const AvatarGenerator: React.FC = () => {
             setGeneratedImage(imageUrl);
 
         } catch (err: any) {
+            // Check if the request was canceled by the user
+            if (axios.isCancel(err) || err.name === 'CanceledError') {
+                console.log('Generation canceled by user');
+                setError('Generation stopped by user.');
+                return;
+            }
+
             console.error("Generation Error:", err);
             let errMsg = "Failed to generate avatar. Please check inputs and try again.";
 
@@ -234,7 +241,10 @@ const AvatarGenerator: React.FC = () => {
                     const json = JSON.parse(text);
                     if (json.message) errMsg = json.message;
                 } catch (e) { /* ignore */ }
+            } else if (err.request) {
+                errMsg = 'No response received from server. Check if the backend is active.';
             }
+
             setError(errMsg);
         } finally {
             setLoading(false);

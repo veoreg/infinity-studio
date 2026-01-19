@@ -139,6 +139,13 @@ const VideoGenerator: React.FC = () => {
             setVideoUrl(url);
 
         } catch (err: any) {
+            // Check if the request was canceled by the user
+            if (axios.isCancel(err) || err.name === 'CanceledError') {
+                console.log('Generation canceled by user');
+                setError('Generation stopped by user.');
+                return;
+            }
+
             console.error(err);
             let errorMessage = 'Failed to generate video. Please check your inputs and try again.';
 
