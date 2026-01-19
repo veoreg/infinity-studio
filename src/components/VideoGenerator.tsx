@@ -4,6 +4,7 @@ import { Play, Loader2, XCircle, ShieldCheck, Flame, Download, Layers, Wand2, Vi
 import GamificationDashboard from './GamificationDashboard';
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
+import { supabase } from '../lib/supabaseClient';
 
 // Simulated Progress Logger for UX
 const GenerationLogger = () => {
@@ -118,57 +119,75 @@ const VideoGenerator: React.FC = () => {
         setVideoUrl(null);
 
         try {
-            // Cancel any previous request
-            if (abortControllerRef.current) {
-                abortControllerRef.current.abort();
-            }
-            abortControllerRef.current = new AbortController();
+            // 1. Create a "Pending" record in Supabase
+            const { data: generation, error: dbError } = await supabase
+                .from('generations')
+                .insert({
+                    type: 'video',
+                    status: 'pending',
+                    prompt: textPrompt,
+                    image_url: imageUrl,
+                    metadata: { safe_mode: safeMode }
+                })
+                .select()
+                .single();
 
-            const response = await axios.post(WEBHOOK_URL, {
+            if (dbError) throw new Error(`Database Error: ${dbError.message}`);
+            if (!generation) throw new Error('Failed to init generation');
+
+            console.log("Generation started, ID:", generation.id);
+
+            // 2. Call Webhook (Fire and Forget - we don't wait for the video blob response)
+            // We pass the 'generation_id' so N8n knows where to save the result.
+            axios.post(WEBHOOK_URL, {
+                generation_id: generation.id, // <--- CRITICAL for Async
                 imageUrl,
-                filename: fileName, // Critical: Backend extracts flags from name
+                filename: fileName,
                 textPrompt,
                 safeMode,
-                resolution_steps: 1080, // Primary attempt
-                aspect_ratio: "1080",   // Alternative name
-                megapixels: 1,          // Alternative name for ImageScaleToTotalPixels
-            }, {
-                responseType: 'blob',
-                headers: { 'Content-Type': 'application/json' },
-                timeout: 900000,
-                signal: abortControllerRef.current.signal
+                resolution_steps: 1080,
+                aspect_ratio: "1080",
+                megapixels: 1,
+            }).catch(err => {
+                // If N8n times out (Cloudflare error), that's actually FINE in async mode,
+                // provided N8n started processing. Only network errors are real errors.
+                console.warn("Webhook triggered (async path)", err);
             });
 
-            const url = URL.createObjectURL(new Blob([response.data], { type: 'video/mp4' }));
+            // 3. Listen for updates on this specific row
+            const channel = supabase
+                .channel(`generation_${generation.id}`)
+                .on(
+                    'postgres_changes',
+                    { event: 'UPDATE', schema: 'public', table: 'generations', filter: `id=eq.${generation.id}` },
+                    (payload) => {
+                        const newRecord = payload.new as any;
+                        console.log("Realtime Update:", newRecord);
+
+                        if (newRecord.status === 'completed' && newRecord.video_url) {
+                            setVideoUrl(newRecord.video_url);
+                            setLoading(false);
+                            supabase.removeChannel(channel);
+                        } else if (newRecord.status === 'failed') {
+                            setError('Generation failed on server.');
+                            setLoading(false);
+                            supabase.removeChannel(channel);
+                        }
+                    }
+                )
+                .subscribe();
+
+            // Safety timeout (stop listening after 10 minutes)
+            setTimeout(() => {
+                if (loading) {
+                    supabase.removeChannel(channel);
+                    // Don't kill the UI, just stop listening
+                }
+            }, 600000);
 
         } catch (err: any) {
-            // Check if the request was canceled by the user
-            if (axios.isCancel(err) || err.name === 'CanceledError') {
-                console.log('Generation canceled by user');
-                setError('Generation stopped by user.');
-                return;
-            }
-
             console.error(err);
-            let errorMessage = 'Failed to generate video. Please check your inputs and try again.';
-
-            if (err.response) {
-                errorMessage = `Server Error(${err.response.status}): ${err.response.statusText} `;
-                if (err.response.data instanceof Blob) {
-                    try {
-                        const text = await err.response.data.text();
-                        const json = JSON.parse(text);
-                        if (json.message) errorMessage += ` - ${json.message} `;
-                    } catch (e) { /* ignore blob parse error */ }
-                }
-            } else if (err.request) {
-                errorMessage = 'No response received from server. Check if the n8n workflow is active.';
-            } else {
-                errorMessage = err.message;
-            }
-
-            setError(errorMessage);
-        } finally {
+            setError(err.message || 'Failed to start generation.');
             setLoading(false);
         }
     };
