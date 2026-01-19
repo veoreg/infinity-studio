@@ -472,12 +472,15 @@ const AvatarGenerator: React.FC = () => {
                             <div className={`border rounded-2xl p-6 group/comp flex flex-col overflow-hidden ${error?.includes('Background') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : grabComposition ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5 h-full min-h-[350px] justify-between'} `}>
                                 <div className={`flex items-center gap-3 mb-4 cursor-pointer w-full ${!grabComposition && 'h-full justify-center flex-col gap-4'}`} onClick={() => setGrabComposition(!grabComposition)}>
                                     <button
-                                        className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabComposition ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'w-12 h-12 border-[#d2ac47]/40 text-[#d2ac47]/40 scale-125'} `}>
-                                        <Layers size={grabComposition ? 16 : 20} />
+                                        className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabComposition ? 'border-red-500 text-red-500 bg-red-950/20' : 'w-12 h-12 border-[#d2ac47]/40 text-[#d2ac47]/40 scale-125'} `}>
+                                        {grabComposition ? <XCircle size={16} /> : <Layers size={20} />}
                                     </button>
-                                    <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabComposition ? 'text-[#d2ac47]' : 'text-[#d2ac47]/40'}`}>
-                                        Background Ref
-                                    </span>
+                                    <div className="flex flex-col">
+                                        <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabComposition ? 'text-[#d2ac47]' : 'text-[#d2ac47]/40'}`}>
+                                            Background Ref
+                                        </span>
+                                        {grabComposition && <span className="text-[8px] text-red-400 uppercase tracking-wider">(Click to Cancel)</span>}
+                                    </div>
                                 </div>
                                 {grabComposition && (
                                     <div className="animate-fade-in w-full aspect-square relative overflow-hidden rounded-xl mb-3">
