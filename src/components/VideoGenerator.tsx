@@ -61,8 +61,8 @@ const GenerationLogger = () => {
     );
 };
 
-// Webhook URL (Proxied via Vite)
-const WEBHOOK_URL = "https://n8n.develotex.io/webhook/wan_context_safeMode_3_enhanced-v3";
+// Webhook URL (Updated to Supabase Workflow)
+const WEBHOOK_URL = "https://n8n.develotex.io/webhook/wan_context_safeMode_3_SB";
 
 const VideoGenerator: React.FC = () => {
     const [imageUrl, setImageUrl] = useState('');
