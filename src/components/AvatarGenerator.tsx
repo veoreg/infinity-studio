@@ -346,24 +346,7 @@ const AvatarGenerator: React.FC = () => {
                                     ]}
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <CustomSelect
-                                    label={grabBody ? "Body Type (Overridden by Image)" : "Body Type"}
-                                    value={bodyType}
-                                    onChange={(val) => setBodyType(val)}
-                                    disabled={grabBody}
-                                    options={[
-                                        { label: 'Fitness Model', value: 'fitness model' },
-                                        { label: 'Thin / Model', value: 'thin' },
-                                        { label: 'Athletic', value: 'athletic' },
-                                        { label: 'Curvy', value: 'curvy' },
-                                        { label: 'Thick', value: 'thick' },
-                                        { label: 'Chubby', value: 'chubby' },
-                                        { label: 'Obese / BBW', value: 'obese' },
-                                        { label: 'Muscular', value: 'muscular' }
-                                    ]}
-                                />
-                            </div>
+
                             <div className="space-y-2 md:col-span-2">
                                 <CustomSelect
                                     label="Clothing Style"
@@ -437,7 +420,7 @@ const AvatarGenerator: React.FC = () => {
                             </div>
 
                             {/* 2. Body Reference Toggle */}
-                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/body flex flex-col overflow-hidden ${error?.includes('Body') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : grabBody ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5 h-[350px] justify-between'} `}>
+                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/body flex flex-col ${error?.includes('Body') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : grabBody ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5 h-[350px] justify-between'} `}>
                                 <div className={`flex items-center gap-3 mb-4 cursor-pointer w-full ${!grabBody && 'h-full justify-center flex-col gap-4'}`} onClick={() => setGrabBody(!grabBody)}>
                                     <button
                                         className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabBody ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'w-12 h-12 border-[#d2ac47]/40 text-[#d2ac47]/40 scale-125'} `}>
@@ -457,15 +440,25 @@ const AvatarGenerator: React.FC = () => {
                                         />
                                     </div>
                                 )}
-                                {/* Invisible Slider Clone for Exact Height Match */}
-                                {grabBody && (
-                                    <div className="invisible pointer-events-none">
-                                        <div className="flex justify-between text-[9px] mb-1">
-                                            <span>Likeness Strength</span>
-                                        </div>
-                                        <div className="w-full h-1" />
-                                    </div>
-                                )}
+                                {/* Body Type Dropdown (Moved Here for UX) */}
+                                <div>
+                                    <CustomSelect
+                                        label={grabBody ? "Structure (From Image)" : "Body Structure"}
+                                        value={bodyType}
+                                        onChange={(val) => setBodyType(val)}
+                                        disabled={grabBody}
+                                        options={[
+                                            { label: 'Fitness Model', value: 'fitness model' },
+                                            { label: 'Thin / Model', value: 'thin' },
+                                            { label: 'Athletic', value: 'athletic' },
+                                            { label: 'Curvy', value: 'curvy' },
+                                            { label: 'Thick', value: 'thick' },
+                                            { label: 'Chubby', value: 'chubby' },
+                                            { label: 'Obese / BBW', value: 'obese' },
+                                            { label: 'Muscular', value: 'muscular' }
+                                        ]}
+                                    />
+                                </div>
                             </div>
 
                             {/* 3. Composition Reference Toggle */}
