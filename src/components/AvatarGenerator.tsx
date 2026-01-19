@@ -418,7 +418,7 @@ const AvatarGenerator: React.FC = () => {
                                     </span>
                                 </div>
                                 {grabBody && (
-                                    <div className="animate-fade-in flex-1 relative overflow-hidden rounded-xl">
+                                    <div className="animate-fade-in flex-1 relative overflow-hidden rounded-xl mb-3">
                                         <ImageUploadZone
                                             onImageUpload={setBodyRefUrl}
                                             currentUrl={bodyRefUrl}
@@ -427,6 +427,8 @@ const AvatarGenerator: React.FC = () => {
                                         />
                                     </div>
                                 )}
+                                {/* Spacer to align with Face Card's Slider (Same height ~35px) */}
+                                {grabBody && <div className="h-[35px] w-full"></div>}
                             </div>
 
                             {/* 3. Composition Reference Toggle */}
@@ -441,7 +443,7 @@ const AvatarGenerator: React.FC = () => {
                                     </span>
                                 </div>
                                 {grabComposition && (
-                                    <div className="animate-fade-in flex-1 relative overflow-hidden rounded-xl">
+                                    <div className="animate-fade-in flex-1 relative overflow-hidden rounded-xl mb-3">
                                         <ImageUploadZone
                                             onImageUpload={setCompositionUrl}
                                             currentUrl={compositionUrl}
@@ -450,6 +452,8 @@ const AvatarGenerator: React.FC = () => {
                                         />
                                     </div>
                                 )}
+                                {/* Spacer to align with Face Card's Slider */}
+                                {grabComposition && <div className="h-[35px] w-full"></div>}
                             </div>
                         </div>
                     </div>
