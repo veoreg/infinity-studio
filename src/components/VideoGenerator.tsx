@@ -222,9 +222,9 @@ const VideoGenerator: React.FC = () => {
                         <div className="space-y-4 relative z-10">
                             {/* Inputs Grid - Split into 2 */}
                             {/* Inputs Grid - Expanded to Fill Space */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-[250px]">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
                                 {/* Image Input Frame */}
-                                <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 overflow-hidden flex flex-col rounded-2xl h-[250px] md:h-auto md:min-h-[250px]">
+                                <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 overflow-hidden flex flex-col rounded-2xl aspect-square">
                                     <div className="absolute top-0 left-0 bg-[#d2ac47] text-black text-[9px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] z-20 rounded-br-xl pointer-events-none">
                                         Source Image
                                     </div>
@@ -244,7 +244,7 @@ const VideoGenerator: React.FC = () => {
                                 </div>
 
                                 {/* Prompt Input Frame */}
-                                <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 flex flex-col rounded-2xl overflow-hidden min-h-[250px]">
+                                <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 flex flex-col rounded-2xl overflow-hidden aspect-square">
                                     <div className="absolute top-0 left-0 bg-[#d2ac47] text-black text-[9px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] z-20 rounded-br-xl">
                                         Vision Prompt
                                     </div>
