@@ -125,7 +125,8 @@ const VideoGenerator: React.FC = () => {
             const response = await axios.post(WEBHOOK_URL, {
                 imageUrl,
                 textPrompt,
-                safeMode
+                safeMode,
+                resolution_steps: 1080 // Required by ComfyUI workflow ID 524
             }, {
                 responseType: 'blob',
                 headers: { 'Content-Type': 'application/json' },
