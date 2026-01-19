@@ -218,11 +218,11 @@ const AvatarGenerator: React.FC = () => {
             const payload = {
                 gender,
                 age,
-                nationality,
-                body_type: bodyType,
-                clothing,
-                role: role,
-                art_style: artStyle,
+                nationality: rawPromptMode ? '' : nationality,
+                body_type: rawPromptMode ? '' : bodyType,
+                clothing, // Critical: Keep for ComfyUI routing
+                role: rawPromptMode ? '' : role,
+                art_style: rawPromptMode ? '' : artStyle,
                 face_image_url: faceImageUrl,
                 body_reference_image_url: (grabBody && bodyRefUrl) ? bodyRefUrl : undefined,
                 composition_image_url: (grabComposition && compositionUrl) ? compositionUrl : undefined,
