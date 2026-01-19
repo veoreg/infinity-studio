@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Camera, Download, RefreshCw, User, Layers, Sparkles } from "lucide-react";
+import { Camera, Download, RefreshCw, User, Layers, Sparkles, XCircle } from "lucide-react";
 import GamificationDashboard from './GamificationDashboard';
 import UserGallery from './UserGallery';
 import HolidayPromo from './HolidayPromo';
@@ -152,6 +152,18 @@ const AvatarGenerator: React.FC = () => {
     // Gallery State
     const [galleryItems, setGalleryItems] = useState<any[]>([]);
 
+    // Cancellation Ref
+    const controllerRef = React.useRef<AbortController | null>(null);
+
+    const handleCancel = () => {
+        if (controllerRef.current) {
+            controllerRef.current.abort();
+            controllerRef.current = null;
+            setLoading(false);
+            setError('Generation stopped by user.');
+        }
+    };
+
     const handleDownload = () => {
         if (!generatedImage) return;
 
@@ -200,8 +212,8 @@ const AvatarGenerator: React.FC = () => {
                 role: role,
                 art_style: artStyle,
                 face_image_url: faceImageUrl,
-                body_reference_image_url: grabBody ? bodyRefUrl : undefined,
-                composition_image_url: grabComposition ? compositionUrl : undefined,
+                body_reference_image_url: (grabBody && bodyRefUrl) ? bodyRefUrl : undefined,
+                composition_image_url: (grabComposition && compositionUrl) ? compositionUrl : undefined,
                 grab_body_from_image: grabBody,
                 grab_composition: grabComposition,
                 instantid_weight: instantIdWeight,
@@ -212,11 +224,15 @@ const AvatarGenerator: React.FC = () => {
                 safe_mode: 3 // Strictly 3 as requested
             };
 
+            // Create new AbortController
+            controllerRef.current = new AbortController();
+
             // Request Blob to handle binary image response
             const response = await axios.post(WEBHOOK_URL, payload, {
                 responseType: 'blob',
                 headers: { 'Content-Type': 'application/json' },
-                timeout: 240000 // 4 minutes timeout for avatar generation
+                timeout: 240000, // 4 minutes timeout for avatar generation
+                signal: controllerRef.current.signal
             });
 
             // Create Object URL from the blob
@@ -552,15 +568,25 @@ const AvatarGenerator: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Generate Button */}
-                    <button
-                        onClick={handleGenerate}
-                        disabled={loading}
-                        className={`w-full font-bold uppercase tracking-[0.3em] py-5 rounded-xl shadow-[0_0_20px_rgba(210,172,71,0.4)] transition-all flex items-center justify-center gap-3 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] ${loading ? 'bg-[#d2ac47] text-black opacity-90 cursor-wait shadow-[0_0_10px_rgba(210,172,71,0.3)]' : 'bg-gold-gradient text-black'}`}
-                    >
-                        {loading ? <RefreshCw className="animate-spin" /> : <Sparkles />}
-                        {loading ? "Forging Identity..." : "Generate Avatar"}
-                    </button>
+                    {/* Generate & Cancel Buttons */}
+                    <div className="flex gap-4">
+                        {loading && (
+                            <button
+                                onClick={handleCancel}
+                                className="px-6 py-5 border border-[#d2ac47] bg-[#1a1a1a] text-[#d2ac47] hover:bg-red-950/40 hover:text-red-400 hover:border-red-500 transition-all text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 group/cancel rounded-xl shadow-[0_0_10px_rgba(210,172,71,0.1)]"
+                            >
+                                <XCircle size={20} className="group-hover/cancel:rotate-90 transition-transform duration-300" />
+                            </button>
+                        )}
+                        <button
+                            onClick={handleGenerate}
+                            disabled={loading}
+                            className={`flex-1 font-bold uppercase tracking-[0.3em] py-5 rounded-xl shadow-[0_0_20px_rgba(210,172,71,0.4)] transition-all flex items-center justify-center gap-3 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] ${loading ? 'bg-[#d2ac47] text-black opacity-90 cursor-wait shadow-[0_0_10px_rgba(210,172,71,0.3)]' : 'bg-gold-gradient text-black'}`}
+                        >
+                            {loading ? <RefreshCw className="animate-spin" /> : <Sparkles />}
+                            {loading ? "Forging Identity..." : "Generate Avatar"}
+                        </button>
+                    </div>
 
                     {error && <div className="text-red-400 text-center font-serif italic bg-red-950/30 p-4 border border-red-900/50">{error}</div>}
 
