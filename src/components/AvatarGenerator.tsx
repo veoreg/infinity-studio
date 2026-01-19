@@ -331,6 +331,7 @@ const AvatarGenerator: React.FC = () => {
                                     value={nationality}
                                     onChange={(val) => setNationality(val)}
                                     options={[
+                                        { label: 'AI Decide / Empty', value: '' },
                                         { label: 'Russian', value: 'Russian' },
                                         { label: 'European', value: 'European' },
                                         { label: 'American', value: 'American' },
@@ -367,6 +368,7 @@ const AvatarGenerator: React.FC = () => {
                                         value={role}
                                         onChange={(val) => setRole(val)}
                                         options={[
+                                            { label: 'AI Decide / Empty', value: '' },
                                             { label: 'Seductive Teacher', value: 'Seductive Teacher' },
                                             { label: 'Submissive Maid', value: 'Submissive Maid' },
                                             { label: 'Insatiable Flight Attendant', value: 'Insatiable Flight Attendant' },
@@ -519,6 +521,7 @@ const AvatarGenerator: React.FC = () => {
                                     value={artStyle}
                                     onChange={(val) => setArtStyle(val)}
                                     options={[
+                                        { label: 'AI Decide / Empty', value: '' },
                                         { label: 'Realistic RAW', value: 'Realistic RAW' },
                                         { label: 'Vintage Pin-Up', value: 'Vintage Pin-Up' },
                                         { label: 'Private Polaroid', value: 'Private Polaroid' },
