@@ -347,36 +347,39 @@ const AvatarGenerator: React.FC = () => {
                                 />
                             </div>
 
-                            <div className="space-y-2 md:col-span-2">
-                                <CustomSelect
-                                    label="Clothing Style"
-                                    value={clothing}
-                                    onChange={(val) => setClothing(val)}
-                                    options={[
-                                        { label: 'Dressed (Full Outfit)', value: 'dressed' },
-                                        { label: 'Semi-Dressed (Lingerie/Bikini)', value: 'semi-dressed' },
-                                        { label: 'Nude (Artistic)', value: 'nude' }
-                                    ]}
-                                />
-                            </div>
-                            <div className="space-y-2 md:col-span-3">
-                                <CustomSelect
-                                    label="Character Role / Archetype"
-                                    value={role}
-                                    onChange={(val) => setRole(val)}
-                                    options={[
-                                        { label: 'Seductive Teacher', value: 'Seductive Teacher' },
-                                        { label: 'Submissive Maid', value: 'Submissive Maid' },
-                                        { label: 'Insatiable Flight Attendant', value: 'Insatiable Flight Attendant' },
-                                        { label: 'Strict Boss / CEO', value: 'Strict Boss' },
-                                        { label: 'Naughty Nun', value: 'Naughty Nun' },
-                                        { label: 'Yoga Instructor', value: 'Yoga Instructor' },
-                                        { label: 'Gothic Vixen', value: 'Gothic Vixen' },
-                                        { label: 'Cyberpunk Rebel', value: 'Cyberpunk Rebel' },
-                                        { label: 'Office Secretary', value: 'Office Secretary' },
-                                        { label: 'Fitness Influencer', value: 'Fitness Influencer' }
-                                    ]}
-                                />
+                            {/* Clothing & Role Row (50/50 Split) */}
+                            <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <CustomSelect
+                                        label="Clothing Style"
+                                        value={clothing}
+                                        onChange={(val) => setClothing(val)}
+                                        options={[
+                                            { label: 'Dressed (Full Outfit)', value: 'dressed' },
+                                            { label: 'Semi-Dressed (Lingerie/Bikini)', value: 'semi-dressed' },
+                                            { label: 'Nude (Artistic)', value: 'nude' }
+                                        ]}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <CustomSelect
+                                        label="Character Role / Archetype"
+                                        value={role}
+                                        onChange={(val) => setRole(val)}
+                                        options={[
+                                            { label: 'Seductive Teacher', value: 'Seductive Teacher' },
+                                            { label: 'Submissive Maid', value: 'Submissive Maid' },
+                                            { label: 'Insatiable Flight Attendant', value: 'Insatiable Flight Attendant' },
+                                            { label: 'Strict Boss / CEO', value: 'Strict Boss' },
+                                            { label: 'Naughty Nun', value: 'Naughty Nun' },
+                                            { label: 'Yoga Instructor', value: 'Yoga Instructor' },
+                                            { label: 'Gothic Vixen', value: 'Gothic Vixen' },
+                                            { label: 'Cyberpunk Rebel', value: 'Cyberpunk Rebel' },
+                                            { label: 'Office Secretary', value: 'Office Secretary' },
+                                            { label: 'Fitness Influencer', value: 'Fitness Influencer' }
+                                        ]}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -390,7 +393,7 @@ const AvatarGenerator: React.FC = () => {
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                             {/* 1. Main Face Input */}
                             {/* 1. Main Face Input */}
-                            <div className="border rounded-2xl p-6 border-[#d2ac47] bg-[#0a0a0a] flex flex-col group overflow-hidden transition-all hover:border-[#d2ac47]/60 h-full">
+                            <div className="border rounded-2xl p-6 border-[#d2ac47] bg-[#0a0a0a] flex flex-col group overflow-hidden hover:border-[#d2ac47]/60 h-full">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="w-8 h-8 border border-[#d2ac47] rounded-full flex items-center justify-center bg-[#d2ac47]/10 text-[#d2ac47]">
                                         <User size={16} />
@@ -409,7 +412,7 @@ const AvatarGenerator: React.FC = () => {
                                     />
                                 </div>
                                 {/* Likeness Slider (Moved here) */}
-                                <div>
+                                <div className="pb-10">
                                     <div className="flex justify-between text-[#d2ac47] text-[9px] font-bold tracking-[0.2em] uppercase mb-1">
                                         <span>Likeness Strength</span>
                                         <span>{instantIdWeight}</span>
@@ -420,7 +423,7 @@ const AvatarGenerator: React.FC = () => {
                             </div>
 
                             {/* 2. Body Reference Toggle */}
-                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/body flex flex-col ${error?.includes('Body') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : grabBody ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5 h-full min-h-[350px] justify-between'} `}>
+                            <div className={`border rounded-2xl p-6 group/body flex flex-col ${error?.includes('Body') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : grabBody ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5 h-full min-h-[350px] justify-between'} `}>
                                 <div className={`flex items-center gap-3 mb-4 cursor-pointer w-full ${!grabBody && 'h-full justify-center flex-col gap-4'}`} onClick={() => setGrabBody(!grabBody)}>
                                     <button
                                         className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabBody ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'w-12 h-12 border-[#d2ac47]/40 text-[#d2ac47]/40 scale-125'} `}>
@@ -462,7 +465,7 @@ const AvatarGenerator: React.FC = () => {
                             </div>
 
                             {/* 3. Composition Reference Toggle */}
-                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/comp flex flex-col overflow-hidden ${error?.includes('Background') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : grabComposition ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5 h-full min-h-[350px] justify-between'} `}>
+                            <div className={`border rounded-2xl p-6 group/comp flex flex-col overflow-hidden ${error?.includes('Background') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : grabComposition ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5 h-full min-h-[350px] justify-between'} `}>
                                 <div className={`flex items-center gap-3 mb-4 cursor-pointer w-full ${!grabComposition && 'h-full justify-center flex-col gap-4'}`} onClick={() => setGrabComposition(!grabComposition)}>
                                     <button
                                         className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabComposition ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'w-12 h-12 border-[#d2ac47]/40 text-[#d2ac47]/40 scale-125'} `}>
