@@ -282,7 +282,7 @@ const VideoGenerator: React.FC = () => {
                         {loading && (
                             <button
                                 onClick={handleCancel}
-                                className="h-full px-6 py-3 border border-[#d2ac47]/30 bg-black/50 text-[#d2ac47]/50 hover:bg-red-950/20 hover:text-red-400 hover:border-red-500/50 transition-all text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 group/cancel rounded-xl"
+                                className="h-full px-6 py-3 border border-[#d2ac47] bg-[#1a1a1a] text-[#d2ac47] hover:bg-red-950/40 hover:text-red-400 hover:border-red-500 transition-all text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 group/cancel rounded-xl shadow-[0_0_10px_rgba(210,172,71,0.1)]"
                             >
                                 <XCircle size={16} className="group-hover/cancel:rotate-90 transition-transform duration-300" /> CANCEL
                             </button>
@@ -291,7 +291,7 @@ const VideoGenerator: React.FC = () => {
                         <button
                             onClick={handleGenerate}
                             disabled={loading}
-                            className={`flex-1 md:flex-none py-4 px-8 text-[10px] tracking-[0.3em] font-bold uppercase flex items-center justify-center gap-3 min-w-[200px] group rounded-xl transition-all duration-300 ${loading ? 'opacity-50 cursor-not-allowed bg-[#d2ac47]/20 text-[#d2ac47]/50' : 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] hover:scale-[1.02]'} `}
+                            className={`flex-1 md:flex-none py-4 px-8 text-[10px] tracking-[0.3em] font-bold uppercase flex items-center justify-center gap-3 min-w-[200px] group rounded-xl transition-all duration-300 ${loading ? 'opacity-90 cursor-wait bg-[#d2ac47] text-black shadow-[0_0_10px_rgba(210,172,71,0.3)]' : 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] hover:scale-[1.02]'} `}
                         >
                             {loading ? (
                                 <><Loader2 className="animate-spin" size={14} /> Forging...</>

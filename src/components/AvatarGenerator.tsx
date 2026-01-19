@@ -556,7 +556,7 @@ const AvatarGenerator: React.FC = () => {
                     <button
                         onClick={handleGenerate}
                         disabled={loading}
-                        className={`w-full bg-gold-gradient text-black font-bold uppercase tracking-[0.3em] py-5 rounded-xl shadow-[0_0_20px_rgba(210,172,71,0.4)] transition-all flex items-center justify-center gap-3 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        className={`w-full font-bold uppercase tracking-[0.3em] py-5 rounded-xl shadow-[0_0_20px_rgba(210,172,71,0.4)] transition-all flex items-center justify-center gap-3 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] ${loading ? 'bg-[#d2ac47] text-black opacity-90 cursor-wait shadow-[0_0_10px_rgba(210,172,71,0.3)]' : 'bg-gold-gradient text-black'}`}
                     >
                         {loading ? <RefreshCw className="animate-spin" /> : <Sparkles />}
                         {loading ? "Forging Identity..." : "Generate Avatar"}
