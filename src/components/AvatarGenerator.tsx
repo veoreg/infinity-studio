@@ -535,21 +535,21 @@ const AvatarGenerator: React.FC = () => {
                                 {/* Layout Refactor: Seed Row, Then Toggles Row */}
                                 <div className="flex flex-col gap-3 mt-3">
                                     {/* Row 1: Seed Control (Full Width) */}
-                                    <div className="w-full flex items-center gap-2 bg-[#0a0a0a] border border-[#d2ac47]/20 p-2 px-3 rounded-xl">
-                                        <span className="text-[#d2ac47] text-[9px] uppercase tracking-wider whitespace-nowrap">Seed:</span>
+                                    <div className="w-full flex items-center gap-2 bg-[#0a0a0a] border border-[#d2ac47]/20 p-4 rounded-xl">
+                                        <span className="text-[#d2ac47] text-xs uppercase tracking-wider whitespace-nowrap">Seed:</span>
                                         <input
                                             type="number"
                                             value={seed === -1 ? '' : seed}
                                             placeholder="Random"
                                             onChange={(e) => setSeed(e.target.value === '' ? -1 : parseInt(e.target.value))}
-                                            className="bg-transparent text-[#F9F1D8] text-xs font-mono w-full focus:outline-none placeholder-[#d2ac47]/30"
+                                            className="bg-transparent text-[#F9F1D8] text-sm font-mono w-full focus:outline-none placeholder-[#d2ac47]/30"
                                         />
                                         <button
                                             onClick={() => setSeed(Math.floor(Math.random() * 2147483647))}
                                             className="text-[#d2ac47]/50 hover:text-[#d2ac47] transition-colors"
                                             title="Spin Random Seed"
                                         >
-                                            <RefreshCw size={14} className="active:animate-spin" />
+                                            <RefreshCw size={16} className="active:animate-spin" />
                                         </button>
                                     </div>
 
@@ -558,19 +558,19 @@ const AvatarGenerator: React.FC = () => {
                                         {/* Raw Prompt Toggle */}
                                         <button
                                             onClick={() => setRawPromptMode(!rawPromptMode)}
-                                            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border transition-all rounded-xl ${rawPromptMode ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
+                                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 border transition-all rounded-xl ${rawPromptMode ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
                                         >
                                             <div className={`w-2 h-2 rounded-full ${rawPromptMode ? 'bg-black' : 'bg-[#d2ac47]/50'}`}></div>
-                                            <span className="text-[9px] uppercase tracking-widest font-bold">Raw Prompt</span>
+                                            <span className="text-xs uppercase tracking-widest font-bold">Raw Prompt</span>
                                         </button>
 
                                         {/* Upscale Toggle */}
                                         <button
                                             onClick={() => setUpscale(!upscale)}
-                                            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border transition-all rounded-xl ${upscale ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
+                                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 border transition-all rounded-xl ${upscale ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
                                         >
-                                            <Sparkles size={12} className={upscale ? 'text-black' : ''} />
-                                            <span className="text-[9px] uppercase tracking-widest font-bold">Upscale</span>
+                                            <Sparkles size={16} className={upscale ? 'text-black' : ''} />
+                                            <span className="text-xs uppercase tracking-widest font-bold">Upscale</span>
                                         </button>
                                     </div>
                                 </div>
