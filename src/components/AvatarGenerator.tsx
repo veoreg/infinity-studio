@@ -329,10 +329,18 @@ const AvatarGenerator: React.FC = () => {
                                     inputMode="numeric"
                                     pattern="[0-9]*"
                                     value={age}
+                                    placeholder="18-80"
                                     onChange={(e) => {
                                         const val = e.target.value;
-                                        if (val === '') setAge('');
-                                        else if (/^\d+$/.test(val)) setAge(Number(val));
+                                        // Allow empty or digits only. NO casting to Number() here.
+                                        if (val === '' || /^\d+$/.test(val)) {
+                                            setAge(val);
+                                        }
+                                    }}
+                                    onBlur={() => {
+                                        // Optional: constrain range on blur if needed, or leave for generation validation
+                                        if (age !== '' && Number(age) < 18) setAge('18');
+                                        if (Number(age) > 90) setAge('90');
                                     }}
                                     className="w-full bg-[#0a0a0a] border border-[#d2ac47]/30 text-[#F9F1D8] p-3 focus:outline-none focus:border-[#d2ac47] rounded-xl font-mono"
                                 />
