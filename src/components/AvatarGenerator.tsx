@@ -427,7 +427,7 @@ const AvatarGenerator: React.FC = () => {
                                 {/* Drag & Drop Zone */}
                                 <div className="w-full aspect-square relative overflow-hidden rounded-xl mb-3">
                                     <ImageUploadZone
-                                        onImageUpload={setFaceImageUrl}
+                                        onImageUpload={({ url }) => setFaceImageUrl(url)}
                                         currentUrl={faceImageUrl}
                                         placeholder="Upload Face Photo"
                                         className="h-full w-full"
@@ -461,7 +461,7 @@ const AvatarGenerator: React.FC = () => {
                                 {grabBody && (
                                     <div className="animate-fade-in w-full aspect-square relative overflow-hidden rounded-xl mb-3">
                                         <ImageUploadZone
-                                            onImageUpload={(url) => {
+                                            onImageUpload={({ url }) => {
                                                 setBodyRefUrl(url);
                                                 setError(null);
                                             }}

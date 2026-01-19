@@ -3,7 +3,7 @@ import { Upload, Loader2, X } from 'lucide-react';
 import { uploadToImgBB } from '../utils/imageUpload';
 
 interface ImageUploadZoneProps {
-    onImageUpload: (url: string) => void;
+    onImageUpload: (data: { url: string; fileName: string }) => void;
     currentUrl?: string;
     placeholder?: string;
     className?: string;
@@ -31,7 +31,7 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
 
         try {
             const url = await uploadToImgBB(file);
-            onImageUpload(url);
+            onImageUpload({ url, fileName: file.name });
             setPreview(url); // Show optimized image from server
         } catch (error) {
             alert('Upload failed. Please try again.');
@@ -68,7 +68,7 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
     const handleClear = (e: React.MouseEvent) => {
         e.stopPropagation();
         setPreview(null);
-        onImageUpload('');
+        onImageUpload({ url: '', fileName: '' });
     };
 
     return (
