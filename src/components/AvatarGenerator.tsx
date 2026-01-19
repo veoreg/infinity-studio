@@ -394,7 +394,7 @@ const AvatarGenerator: React.FC = () => {
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                             {/* 1. Main Face Input */}
                             {/* 1. Main Face Input */}
-                            <div className="border rounded-2xl p-6 border-[#d2ac47] bg-[#0a0a0a] h-[350px] flex flex-col group overflow-hidden transition-all hover:border-[#d2ac47]/60">
+                            <div className="border rounded-2xl p-6 border-[#d2ac47] bg-[#0a0a0a] flex flex-col group overflow-hidden transition-all hover:border-[#d2ac47]/60">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="w-8 h-8 border border-[#d2ac47] rounded-full flex items-center justify-center bg-[#d2ac47]/10 text-[#d2ac47]">
                                         <User size={16} />
@@ -404,7 +404,7 @@ const AvatarGenerator: React.FC = () => {
                                     </span>
                                 </div>
                                 {/* Drag & Drop Zone */}
-                                <div className="flex-1 relative overflow-hidden rounded-xl mb-3">
+                                <div className="w-full aspect-square relative overflow-hidden rounded-xl mb-3">
                                     <ImageUploadZone
                                         onImageUpload={setFaceImageUrl}
                                         currentUrl={faceImageUrl}
@@ -424,7 +424,7 @@ const AvatarGenerator: React.FC = () => {
                             </div>
 
                             {/* 2. Body Reference Toggle */}
-                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/body flex flex-col overflow-hidden h-[350px] ${grabBody ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5'} `}>
+                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/body flex flex-col overflow-hidden ${grabBody ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5 h-[350px] justify-between'} `}>
                                 <div className={`flex items-center gap-3 mb-4 cursor-pointer w-full ${!grabBody && 'h-full justify-center flex-col gap-4'}`} onClick={() => setGrabBody(!grabBody)}>
                                     <button
                                         className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabBody ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'w-12 h-12 border-[#d2ac47]/40 text-[#d2ac47]/40 scale-125'} `}>
@@ -435,7 +435,7 @@ const AvatarGenerator: React.FC = () => {
                                     </span>
                                 </div>
                                 {grabBody && (
-                                    <div className="animate-fade-in flex-1 relative overflow-hidden rounded-xl mb-3">
+                                    <div className="animate-fade-in w-full aspect-square relative overflow-hidden rounded-xl mb-3">
                                         <ImageUploadZone
                                             onImageUpload={setBodyRefUrl}
                                             currentUrl={bodyRefUrl}
@@ -456,7 +456,7 @@ const AvatarGenerator: React.FC = () => {
                             </div>
 
                             {/* 3. Composition Reference Toggle */}
-                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/comp flex flex-col overflow-hidden h-[350px] ${grabComposition ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5'} `}>
+                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/comp flex flex-col overflow-hidden ${grabComposition ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5 h-[350px] justify-between'} `}>
                                 <div className={`flex items-center gap-3 mb-4 cursor-pointer w-full ${!grabComposition && 'h-full justify-center flex-col gap-4'}`} onClick={() => setGrabComposition(!grabComposition)}>
                                     <button
                                         className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabComposition ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'w-12 h-12 border-[#d2ac47]/40 text-[#d2ac47]/40 scale-125'} `}>
@@ -467,7 +467,7 @@ const AvatarGenerator: React.FC = () => {
                                     </span>
                                 </div>
                                 {grabComposition && (
-                                    <div className="animate-fade-in flex-1 relative overflow-hidden rounded-xl mb-3">
+                                    <div className="animate-fade-in w-full aspect-square relative overflow-hidden rounded-xl mb-3">
                                         <ImageUploadZone
                                             onImageUpload={setCompositionUrl}
                                             currentUrl={compositionUrl}
