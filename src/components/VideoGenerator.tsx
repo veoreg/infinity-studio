@@ -77,6 +77,7 @@ const VideoGenerator: React.FC = () => {
     const [imageUrl, setImageUrl] = useState('');
     const [fileName, setFileName] = useState('');
     const [textPrompt, setTextPrompt] = useState('');
+    const [negativePrompt, setNegativePrompt] = useState('');
     const [safeMode, setSafeMode] = useState(true);
     const [loading, setLoading] = useState(false);
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -109,6 +110,7 @@ const VideoGenerator: React.FC = () => {
                 console.log("Restoring session:", data);
                 setImageUrl(data.imageUrl || '');
                 setTextPrompt(data.prompt || '');
+                setNegativePrompt(data.negativePrompt || '');
                 setLoading(true);
                 // Resume monitoring
                 startMonitoring(data.id);
@@ -241,6 +243,7 @@ const VideoGenerator: React.FC = () => {
                     type: 'video',
                     status: 'pending',
                     prompt: textPrompt,
+                    negative_prompt: negativePrompt,
                     image_url: imageUrl,
                     metadata: { safe_mode: safeMode }
                 })
@@ -267,6 +270,7 @@ const VideoGenerator: React.FC = () => {
                 imageUrl,
                 filename: fileName,
                 textPrompt,
+                negativePrompt,
                 safeMode,
                 resolution_steps: 1080,
                 aspect_ratio: "1080",
@@ -370,19 +374,37 @@ const VideoGenerator: React.FC = () => {
 
                                 </div>
 
-                                {/* Prompt Input Frame */}
+                                {/* Prompt Input Frame - Split */}
                                 <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 flex flex-col rounded-2xl overflow-hidden aspect-square min-h-[280px]">
-                                    <div className="absolute top-0 left-0 bg-[#d2ac47] text-black text-[9px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] z-20 rounded-br-xl">
-                                        Vision Prompt
+
+                                    {/* Vision Prompt (Top Part) */}
+                                    <div className="relative flex-1 flex flex-col border-b border-[#d2ac47]/10">
+                                        <div className="absolute top-0 left-0 bg-[#d2ac47] text-black text-[9px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] z-20 rounded-br-xl">
+                                            Vision Prompt
+                                        </div>
+                                        <textarea
+                                            value={textPrompt}
+                                            onChange={(e) => setTextPrompt(e.target.value)}
+                                            placeholder="Describe the motion, atmosphere, and desire..."
+                                            className="w-full h-full bg-transparent p-3 md:p-6 pt-10 text-[#F9F1D8] placeholder-[#d2ac47]/50 font-sans font-light text-sm resize-none focus:outline-none"
+                                        />
                                     </div>
-                                    <textarea
-                                        value={textPrompt}
-                                        onChange={(e) => setTextPrompt(e.target.value)}
-                                        placeholder="Describe the motion, atmosphere, and desire..."
-                                        className="w-full h-full bg-transparent p-3 md:p-6 pt-10 text-[#F9F1D8] placeholder-[#d2ac47]/50 font-sans font-light text-sm resize-none focus:outline-none"
-                                    />
-                                    <div className="absolute bottom-4 right-4 text-[#d2ac47]/50 pointer-events-none group-focus-within:text-[#d2ac47]/80 transition-colors">
-                                        <Wand2 size={24} />
+
+                                    {/* Negative Prompt (Bottom Part) */}
+                                    <div className="relative h-1/3 bg-red-950/5 flex flex-col group/neg">
+                                        <div className="absolute top-0 left-0 bg-red-900/40 text-red-100 text-[8px] font-bold px-3 py-1 uppercase tracking-[0.15em] z-20 rounded-br-lg group-hover/neg:bg-red-600 transition-colors">
+                                            Exclude (Negative)
+                                        </div>
+                                        <textarea
+                                            value={negativePrompt}
+                                            onChange={(e) => setNegativePrompt(e.target.value)}
+                                            placeholder="no distortion, blurry, low quality..."
+                                            className="w-full h-full bg-transparent p-3 pt-8 text-[#F9F1D8]/70 placeholder-red-900/40 font-sans font-light text-[11px] resize-none focus:outline-none"
+                                        />
+                                    </div>
+
+                                    <div className="absolute bottom-4 right-4 text-[#d2ac47]/30 pointer-events-none group-focus-within:text-[#d2ac47]/60 transition-colors">
+                                        <Wand2 size={18} />
                                     </div>
                                 </div>
                             </div>
