@@ -39,23 +39,26 @@ const GenerationLogger = () => {
     }, []);
 
     return (
-        // Fixed positioning to ensure visibility on mobile regardless of scroll
-        <div className="absolute inset-x-0 bottom-0 md:relative md:inset-0 bg-black/90 md:bg-black/90 flex flex-col items-center justify-center p-6 font-mono text-xs z-50 h-[300px] md:h-full border-t border-[#d2ac47]/20 md:border-none">
-            <div className="w-full max-w-md space-y-2">
-                <div className="text-[#d2ac47]/30 text-[10px] text-center mb-2">Supabase Cloud Engine Active</div>
-                {logs.map((log, i) => (
-                    <div key={i} className="text-[#d2ac47] animate-fade-in-up flex items-center gap-2">
-                        <span className="text-[#d2ac47]/50">{`> `}</span>
-                        <span className={i === logs.length - 1 ? "animate-pulse font-bold" : "opacity-70"}>{log}</span>
-                    </div>
-                ))}
-
-                {/* Progress Bar Container */}
-                <div className="h-2 w-full bg-[#d2ac47]/10 mt-4 rounded-full overflow-hidden relative">
-                    {/* Animation duration set to 360s (6 mins) to move slowly */}
+        // Adjusted positioning: Absolute Top with full width/height overlay
+        <div className="absolute inset-0 bg-black/95 flex flex-col items-start justify-start p-8 font-mono text-xs z-50">
+            <div className="w-full space-y-4">
+                {/* Progress Bar Top */}
+                <div className="h-2 w-full bg-[#d2ac47]/10 rounded-full overflow-hidden relative">
                     <div className="absolute top-0 left-0 h-full bg-[#d2ac47] animate-[shimmer_20s_linear_infinite]" style={{ width: '0%', animation: 'growWidth 360s linear forwards' }}></div>
                 </div>
-                <div className="text-center text-[9px] text-[#d2ac47]/40 mt-1">Est. time: ~4-6 mins</div>
+                <div className="flex justify-between text-[9px] text-[#d2ac47]/40 uppercase tracking-widest">
+                    <span>Supabase Cloud Engine</span>
+                    <span>Est: 5-6 mins</span>
+                </div>
+
+                <div className="space-y-3 mt-8">
+                    {logs.map((log, i) => (
+                        <div key={i} className="text-[#d2ac47] animate-fade-in-up flex items-center gap-2">
+                            <div className={`w-1.5 h-1.5 rounded-full ${i === logs.length - 1 ? "bg-[#d2ac47] animate-ping" : "bg-[#d2ac47]/30"}`}></div>
+                            <span className={i === logs.length - 1 ? "animate-pulse font-bold text-[#d2ac47]" : "opacity-50 text-[#d2ac47]/70"}>{log}</span>
+                        </div>
+                    ))}
+                </div>
             </div>
             <style>{`
 @keyframes growWidth {
@@ -79,39 +82,145 @@ const VideoGenerator: React.FC = () => {
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [galleryItems, setGalleryItems] = useState<any[]>([]);
+
+    // Refs for cleanup
     const abortControllerRef = React.useRef<AbortController | null>(null);
+    const intervalRef = React.useRef<any | null>(null);
+    const channelRef = React.useRef<any | null>(null);
+
+    const fetchHistory = async () => {
+        const { data, error } = await supabase
+            .from('generations')
+            .select('*')
+            .eq('status', 'completed')
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        if (data) setGalleryItems(data);
+    };
+
+    // RESTORE STATE ON MOUNT + Fetch History
+    React.useEffect(() => {
+        fetchHistory(); // Load some past videos to show it's working
+        const savedGen = localStorage.getItem('active_generation');
+        if (savedGen) {
+            try {
+                const data = JSON.parse(savedGen);
+                console.log("Restoring session:", data);
+                setImageUrl(data.imageUrl || '');
+                setTextPrompt(data.prompt || '');
+                setLoading(true);
+                // Resume monitoring
+                startMonitoring(data.id);
+            } catch (e) {
+                console.error("Failed to restore session", e);
+                localStorage.removeItem('active_generation');
+            }
+        }
+    }, []);
+
+    const cleanupMonitoring = () => {
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        }
+        if (channelRef.current) {
+            supabase.removeChannel(channelRef.current);
+            channelRef.current = null;
+        }
+    };
 
     const handleCancel = () => {
+        // 1. Abort Upload/Request
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
             abortControllerRef.current = null;
-            setLoading(false);
-            setError('Generation cancelled by user.');
         }
+        // 2. Stop Listeners
+        cleanupMonitoring();
+
+        // 3. Clear Storage
+        localStorage.removeItem('active_generation');
+
+        // 4. Reset UI
+        setLoading(false);
+        setError('Generation cancelled by user.');
     };
 
     const handleDownload = () => {
         if (!videoUrl) return;
-
-        // Mock download
         const link = document.createElement('a');
         link.href = videoUrl;
         link.download = `infinity_video_${Date.now()}.mp4`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    };
 
-        // Add to gallery
-        const newItem = {
-            id: Date.now(),
-            type: 'video',
-            url: videoUrl,
-            thumb: '/luxury-right-2.png', // Placeholder thumb for now
-            label: 'New Masterpiece',
-            privacy: 'private',
-            date: 'Just now'
+    // Reusable Monitor Function
+    const startMonitoring = (generationId: string) => {
+        // Cleanup existing (just in case)
+        cleanupMonitoring();
+
+        // 1. Polling Function
+        const checkStatus = async () => {
+            const { data, error } = await supabase
+                .from('generations')
+                .select('status, video_url')
+                .eq('id', generationId)
+                .single();
+
+            if (data?.status === 'completed' && data?.video_url) {
+                setVideoUrl(data.video_url);
+                setLoading(false);
+                cleanupMonitoring();
+                localStorage.removeItem('active_generation'); // Done!
+                return true;
+            } else if (data?.status === 'failed') {
+                setError('Generation failed on server.');
+                setLoading(false);
+                cleanupMonitoring();
+                localStorage.removeItem('active_generation');
+                return true;
+            }
+            return false;
         };
-        setGalleryItems(prev => [newItem, ...prev]);
+
+        // 2. Realtime Subscription
+        const channel = supabase
+            .channel(`generation_${generationId}`)
+            .on(
+                'postgres_changes',
+                { event: 'UPDATE', schema: 'public', table: 'generations', filter: `id=eq.${generationId}` },
+                (payload) => {
+                    const newRecord = payload.new as any;
+                    if (newRecord.status === 'completed' && newRecord.video_url) {
+                        setVideoUrl(newRecord.video_url);
+                        setLoading(false);
+                        cleanupMonitoring();
+                        localStorage.removeItem('active_generation');
+                    } else if (newRecord.status === 'failed') {
+                        setError('Generation failed on server.');
+                        setLoading(false);
+                        cleanupMonitoring();
+                        localStorage.removeItem('active_generation');
+                    }
+                }
+            )
+            .subscribe();
+
+        channelRef.current = channel;
+
+        // 3. Start Polling Interval
+        const id = setInterval(checkStatus, 5000);
+        intervalRef.current = id;
+
+        // 4. Safety Timeout (10m)
+        setTimeout(() => {
+            cleanupMonitoring();
+            // Don't auto-cancel UI, just stop checking to save battery.
+            // User can still manual refresh if really long.
+        }, 600000);
     };
 
     const handleGenerate = async () => {
@@ -143,6 +252,14 @@ const VideoGenerator: React.FC = () => {
 
             console.log("Generation started, ID:", generation.id);
 
+            // SAVE STATE (Persistence)
+            localStorage.setItem('active_generation', JSON.stringify({
+                id: generation.id,
+                imageUrl,
+                prompt: textPrompt,
+                startTime: Date.now()
+            }));
+
             // 2. Call Webhook (Fire and Forget - we don't wait for the video blob response)
             // We pass the 'generation_id' so N8n knows where to save the result.
             axios.post(WEBHOOK_URL, {
@@ -160,36 +277,8 @@ const VideoGenerator: React.FC = () => {
                 console.warn("Webhook triggered (async path)", err);
             });
 
-            // 3. Listen for updates on this specific row
-            const channel = supabase
-                .channel(`generation_${generation.id}`)
-                .on(
-                    'postgres_changes',
-                    { event: 'UPDATE', schema: 'public', table: 'generations', filter: `id=eq.${generation.id}` },
-                    (payload) => {
-                        const newRecord = payload.new as any;
-                        console.log("Realtime Update:", newRecord);
-
-                        if (newRecord.status === 'completed' && newRecord.video_url) {
-                            setVideoUrl(newRecord.video_url);
-                            setLoading(false);
-                            supabase.removeChannel(channel);
-                        } else if (newRecord.status === 'failed') {
-                            setError('Generation failed on server.');
-                            setLoading(false);
-                            supabase.removeChannel(channel);
-                        }
-                    }
-                )
-                .subscribe();
-
-            // Safety timeout (stop listening after 10 minutes)
-            setTimeout(() => {
-                if (loading) {
-                    supabase.removeChannel(channel);
-                    // Don't kill the UI, just stop listening
-                }
-            }, 600000);
+            // 3. Start Monitoring
+            startMonitoring(generation.id);
 
         } catch (err: any) {
             console.error(err);
@@ -206,7 +295,7 @@ const VideoGenerator: React.FC = () => {
             <div className="text-center mb-6 relative z-10 animate-fade-in">
                 <div className="inline-flex items-center gap-4 mb-4">
                     <div className="h-[1px] w-12 bg-[#d2ac47]"></div>
-                    <span className="text-[#d2ac47] text-[10px] font-bold tracking-[0.4em] uppercase">Generation 2.2 Active</span>
+                    <span className="text-[#d2ac47] text-[10px] font-bold tracking-[0.4em] uppercase">Generation 2.4 Active</span>
                     <div className="h-[1px] w-12 bg-[#d2ac47]"></div>
                 </div>
                 <h1 className="text-4xl md:text-6xl font-serif text-[#F9F1D8] mb-4 leading-tight drop-shadow-[0_0_25px_rgba(210,172,71,0.2)]">
@@ -300,47 +389,52 @@ const VideoGenerator: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Controls - The Toggle */}
-                    <div className="border-t border-[#d2ac47]/10 pt-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                    {/* Controls - The Toggle + Buttons */}
+                    <div className="border-t border-[#d2ac47]/10 pt-4 flex flex-col gap-4">
 
-                        {/* Mode Toggle - Strict Rectangles (Larger & Clearer) */}
-                        <div
-                            onClick={() => setSafeMode(!safeMode)}
-                            className="cursor-pointer group flex items-center border border-[#d2ac47] w-fit transition-all hover:scale-105 shadow-[0_0_15px_rgba(210,172,71,0.1)] bg-black rounded-xl overflow-hidden"
-                        >
-                            <div className={`px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center gap-3 ${safeMode ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-[#d2ac47]/10 hover:text-[#d2ac47]'} `}>
-                                <ShieldCheck size={16} strokeWidth={2.5} /> SAFE
-                            </div>
-                            <div className="w-[1px] h-full bg-[#d2ac47]/30"></div>
-                            <div className={`px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center gap-3 ${!safeMode ? 'bg-gradient-to-r from-red-600 to-red-900 text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-red-900/30 hover:text-red-500'} `}>
-                                <Flame size={16} strokeWidth={2.5} /> SPICY
+                        {/* Mode Toggle - Fixed Height, Full Width on Mobile */}
+                        <div className="flex w-full items-stretch justify-center h-[50px] md:h-auto">
+                            <div
+                                onClick={() => setSafeMode(!safeMode)}
+                                className="cursor-pointer group flex items-center border border-[#d2ac47] w-full md:w-fit transition-all hover:scale-105 shadow-[0_0_15px_rgba(210,172,71,0.1)] bg-black rounded-xl overflow-hidden"
+                            >
+                                <div className={`flex-1 md:flex-none px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 h-full ${safeMode ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-[#d2ac47]/10 hover:text-[#d2ac47]'} `}>
+                                    <ShieldCheck size={16} strokeWidth={2.5} /> SAFE
+                                </div>
+                                <div className="w-[1px] h-full bg-[#d2ac47]/30"></div>
+                                <div className={`flex-1 md:flex-none px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 h-full ${!safeMode ? 'bg-gradient-to-r from-red-600 to-red-900 text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-red-900/30 hover:text-red-500'} `}>
+                                    <Flame size={16} strokeWidth={2.5} /> SPICY
+                                </div>
                             </div>
                         </div>
 
-                        {loading && (
-                            <button
-                                onClick={handleCancel}
-                                className="h-full px-6 py-3 border border-[#d2ac47] bg-[#1a1a1a] text-[#d2ac47] hover:bg-red-950/40 hover:text-red-400 hover:border-red-500 transition-all text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 group/cancel rounded-xl shadow-[0_0_10px_rgba(210,172,71,0.1)]"
-                            >
-                                <XCircle size={16} className="group-hover/cancel:rotate-90 transition-transform duration-300" /> CANCEL
-                            </button>
-                        )}
-
-                        <button
-                            onClick={handleGenerate}
-                            disabled={loading}
-                            className={`flex-1 md:flex-none py-3 px-6 md:py-4 md:px-8 text-[10px] tracking-[0.3em] font-bold uppercase flex items-center justify-center gap-3 min-w-[200px] group rounded-xl transition-all duration-300 ${loading ? 'opacity-90 cursor-wait bg-[#d2ac47] text-black shadow-[0_0_10px_rgba(210,172,71,0.3)]' : 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] hover:scale-[1.02]'} `}
-                        >
-                            {loading ? (
-                                <><Loader2 className="animate-spin" size={14} /> Forging...</>
-                            ) : (
-                                <>CREATE VIDEO <Play size={12} fill="currentColor" className="group-hover:translate-x-1 transition-transform" /></>
+                        {/* Action Buttons - Grid on Mobile for Equal Widths */}
+                        <div className="grid grid-cols-2 md:flex md:items-center gap-3 w-full">
+                            {loading && (
+                                <button
+                                    onClick={handleCancel}
+                                    className="h-[50px] md:h-auto px-4 md:px-6 py-3 border border-[#d2ac47] bg-[#1a1a1a] text-[#d2ac47] hover:bg-red-950/40 hover:text-red-400 hover:border-red-500 transition-all text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2 group/cancel rounded-xl shadow-[0_0_10px_rgba(210,172,71,0.1)] order-1 md:order-none"
+                                >
+                                    <XCircle size={16} className="group-hover/cancel:rotate-90 transition-transform duration-300" /> CANCEL
+                                </button>
                             )}
-                        </button>
+
+                            <button
+                                onClick={handleGenerate}
+                                disabled={loading}
+                                className={`h-[50px] md:h-auto ${loading ? 'col-span-1' : 'col-span-2'} md:flex-1 py-3 px-6 md:py-4 md:px-8 text-[10px] tracking-[0.3em] font-bold uppercase flex items-center justify-center gap-3 min-w-[100px] group rounded-xl transition-all duration-300 ${loading ? 'opacity-90 cursor-wait bg-[#d2ac47] text-black shadow-[0_0_10px_rgba(210,172,71,0.3)] order-2' : 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] hover:scale-[1.02]'} `}
+                            >
+                                {loading ? (
+                                    <><Loader2 className="animate-spin" size={14} /> Forging...</>
+                                ) : (
+                                    <>CREATE VIDEO <Play size={12} fill="currentColor" className="group-hover:translate-x-1 transition-transform" /></>
+                                )}
+                            </button>
+                        </div>
                     </div>
 
                     {error && (
-                        <div className="p-4 bg-red-950/30 border-l-2 border-red-500 text-center">
+                        <div className="p-4 bg-red-950/30 border-l-2 border-red-500 text-center mt-4 rounded-xl">
                             <p className="text-red-300 font-serif italic text-sm">{error}</p>
                         </div>
                     )}
@@ -352,10 +446,9 @@ const VideoGenerator: React.FC = () => {
                             {/* Art Deco Corners */}
                             <div className="absolute top-6 left-6 w-4 h-4 border-t border-l border-[#d2ac47] pointer-events-none z-10 rounded-tl-lg opacity-50"></div>
                             <div className="absolute top-6 right-6 w-4 h-4 border-t border-r border-[#d2ac47] pointer-events-none z-10 rounded-tr-lg opacity-50"></div>
-                            <div className="absolute bottom-6 left-6 w-4 h-4 border-b border-l border-[#d2ac47] pointer-events-none z-10 rounded-bl-lg opacity-50"></div>
-                            <div className="absolute bottom-6 right-6 w-4 h-4 border-b border-r border-[#d2ac47] pointer-events-none z-10 rounded-br-lg opacity-50"></div>
 
                             {loading ? (
+                                // Logger is now full-size overlay in the output box, ensuring visibility
                                 <GenerationLogger />
                             ) : videoUrl ? (
                                 <div className="relative w-full h-full flex items-center justify-center">
@@ -458,10 +551,45 @@ const VideoGenerator: React.FC = () => {
                         <UserGallery newItems={galleryItems} />
                     </div>
                 </div>
-            </div >
-        </div >
+            </div>
 
+            {/* Recent Creations Gallery (New Section) */}
+            <div className="mt-16 animate-fade-in-up">
+                <div className="flex items-center gap-4 mb-8">
+                    <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#d2ac47]/30"></div>
+                    <h2 className="text-2xl font-serif text-[#F9F1D8] italic">Recent Masterpieces</h2>
+                    <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#d2ac47]/30"></div>
+                </div>
 
+                {galleryItems.length > 0 ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        {galleryItems.map((item) => (
+                            <div key={item.id} className="group relative bg-[#111] border border-[#d2ac47]/10 rounded-2xl overflow-hidden aspect-video shadow-xl transition-all hover:border-[#d2ac47]/40 hover:-translate-y-1">
+                                <video
+                                    src={item.video_url}
+                                    className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
+                                    muted
+                                    onMouseOver={(e) => (e.target as HTMLVideoElement).play()}
+                                    onMouseOut={(e) => (e.target as HTMLVideoElement).pause()}
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3 flex flex-col justify-end">
+                                    <button
+                                        onClick={() => setVideoUrl(item.video_url)}
+                                        className="w-full py-1 text-[9px] bg-[#d2ac47] text-black font-bold uppercase rounded-lg"
+                                    >
+                                        View Full
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-12 border border-dashed border-[#d2ac47]/10 rounded-3xl">
+                        <p className="text-[#d2ac47]/30 text-xs font-mono uppercase">Your legacy awaits...</p>
+                    </div>
+                )}
+            </div>
+        </div>
     );
 };
 
