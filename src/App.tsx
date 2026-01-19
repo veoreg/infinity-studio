@@ -72,6 +72,11 @@ function App() {
         </div>
       </main>
 
+      {/* Global Promo - Inserted in Flow for Mobile, Fixed for Desktop */}
+      <div className="relative z-50 md:fixed md:bottom-8 md:right-8 pointer-events-none">
+        <HolidayPromo />
+      </div>
+
       {/* Simple Footer */}
       <footer className="bg-[#050505] border-t border-[#d2ac47]/20 py-12 relative z-10">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
@@ -83,9 +88,6 @@ function App() {
           </div>
         </div>
       </footer>
-
-      {/* Global Promo - Root Level for Correct Z-Index */}
-      {activeTab === 'avatar' && <HolidayPromo />}
     </div>
   )
 }

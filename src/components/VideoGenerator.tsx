@@ -89,7 +89,7 @@ const VideoGenerator: React.FC = () => {
     const channelRef = React.useRef<any | null>(null);
 
     const fetchHistory = async () => {
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('generations')
             .select('*')
             .eq('status', 'completed')
@@ -164,7 +164,7 @@ const VideoGenerator: React.FC = () => {
 
         // 1. Polling Function
         const checkStatus = async () => {
-            const { data, error } = await supabase
+            const { data } = await supabase
                 .from('generations')
                 .select('status, video_url')
                 .eq('id', generationId)
