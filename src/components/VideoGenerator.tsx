@@ -217,7 +217,7 @@ const VideoGenerator: React.FC = () => {
                             {/* Inputs Grid - Expanded to Fill Space */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-[250px]">
                                 {/* Image Input Frame */}
-                                <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 overflow-hidden flex flex-col rounded-2xl">
+                                <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 overflow-hidden flex flex-col rounded-2xl h-[250px] md:h-auto md:min-h-[250px]">
                                     <div className="absolute top-0 left-0 bg-[#d2ac47] text-black text-[9px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] z-20 rounded-br-xl pointer-events-none">
                                         Source Image
                                     </div>

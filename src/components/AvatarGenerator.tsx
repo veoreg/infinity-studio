@@ -377,7 +377,7 @@ const AvatarGenerator: React.FC = () => {
                                     </span>
                                 </div>
                                 {/* Drag & Drop Zone */}
-                                <div className="flex-1 relative overflow-hidden rounded-xl">
+                                <div className="flex-1 relative overflow-hidden rounded-xl mb-3">
                                     <ImageUploadZone
                                         onImageUpload={setFaceImageUrl}
                                         currentUrl={faceImageUrl}
@@ -385,16 +385,25 @@ const AvatarGenerator: React.FC = () => {
                                         className="h-full w-full"
                                     />
                                 </div>
+                                {/* Likeness Slider (Moved here) */}
+                                <div>
+                                    <div className="flex justify-between text-[#d2ac47] text-[9px] font-bold tracking-[0.2em] uppercase mb-1">
+                                        <span>Likeness</span>
+                                        <span>{instantIdWeight}</span>
+                                    </div>
+                                    <input type="range" min="0" max="1" step="0.05" value={instantIdWeight} onChange={(e) => setInstantIdWeight(Number(e.target.value))}
+                                        className="w-full h-1 bg-[#d2ac47]/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-[#d2ac47] [&::-webkit-slider-thumb]:rounded-full" />
+                                </div>
                             </div>
 
                             {/* 2. Body Reference Toggle */}
-                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/body flex flex-col overflow-hidden ${grabBody ? 'border-[#d2ac47] bg-[#0a0a0a] h-[350px]' : 'border-[#d2ac47]/20 bg-transparent hover:border-[#d2ac47]/40 h-auto'} `}>
-                                <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => setGrabBody(!grabBody)}>
+                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/body flex flex-col overflow-hidden h-[350px] ${grabBody ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5'} `}>
+                                <div className={`flex items-center gap-3 mb-4 cursor-pointer w-full ${!grabBody && 'h-full justify-center flex-col gap-4'}`} onClick={() => setGrabBody(!grabBody)}>
                                     <button
-                                        className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabBody ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/30 text-[#d2ac47]/50 hover:text-[#d2ac47] hover:border-[#d2ac47]'} `}>
-                                        <Camera size={16} />
+                                        className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabBody ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'w-12 h-12 border-[#d2ac47]/40 text-[#d2ac47]/40 scale-125'} `}>
+                                        <Camera size={grabBody ? 16 : 20} />
                                     </button>
-                                    <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabBody ? 'text-[#d2ac47]' : 'text-[#d2ac47]/60'}`}>
+                                    <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabBody ? 'text-[#d2ac47]' : 'text-[#d2ac47]/40'}`}>
                                         Pose & Body Ref
                                     </span>
                                 </div>
@@ -411,13 +420,13 @@ const AvatarGenerator: React.FC = () => {
                             </div>
 
                             {/* 3. Composition Reference Toggle */}
-                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/comp flex flex-col overflow-hidden ${grabComposition ? 'border-[#d2ac47] bg-[#0a0a0a] h-[350px]' : 'border-[#d2ac47]/20 bg-transparent hover:border-[#d2ac47]/40 h-auto'} `}>
-                                <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => setGrabComposition(!grabComposition)}>
+                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/comp flex flex-col overflow-hidden h-[350px] ${grabComposition ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5'} `}>
+                                <div className={`flex items-center gap-3 mb-4 cursor-pointer w-full ${!grabComposition && 'h-full justify-center flex-col gap-4'}`} onClick={() => setGrabComposition(!grabComposition)}>
                                     <button
-                                        className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabComposition ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/30 text-[#d2ac47]/50 hover:text-[#d2ac47] hover:border-[#d2ac47]'} `}>
-                                        <Layers size={16} />
+                                        className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabComposition ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'w-12 h-12 border-[#d2ac47]/40 text-[#d2ac47]/40 scale-125'} `}>
+                                        <Layers size={grabComposition ? 16 : 20} />
                                     </button>
-                                    <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabComposition ? 'text-[#d2ac47]' : 'text-[#d2ac47]/60'}`}>
+                                    <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabComposition ? 'text-[#d2ac47]' : 'text-[#d2ac47]/40'}`}>
                                         Composition Ref
                                     </span>
                                 </div>
@@ -461,14 +470,7 @@ const AvatarGenerator: React.FC = () => {
                                 />
                             </div>
 
-                            <div>
-                                <div className="flex justify-between text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2">
-                                    <span>Likeness Strength</span>
-                                    <span>{instantIdWeight}</span>
-                                </div>
-                                <input type="range" min="0" max="1" step="0.05" value={instantIdWeight} onChange={(e) => setInstantIdWeight(Number(e.target.value))}
-                                    className="w-full h-1 bg-[#d2ac47]/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-[#d2ac47] [&::-webkit-slider-thumb]:rounded-full" />
-                            </div>
+
 
                             <div>
                                 <label className="text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2 block">Prompt Details</label>

@@ -111,7 +111,7 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
                     </button>
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center py-10 px-4 text-center space-y-3">
+                <div className="h-full flex flex-col items-center justify-center pt-10 px-4 text-center space-y-3">
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center border transition-all duration-300 ${isDragging ? 'scale-110 border-[#d2ac47] bg-[#d2ac47]/20' : 'border-[#d2ac47]/30 bg-[#0f0f0f]'}`}>
                         <Upload size={20} className={isDragging ? 'text-[#d2ac47]' : 'text-[#d2ac47]/50'} />
                     </div>
