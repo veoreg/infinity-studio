@@ -202,7 +202,7 @@ const AvatarGenerator: React.FC = () => {
         }
 
         if (grabComposition && !compositionUrl) {
-            setError("Composition Reference toggle is ON, but no image uploaded.");
+            setError("Background Reference toggle is ON, but no image uploaded.");
             return;
         }
 
@@ -476,7 +476,7 @@ const AvatarGenerator: React.FC = () => {
                                         <Layers size={grabComposition ? 16 : 20} />
                                     </button>
                                     <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabComposition ? 'text-[#d2ac47]' : 'text-[#d2ac47]/40'}`}>
-                                        Composition Ref
+                                        Background Ref
                                     </span>
                                 </div>
                                 {grabComposition && (
@@ -484,7 +484,7 @@ const AvatarGenerator: React.FC = () => {
                                         <ImageUploadZone
                                             onImageUpload={setCompositionUrl}
                                             currentUrl={compositionUrl}
-                                            placeholder="Upload Background/Comp"
+                                            placeholder="Upload Background"
                                             className="h-full w-full"
                                         />
                                     </div>
