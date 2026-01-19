@@ -11,18 +11,19 @@ const GenerationLogger = () => {
     const [logs, setLogs] = React.useState<string[]>(["Initializing Neural Network..."]);
 
     React.useEffect(() => {
+        // Adjusted for ~5-6 minutes (300-360s) total generation time
         const steps = [
             { msg: "Studio: Receiving creative assets...", delay: 800 },
             { msg: "Analysis: Deciphering visual context...", delay: 5000 },
-            { msg: "Director: Crafting cinematic screenplay...", delay: 10000 },
-            { msg: "Lighting: Configuring atmosphere & mood...", delay: 15000 },
-            { msg: "Safety: Verifying content guidelines...", delay: 20000 },
-            { msg: "Engine: Calibrating render pipeline...", delay: 25000 },
-            { msg: "Core: Loading high-fidelity models...", delay: 35000 },
-            { msg: "Animation: Simulating physics and movement...", delay: 50000 },
-            { msg: "Rendering: Enhancing texture and detail...", delay: 200000 },
-            { msg: "Assembly: Compiling final video sequence...", delay: 390000 },
-            { msg: "Delivery: Finalizing masterpiece (Please Wait)...", delay: 410000 }
+            { msg: "Director: Crafting cinematic screenplay...", delay: 15000 },
+            { msg: "Lighting: Configuring atmosphere & mood...", delay: 30000 },
+            { msg: "Safety: Verifying content guidelines...", delay: 45000 },
+            { msg: "Engine: Calibrating render pipeline (This takes time)...", delay: 60000 }, // 1 min
+            { msg: "Core: Loading high-fidelity models...", delay: 90000 }, // 1.5 min
+            { msg: "Animation: Simulating physics and movement...", delay: 150000 }, // 2.5 min
+            { msg: "Rendering: Enhancing texture and detail...", delay: 240000 }, // 4 min
+            { msg: "Assembly: Compiling final video sequence...", delay: 300000 }, // 5 min
+            { msg: "Delivery: Finalizing masterpiece...", delay: 340000 } // ~5.5 min
         ];
 
         let timeouts: any[] = [];
@@ -38,23 +39,28 @@ const GenerationLogger = () => {
     }, []);
 
     return (
-        <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-6 font-mono text-xs z-20">
+        // Fixed positioning to ensure visibility on mobile regardless of scroll
+        <div className="absolute inset-x-0 bottom-0 md:relative md:inset-0 bg-black/90 md:bg-black/90 flex flex-col items-center justify-center p-6 font-mono text-xs z-50 h-[300px] md:h-full border-t border-[#d2ac47]/20 md:border-none">
             <div className="w-full max-w-md space-y-2">
-                <div className="text-[#d2ac47]/30 text-[10px] text-center mb-2">Build v2.3 (Debug: Payload Fix)</div>
+                <div className="text-[#d2ac47]/30 text-[10px] text-center mb-2">Supabase Cloud Engine Active</div>
                 {logs.map((log, i) => (
                     <div key={i} className="text-[#d2ac47] animate-fade-in-up flex items-center gap-2">
                         <span className="text-[#d2ac47]/50">{`> `}</span>
                         <span className={i === logs.length - 1 ? "animate-pulse font-bold" : "opacity-70"}>{log}</span>
                     </div>
                 ))}
-                <div className="h-4 w-full bg-[#d2ac47]/10 mt-4 rounded-full overflow-hidden relative">
-                    <div className="absolute top-0 left-0 h-full bg-[#d2ac47] animate-[shimmer_20s_linear_infinite]" style={{ width: '100%', animation: 'growWidth 420s linear forwards' }}></div>
+
+                {/* Progress Bar Container */}
+                <div className="h-2 w-full bg-[#d2ac47]/10 mt-4 rounded-full overflow-hidden relative">
+                    {/* Animation duration set to 360s (6 mins) to move slowly */}
+                    <div className="absolute top-0 left-0 h-full bg-[#d2ac47] animate-[shimmer_20s_linear_infinite]" style={{ width: '0%', animation: 'growWidth 360s linear forwards' }}></div>
                 </div>
+                <div className="text-center text-[9px] text-[#d2ac47]/40 mt-1">Est. time: ~4-6 mins</div>
             </div>
             <style>{`
 @keyframes growWidth {
-    0 % { width: 0 %; }
-    100 % { width: 100 %; }
+    0% { width: 0%; }
+    100% { width: 95%; } 
 }
 `}</style>
         </div>
@@ -284,7 +290,7 @@ const VideoGenerator: React.FC = () => {
                                         value={textPrompt}
                                         onChange={(e) => setTextPrompt(e.target.value)}
                                         placeholder="Describe the motion, atmosphere, and desire..."
-                                        className="w-full h-full bg-transparent p-6 pt-10 text-[#F9F1D8] placeholder-[#d2ac47]/50 font-sans font-light text-sm resize-none focus:outline-none"
+                                        className="w-full h-full bg-transparent p-4 md:p-6 pt-10 text-[#F9F1D8] placeholder-[#d2ac47]/50 font-sans font-light text-sm resize-none focus:outline-none"
                                     />
                                     <div className="absolute bottom-4 right-4 text-[#d2ac47]/50 pointer-events-none group-focus-within:text-[#d2ac47]/80 transition-colors">
                                         <Wand2 size={24} />
