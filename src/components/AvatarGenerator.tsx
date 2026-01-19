@@ -13,10 +13,11 @@ interface CustomSelectProps {
     value: string | number;
     onChange: (val: string) => void;
     options: { label: string, value: string | number }[];
+    disabled?: boolean;
 }
 
 // Reusable Dropdown Component
-const CustomSelect: React.FC<CustomSelectProps> = ({ label, value, onChange, options }) => {
+const CustomSelect: React.FC<CustomSelectProps> = ({ label, value, onChange, options, disabled }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = React.useRef<HTMLDivElement>(null);
 
@@ -35,8 +36,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ label, value, onChange, opt
         <div className="relative group" ref={dropdownRef}>
             <label className="text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2 block">{label}</label>
             <div
-                className={`w-full bg-[#0a0a0a] border ${isOpen ? 'border-[#d2ac47]' : 'border-[#d2ac47]/30'} text-[#F9F1D8] p-3 rounded-xl cursor-pointer flex justify-between items-center transition-all hover:border-[#d2ac47]/60`}
-                onClick={() => setIsOpen(!isOpen)}
+                className={`w-full bg-[#0a0a0a] border ${isOpen ? 'border-[#d2ac47]' : 'border-[#d2ac47]/30'} text-[#F9F1D8] p-3 rounded-xl flex justify-between items-center transition-all 
+                ${disabled ? 'opacity-50 cursor-not-allowed border-[#d2ac47]/10' : 'cursor-pointer hover:border-[#d2ac47]/60'}
+                `}
+                onClick={() => !disabled && setIsOpen(!isOpen)}
             >
                 <span className="truncate text-xs font-bold tracking-widest uppercase">{options.find(o => o.value == value)?.label || value}</span>
                 <span className="text-[#d2ac47] text-[10px] transition-transform duration-300 transform" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
@@ -335,9 +338,10 @@ const AvatarGenerator: React.FC = () => {
                             </div>
                             <div className="space-y-2">
                                 <CustomSelect
-                                    label="Body Type"
+                                    label={grabBody ? "Body Type (Overridden by Image)" : "Body Type"}
                                     value={bodyType}
                                     onChange={(val) => setBodyType(val)}
+                                    disabled={grabBody}
                                     options={[
                                         { label: 'Fitness Model', value: 'fitness model' },
                                         { label: 'Thin / Model', value: 'thin' },
@@ -430,7 +434,7 @@ const AvatarGenerator: React.FC = () => {
                                         <Camera size={grabBody ? 16 : 20} />
                                     </button>
                                     <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabBody ? 'text-[#d2ac47]' : 'text-[#d2ac47]/40'}`}>
-                                        Body & Clothing Ref
+                                        Body Reference
                                     </span>
                                 </div>
                                 {grabBody && (
@@ -438,7 +442,7 @@ const AvatarGenerator: React.FC = () => {
                                         <ImageUploadZone
                                             onImageUpload={setBodyRefUrl}
                                             currentUrl={bodyRefUrl}
-                                            placeholder="Upload Body & Attire"
+                                            placeholder="Upload Body Photo"
                                             className="h-full w-full"
                                         />
                                     </div>
