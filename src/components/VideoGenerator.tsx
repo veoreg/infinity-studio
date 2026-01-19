@@ -206,7 +206,7 @@ const VideoGenerator: React.FC = () => {
 
                 {/* Center: Generator Interface (Narrowed & Moved Up) */}
                 <div className="lg:col-span-12 xl:col-span-5 flex flex-col">
-                    <div className="bg-velvet-depth border border-[#d2ac47]/20 rounded-3xl p-6 relative overflow-hidden flex-1 flex flex-col justify-start shadow-2xl transition-all hover:border-[#d2ac47]/40">
+                    <div className="bg-velvet-depth border border-[#d2ac47]/20 rounded-3xl p-8 relative overflow-hidden flex-1 flex flex-col justify-start shadow-2xl transition-all hover:border-[#d2ac47]/40">
 
                         {/* Decorative Background Elements */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47]/50 to-transparent"></div>
