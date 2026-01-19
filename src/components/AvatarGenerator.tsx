@@ -431,7 +431,7 @@ const AvatarGenerator: React.FC = () => {
                                         <Camera size={grabBody ? 16 : 20} />
                                     </button>
                                     <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabBody ? 'text-[#d2ac47]' : 'text-[#d2ac47]/40'}`}>
-                                        Pose & Body Ref
+                                        Body & Clothing Ref
                                     </span>
                                 </div>
                                 {grabBody && (
@@ -439,7 +439,7 @@ const AvatarGenerator: React.FC = () => {
                                         <ImageUploadZone
                                             onImageUpload={setBodyRefUrl}
                                             currentUrl={bodyRefUrl}
-                                            placeholder="Upload Body/Pose Photo"
+                                            placeholder="Upload Body & Attire"
                                             className="h-full w-full"
                                         />
                                     </div>
