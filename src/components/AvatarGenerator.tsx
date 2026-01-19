@@ -77,9 +77,9 @@ const AvatarLogger: React.FC = () => {
             { msg: "Identity: Preserving unique features...", delay: 6000 },
             { msg: "Composition: Aligning pose and body...", delay: 12000 },
             { msg: "Detailing: Generating realistic skin...", delay: 18000 },
-            { msg: "Lighting: Ray-tracing illumination...", delay: 26000 },
-            { msg: "Polishing: Blending visual elements...", delay: 34000 },
-            { msg: "Studio: Developing final photograph...", delay: 38000 }
+            { msg: "Lighting: Ray-tracing illumination...", delay: 32000 },
+            { msg: "Polishing: Blending visual elements...", delay: 42000 },
+            { msg: "Studio: Developing final photograph...", delay: 48000 }
         ];
 
         let timeouts: any[] = [];
@@ -104,7 +104,7 @@ const AvatarLogger: React.FC = () => {
             </div>
             {/* Progress Bar Simulation */}
             <div className="w-48 h-1 bg-[#d2ac47]/20 rounded-full overflow-hidden mt-4 bg-black/40 backdrop-blur-sm">
-                <div className="h-full bg-[#d2ac47] animate-[growWidth_40s_ease-out_forwards]" style={{ width: '0%' }}></div>
+                <div className="h-full bg-[#d2ac47] animate-[growWidth_50s_ease-out_forwards]" style={{ width: '0%' }}></div>
             </div>
             <style>{`
                 @keyframes growWidth {
