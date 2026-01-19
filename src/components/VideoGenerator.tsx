@@ -234,13 +234,23 @@ const VideoGenerator: React.FC = () => {
 
                                     {/* Main Upload Zone */}
                                     <div className="flex-1 p-0 relative h-full flex flex-col">
-                                        <div className="absolute inset-0">
+                                        <div className="w-full h-full">
                                             <ImageUploadZone
-                                                onImageUpload={setImageUrl}
+                                                onImageUpload={({ url, fileName }) => {
+                                                    setImageUrl(url);
+                                                    setFileName(fileName);
+                                                }}
                                                 currentUrl={imageUrl}
-                                                placeholder="CLICK OR DRAG IMAGE"
-                                                className="h-full w-full"
+                                                placeholder="Click or Drag Image"
+                                                className="h-full w-full border-none bg-transparent"
                                             />
+                                            {imageUrl && (
+                                                <div className="absolute top-2 right-2 z-30">
+                                                    <button onClick={(e) => { e.stopPropagation(); setImageUrl(''); setFileName(''); }} className="bg-black/50 p-1 rounded-full text-white hover:text-red-500 transition-colors">
+                                                        <XCircle size={16} />
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 

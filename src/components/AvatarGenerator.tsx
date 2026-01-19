@@ -510,7 +510,7 @@ const AvatarGenerator: React.FC = () => {
                                 {grabComposition && (
                                     <div className="animate-fade-in w-full aspect-square relative overflow-hidden rounded-xl mb-3">
                                         <ImageUploadZone
-                                            onImageUpload={setCompositionUrl}
+                                            onImageUpload={({ url }) => setCompositionUrl(url)}
                                             currentUrl={compositionUrl}
                                             placeholder="Upload Background"
                                             className="h-full w-full"
