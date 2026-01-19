@@ -196,6 +196,16 @@ const AvatarGenerator: React.FC = () => {
             return;
         }
 
+        if (grabBody && !bodyRefUrl) {
+            setError("Body Reference toggle is ON, but no image uploaded.");
+            return;
+        }
+
+        if (grabComposition && !compositionUrl) {
+            setError("Composition Reference toggle is ON, but no image uploaded.");
+            return;
+        }
+
         setLoading(true);
         setError(null);
 
@@ -216,9 +226,9 @@ const AvatarGenerator: React.FC = () => {
                 face_image_url: faceImageUrl,
                 body_reference_image_url: (grabBody && bodyRefUrl) ? bodyRefUrl : undefined,
                 composition_image_url: (grabComposition && compositionUrl) ? compositionUrl : undefined,
-                // Safety: Only set flag to TRUE if both Toggle is ON AND Image is present
-                grab_body_from_image: grabBody && !!bodyRefUrl,
-                grab_composition: grabComposition && !!compositionUrl,
+                // Strict Logic: Validation ensures images exist if Toggles are True
+                grab_body_from_image: grabBody,
+                grab_composition: grabComposition,
                 instantid_weight: instantIdWeight,
                 style_token: rawPromptMode ? userPrompt : `Style: ${artStyle}. Role: ${role}. ${userPrompt} `,
                 user_prompt: userPrompt,
