@@ -2,6 +2,7 @@ import { useState } from 'react'
 import VideoGenerator from './components/VideoGenerator'
 import AvatarGenerator from './components/AvatarGenerator'
 import GoldenDust from './components/GoldenDust'
+import HolidayPromo from './components/HolidayPromo'
 import { Video, Github, Sparkles, User } from 'lucide-react'
 
 
@@ -82,6 +83,9 @@ function App() {
           </div>
         </div>
       </footer>
+
+      {/* Global Promo - Root Level for Correct Z-Index */}
+      {activeTab === 'avatar' && <HolidayPromo />}
     </div>
   )
 }

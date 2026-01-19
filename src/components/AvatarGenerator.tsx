@@ -3,7 +3,6 @@ import axios from 'axios';
 import { Camera, Download, RefreshCw, User, Layers, Sparkles, XCircle } from "lucide-react";
 import GamificationDashboard from './GamificationDashboard';
 import UserGallery from './UserGallery';
-import HolidayPromo from './HolidayPromo';
 import ImageUploadZone from './ImageUploadZone';
 
 // Webhook URL (Proxied via Vite)
@@ -722,7 +721,6 @@ const AvatarGenerator: React.FC = () => {
                     100% { transform: rotateY(360deg); }
                 }
             `}</style>
-            <HolidayPromo />
         </div >
     );
 };
