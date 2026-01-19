@@ -385,7 +385,7 @@ const AvatarGenerator: React.FC = () => {
                     </div>
 
                     {/* 2. Visual Sources - Art Deco Panel */}
-                    <div className="bg-[#121212] border border-[#d2ac47]/20 rounded-3xl p-8 relative shadow-2xl transition-all hover:border-[#d2ac47]/40">
+                    <div className="bg-[#121212] border border-[#d2ac47]/20 rounded-3xl p-4 md:p-8 relative shadow-2xl transition-all hover:border-[#d2ac47]/40">
                         <div className="absolute top-0 left-0 px-6 py-2 bg-[#d2ac47] text-black text-[10px] font-bold tracking-[0.2em] uppercase rounded-tl-3xl rounded-br-2xl shadow-lg">
                             Visual Source
                         </div>
