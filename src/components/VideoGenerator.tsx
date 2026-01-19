@@ -291,7 +291,7 @@ const VideoGenerator: React.FC = () => {
         <div className="w-full relative">
 
 
-            {/* Hero Section */}
+            {/* Hero Section - Build: 2026-01-19 23:05 UTC+7 */}
             <div className="text-center mb-6 relative z-10 animate-fade-in">
                 <div className="inline-flex items-center gap-4 mb-4">
                     <div className="h-[1px] w-12 bg-[#d2ac47]"></div>
