@@ -230,7 +230,7 @@ const AvatarGenerator: React.FC = () => {
                 grab_body_from_image: grabBody,
                 grab_composition: grabComposition,
                 instantid_weight: instantIdWeight,
-                style_token: rawPromptMode ? userPrompt : `Style: ${artStyle}. Role: ${role}. ${userPrompt} `,
+                style_token: rawPromptMode ? userPrompt : `Style: ${artStyle}. Role: ${role}. Body: ${bodyType}. Clothing: ${clothing}. ${userPrompt} `,
                 user_prompt: userPrompt,
                 seed: seed === -1 ? Math.floor(Math.random() * 2147483647) : seed,
                 upscale: upscale,
@@ -626,7 +626,7 @@ const AvatarGenerator: React.FC = () => {
                             )}
                             {/* 3. LAYER: Action Buttons */}
                             {generatedImage && (
-                                <div className="absolute top-12 left-0 w-full z-30 flex justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <div className="absolute top-12 left-0 w-full z-30 flex justify-center gap-4 transition-opacity duration-300">
                                     <button onClick={handleGenerate} disabled={loading} className="btn-gold px-6 py-3 text-xs tracking-widest uppercase flex items-center gap-2 border border-[#d2ac47]/50 rounded-xl hover:bg-[#d2ac47] hover:text-black shadow-[0_4px_10px_rgba(0,0,0,0.5)]">
                                         <RefreshCw size={16} className={loading ? "animate-spin" : ""} /> Regenerate
                                     </button>
@@ -703,7 +703,7 @@ const AvatarGenerator: React.FC = () => {
 
                         {/* 3. LAYER: Action Buttons (Top Overlay) */}
                         {generatedImage && (
-                            <div className="absolute top-12 left-0 w-full z-30 flex justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="absolute top-12 left-0 w-full z-30 flex justify-center gap-4 transition-opacity duration-300">
                                 <button
                                     onClick={handleGenerate}
                                     disabled={loading}
