@@ -437,7 +437,7 @@ const AvatarGenerator: React.FC = () => {
                             </div>
 
                             {/* 2. Body Reference Toggle */}
-                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/body flex flex-col overflow-hidden ${grabBody ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5 h-[350px] justify-between'} `}>
+                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/body flex flex-col overflow-hidden ${error?.includes('Body') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : grabBody ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5 h-[350px] justify-between'} `}>
                                 <div className={`flex items-center gap-3 mb-4 cursor-pointer w-full ${!grabBody && 'h-full justify-center flex-col gap-4'}`} onClick={() => setGrabBody(!grabBody)}>
                                     <button
                                         className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabBody ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'w-12 h-12 border-[#d2ac47]/40 text-[#d2ac47]/40 scale-125'} `}>
@@ -469,7 +469,7 @@ const AvatarGenerator: React.FC = () => {
                             </div>
 
                             {/* 3. Composition Reference Toggle */}
-                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/comp flex flex-col overflow-hidden ${grabComposition ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5 h-[350px] justify-between'} `}>
+                            <div className={`border rounded-2xl p-6 transition-all duration-300 group/comp flex flex-col overflow-hidden ${error?.includes('Background') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : grabComposition ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5 h-[350px] justify-between'} `}>
                                 <div className={`flex items-center gap-3 mb-4 cursor-pointer w-full ${!grabComposition && 'h-full justify-center flex-col gap-4'}`} onClick={() => setGrabComposition(!grabComposition)}>
                                     <button
                                         className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabComposition ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'w-12 h-12 border-[#d2ac47]/40 text-[#d2ac47]/40 scale-125'} `}>
@@ -582,6 +582,9 @@ const AvatarGenerator: React.FC = () => {
                         </div>
                     </div>
 
+                    {/* Error Message Display (Moved Up for Visibility) */}
+                    {error && <div className="text-red-400 text-center font-serif italic bg-red-950/30 p-4 border border-red-900/50 rounded-xl animate-pulse mb-4">{error}</div>}
+
                     {/* Generate & Cancel Buttons */}
                     <div className="flex gap-4">
                         {loading && (
@@ -602,7 +605,7 @@ const AvatarGenerator: React.FC = () => {
                         </button>
                     </div>
 
-                    {error && <div className="text-red-400 text-center font-serif italic bg-red-950/30 p-4 border border-red-900/50">{error}</div>}
+
 
                     {/* MOBILE ONLY: Image Output (Moved up per user request) */}
                     <div className="lg:hidden mt-8 mb-8">
