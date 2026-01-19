@@ -425,10 +425,10 @@ const AvatarGenerator: React.FC = () => {
 
                             {/* 2. Body Reference Toggle */}
                             <div className={`border rounded-2xl p-6 transition-all duration-300 group/body flex flex-col overflow-hidden ${grabBody ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5 h-[350px] justify-between'} `}>
-                                <div className={`flex items-center gap-3 mb-4 cursor-pointer w-full ${!grabBody && 'h-full justify-center flex-col gap-4'}`} onClick={() => setGrabBody(!grabBody)}>
+                                <div className={`flex items-center gap-3 mb-4 cursor-pointer w-full h-full`} onClick={() => setGrabBody(!grabBody)}>
                                     <button
-                                        className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabBody ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'w-12 h-12 border-[#d2ac47]/40 text-[#d2ac47]/40 scale-125'} `}>
-                                        <Camera size={grabBody ? 16 : 20} />
+                                        className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabBody ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/20 text-[#d2ac47]/20'} `}>
+                                        <Camera size={16} />
                                     </button>
                                     <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabBody ? 'text-[#d2ac47]' : 'text-[#d2ac47]/40'}`}>
                                         Body & Clothing Ref
@@ -457,10 +457,10 @@ const AvatarGenerator: React.FC = () => {
 
                             {/* 3. Composition Reference Toggle */}
                             <div className={`border rounded-2xl p-6 transition-all duration-300 group/comp flex flex-col overflow-hidden ${grabComposition ? 'border-solid border-[#d2ac47] bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5 h-[350px] justify-between'} `}>
-                                <div className={`flex items-center gap-3 mb-4 cursor-pointer w-full ${!grabComposition && 'h-full justify-center flex-col gap-4'}`} onClick={() => setGrabComposition(!grabComposition)}>
+                                <div className={`flex items-center gap-3 mb-4 cursor-pointer w-full h-full`} onClick={() => setGrabComposition(!grabComposition)}>
                                     <button
-                                        className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabComposition ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'w-12 h-12 border-[#d2ac47]/40 text-[#d2ac47]/40 scale-125'} `}>
-                                        <Layers size={grabComposition ? 16 : 20} />
+                                        className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabComposition ? 'border-[#d2ac47] text-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/20 text-[#d2ac47]/20'} `}>
+                                        <Layers size={16} />
                                     </button>
                                     <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabComposition ? 'text-[#d2ac47]' : 'text-[#d2ac47]/40'}`}>
                                         Composition Ref
