@@ -74,13 +74,13 @@ const AvatarLogger: React.FC = () => {
 
     React.useEffect(() => {
         const steps = [
-            { msg: "Analyzing Face Topology...", delay: 2000 },
-            { msg: "Mapping Facial Features...", delay: 6000 },
-            { msg: "Aligning Body Reference...", delay: 12000 },
-            { msg: "Synthesizing Skin Texture...", delay: 18000 },
-            { msg: "Applying Lighting & Shadows...", delay: 26000 },
-            { msg: "Finalizing Composition...", delay: 34000 },
-            { msg: "Rendering Output...", delay: 38000 }
+            { msg: "Scanner: Mapping facial structure...", delay: 2000 },
+            { msg: "Identity: Preserving unique features...", delay: 6000 },
+            { msg: "Composition: Aligning pose and body...", delay: 12000 },
+            { msg: "Detailing: Generating realistic skin...", delay: 18000 },
+            { msg: "Lighting: Ray-tracing illumination...", delay: 26000 },
+            { msg: "Polishing: Blending visual elements...", delay: 34000 },
+            { msg: "Studio: Developing final photograph...", delay: 38000 }
         ];
 
         let timeouts: any[] = [];

@@ -11,17 +11,17 @@ const GenerationLogger = () => {
 
     React.useEffect(() => {
         const steps = [
-            { msg: "Webhook: Receiving Input Data...", delay: 800 },
-            { msg: "AI Analyst: Extracting Image Context...", delay: 5000 },
-            { msg: "Role [Smart Director]: Generating Script...", delay: 10000 },
-            { msg: "Tokenizer: Parsing [Lighting, Style]...", delay: 15000 },
-            { msg: "Security: Running NSFW Filters...", delay: 20000 },
-            { msg: "Router: Workflow [SAFE] Selected...", delay: 25000 },
-            { msg: "ComfyUI: Loading Flux Checkpoint...", delay: 35000 },
-            { msg: "K-Sampler: Refining Motion Data...", delay: 50000 },
-            { msg: "K-Sampler: Polishing Visuals...", delay: 200000 },
-            { msg: "VAE Decode: Rendering Frames...", delay: 390000 },
-            { msg: "API: Downloading Video (Please Wait)...", delay: 410000 }
+            { msg: "Studio: Receiving creative assets...", delay: 800 },
+            { msg: "Analysis: Deciphering visual context...", delay: 5000 },
+            { msg: "Director: Crafting cinematic screenplay...", delay: 10000 },
+            { msg: "Lighting: Configuring atmosphere & mood...", delay: 15000 },
+            { msg: "Safety: Verifying content guidelines...", delay: 20000 },
+            { msg: "Engine: Calibrating render pipeline...", delay: 25000 },
+            { msg: "Core: Loading high-fidelity models...", delay: 35000 },
+            { msg: "Animation: Simulating physics and movement...", delay: 50000 },
+            { msg: "Rendering: Enhancing texture and detail...", delay: 200000 },
+            { msg: "Assembly: Compiling final video sequence...", delay: 390000 },
+            { msg: "Delivery: Finalizing masterpiece (Please Wait)...", delay: 410000 }
         ];
 
         let timeouts: any[] = [];
