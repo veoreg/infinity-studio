@@ -339,9 +339,9 @@ const VideoGenerator: React.FC = () => {
                         <div className="space-y-4 relative z-10">
                             {/* Inputs Grid - Split into 2 */}
                             {/* Inputs Grid - Expanded to Fill Space */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* Image Input Frame */}
-                                <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 overflow-hidden flex flex-col rounded-2xl aspect-square">
+                                <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 overflow-hidden flex flex-col rounded-2xl aspect-square min-h-[280px]">
                                     <div className="absolute top-0 left-0 bg-[#d2ac47] text-black text-[9px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] z-20 rounded-br-xl pointer-events-none">
                                         Source Image
                                     </div>
@@ -371,7 +371,7 @@ const VideoGenerator: React.FC = () => {
                                 </div>
 
                                 {/* Prompt Input Frame */}
-                                <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 flex flex-col rounded-2xl overflow-hidden aspect-square">
+                                <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 flex flex-col rounded-2xl overflow-hidden aspect-square min-h-[280px]">
                                     <div className="absolute top-0 left-0 bg-[#d2ac47] text-black text-[9px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] z-20 rounded-br-xl">
                                         Vision Prompt
                                     </div>
@@ -379,7 +379,7 @@ const VideoGenerator: React.FC = () => {
                                         value={textPrompt}
                                         onChange={(e) => setTextPrompt(e.target.value)}
                                         placeholder="Describe the motion, atmosphere, and desire..."
-                                        className="w-full h-full bg-transparent p-4 md:p-6 pt-10 text-[#F9F1D8] placeholder-[#d2ac47]/50 font-sans font-light text-sm resize-none focus:outline-none"
+                                        className="w-full h-full bg-transparent p-3 md:p-6 pt-10 text-[#F9F1D8] placeholder-[#d2ac47]/50 font-sans font-light text-sm resize-none focus:outline-none"
                                     />
                                     <div className="absolute bottom-4 right-4 text-[#d2ac47]/50 pointer-events-none group-focus-within:text-[#d2ac47]/80 transition-colors">
                                         <Wand2 size={24} />
@@ -390,30 +390,28 @@ const VideoGenerator: React.FC = () => {
                     </div>
 
                     {/* Controls - The Toggle + Buttons */}
-                    <div className="border-t border-[#d2ac47]/10 pt-4 flex flex-col gap-4">
+                    <div className="border-t border-[#d2ac47]/10 pt-4 mt-4 flex flex-col gap-3">
 
-                        {/* Mode Toggle - Fixed Height, Full Width on Mobile */}
-                        <div className="flex w-full items-stretch justify-center h-[50px] md:h-auto">
-                            <div
-                                onClick={() => setSafeMode(!safeMode)}
-                                className="cursor-pointer group flex items-center border border-[#d2ac47] w-full md:w-fit transition-all hover:scale-105 shadow-[0_0_15px_rgba(210,172,71,0.1)] bg-black rounded-xl overflow-hidden"
-                            >
-                                <div className={`flex-1 md:flex-none px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 h-full ${safeMode ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-[#d2ac47]/10 hover:text-[#d2ac47]'} `}>
-                                    <ShieldCheck size={16} strokeWidth={2.5} /> SAFE
-                                </div>
-                                <div className="w-[1px] h-full bg-[#d2ac47]/30"></div>
-                                <div className={`flex-1 md:flex-none px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 h-full ${!safeMode ? 'bg-gradient-to-r from-red-600 to-red-900 text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-red-900/30 hover:text-red-500'} `}>
-                                    <Flame size={16} strokeWidth={2.5} /> SPICY
-                                </div>
+                        {/* Mode Toggle - Full Width Mobile */}
+                        <div
+                            onClick={() => setSafeMode(!safeMode)}
+                            className="cursor-pointer group flex items-center border border-[#d2ac47] w-full md:w-fit transition-all hover:scale-105 shadow-[0_0_15px_rgba(210,172,71,0.1)] bg-black rounded-xl overflow-hidden min-h-[48px]"
+                        >
+                            <div className={`flex-1 md:flex-none px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 ${safeMode ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-[#d2ac47]/10 hover:text-[#d2ac47]'} `}>
+                                <ShieldCheck size={16} strokeWidth={2.5} /> SAFE
+                            </div>
+                            <div className="w-[1px] h-full bg-[#d2ac47]/30"></div>
+                            <div className={`flex-1 md:flex-none px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 ${!safeMode ? 'bg-gradient-to-r from-red-600 to-red-900 text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-red-900/30 hover:text-red-500'} `}>
+                                <Flame size={16} strokeWidth={2.5} /> SPICY
                             </div>
                         </div>
 
-                        {/* Action Buttons - Grid on Mobile for Equal Widths */}
-                        <div className="grid grid-cols-2 md:flex md:items-center gap-3 w-full">
+                        {/* Action Buttons */}
+                        <div className="flex flex-col md:flex-row gap-3 w-full">
                             {loading && (
                                 <button
                                     onClick={handleCancel}
-                                    className="h-[50px] md:h-auto px-4 md:px-6 py-3 border border-[#d2ac47] bg-[#1a1a1a] text-[#d2ac47] hover:bg-red-950/40 hover:text-red-400 hover:border-red-500 transition-all text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2 group/cancel rounded-xl shadow-[0_0_10px_rgba(210,172,71,0.1)] order-1 md:order-none"
+                                    className="w-full md:w-auto min-h-[48px] px-6 py-3 border border-[#d2ac47] bg-[#1a1a1a] text-[#d2ac47] hover:bg-red-950/40 hover:text-red-400 hover:border-red-500 transition-all text-xs font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2 group/cancel rounded-xl shadow-[0_0_10px_rgba(210,172,71,0.1)]"
                                 >
                                     <XCircle size={16} className="group-hover/cancel:rotate-90 transition-transform duration-300" /> CANCEL
                                 </button>
@@ -422,7 +420,7 @@ const VideoGenerator: React.FC = () => {
                             <button
                                 onClick={handleGenerate}
                                 disabled={loading}
-                                className={`h-[50px] md:h-auto ${loading ? 'col-span-1' : 'col-span-2'} md:flex-1 py-3 px-6 md:py-4 md:px-8 text-[10px] tracking-[0.3em] font-bold uppercase flex items-center justify-center gap-3 min-w-[100px] group rounded-xl transition-all duration-300 ${loading ? 'opacity-90 cursor-wait bg-[#d2ac47] text-black shadow-[0_0_10px_rgba(210,172,71,0.3)] order-2' : 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] hover:scale-[1.02]'} `}
+                                className={`w-full md:flex-1 min-h-[48px] py-3 px-6 md:px-8 text-[10px] tracking-[0.3em] font-bold uppercase flex items-center justify-center gap-3 group rounded-xl transition-all duration-300 ${loading ? 'opacity-90 cursor-wait bg-[#d2ac47] text-black shadow-[0_0_10px_rgba(210,172,71,0.3)]' : 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] hover:scale-[1.02]'} `}
                             >
                                 {loading ? (
                                     <><Loader2 className="animate-spin" size={14} /> Forging...</>
