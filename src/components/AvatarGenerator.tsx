@@ -7,7 +7,7 @@ import HolidayPromo from './HolidayPromo';
 import ImageUploadZone from './ImageUploadZone';
 
 // Webhook URL (Proxied via Vite)
-const WEBHOOK_URL = "/api/avatar";
+const WEBHOOK_URL = "https://n8n.develotex.io/webhook/generate-flux-image";
 
 interface CustomSelectProps {
     label: string;
