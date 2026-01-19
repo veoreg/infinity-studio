@@ -427,8 +427,15 @@ const AvatarGenerator: React.FC = () => {
                                         />
                                     </div>
                                 )}
-                                {/* Spacer to align with Face Card's Slider (Same height ~35px) */}
-                                {grabBody && <div className="h-[35px] w-full"></div>}
+                                {/* Invisible Slider Clone for Exact Height Match */}
+                                {grabBody && (
+                                    <div className="invisible pointer-events-none">
+                                        <div className="flex justify-between text-[9px] mb-1">
+                                            <span>Likeness Strength</span>
+                                        </div>
+                                        <div className="w-full h-1" />
+                                    </div>
+                                )}
                             </div>
 
                             {/* 3. Composition Reference Toggle */}
@@ -452,8 +459,15 @@ const AvatarGenerator: React.FC = () => {
                                         />
                                     </div>
                                 )}
-                                {/* Spacer to align with Face Card's Slider */}
-                                {grabComposition && <div className="h-[35px] w-full"></div>}
+                                {/* Invisible Slider Clone for Exact Height Match */}
+                                {grabComposition && (
+                                    <div className="invisible pointer-events-none">
+                                        <div className="flex justify-between text-[9px] mb-1">
+                                            <span>Likeness Strength</span>
+                                        </div>
+                                        <div className="w-full h-1" />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
