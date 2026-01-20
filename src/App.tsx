@@ -3,15 +3,20 @@ import VideoGenerator from './components/VideoGenerator'
 import AvatarGenerator from './components/AvatarGenerator'
 import GoldenDust from './components/GoldenDust'
 import HolidayPromo from './components/HolidayPromo'
-import { Video, Github, Sparkles, User } from 'lucide-react'
+import AuthModal from './components/AuthModal'
+import { Video, Sparkles, User, LogOut } from 'lucide-react'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 
 
-function App() {
+function AppContent() {
   const [activeTab, setActiveTab] = useState<'video' | 'avatar'>('video');
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   return (
     <div className="min-h-screen flex flex-col text-[#F9F1D8] selection:bg-[#d2ac47] selection:text-black relative bg-pattern-deco overflow-x-hidden">
       <GoldenDust />
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
 
       {/* Texture Overlay for that 'Velvet' feel */}
       <div className="fixed inset-0 bg-black/80 pointer-events-none z-0"></div>
@@ -51,10 +56,23 @@ function App() {
               </button>
             </div>
 
+            {/* Auth / Profile Section */}
             <div className="flex items-center gap-6 order-2 md:order-3">
-              <button className="text-[#d2ac47] hover:text-[#fbeea4] transition-colors hover:scale-110 transform duration-300">
-                <Github size={24} />
-              </button>
+              {user ? (
+                <div className="flex items-center gap-4">
+                  <span className="hidden md:inline text-[10px] uppercase tracking-widest text-[#d2ac47]/80 font-bold">{user.email?.split('@')[0]}</span>
+                  <button onClick={() => signOut()} className="flex items-center gap-2 px-4 py-2 border border-[#d2ac47]/30 rounded-full text-[#d2ac47] text-[10px] uppercase tracking-widest hover:bg-[#d2ac47] hover:text-black transition-all">
+                    <LogOut size={12} /> Sign Out
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setIsAuthModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#d2ac47]/10 border border-[#d2ac47] rounded-full text-[#d2ac47] text-[10px] uppercase tracking-widest hover:bg-[#d2ac47] hover:text-black hover:shadow-[0_0_20px_rgba(210,172,71,0.4)] transition-all"
+                >
+                  <User size={14} /> Sign In
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -90,6 +108,14 @@ function App() {
       </footer>
     </div>
   )
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
 }
 
 export default App

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Camera, Download, RefreshCw, User, Layers, Sparkles, XCircle } from "lucide-react";
+import { Camera, Download, RefreshCw, User, Sparkles, XCircle } from "lucide-react";
 import GamificationDashboard from './GamificationDashboard';
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
@@ -17,7 +17,7 @@ interface CustomSelectProps {
 }
 
 // Reusable Dropdown Component
-const CustomSelect: React.FC<CustomSelectProps> = ({ label, value, onChange, options, disabled }) => {
+const CustomSelect: React.FC<CustomSelectProps & { centerLabel?: boolean }> = ({ label, value, onChange, options, disabled, centerLabel }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = React.useRef<HTMLDivElement>(null);
 
@@ -34,7 +34,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ label, value, onChange, opt
 
     return (
         <div className="relative group" ref={dropdownRef}>
-            <label className="text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2 block">{label}</label>
+            <label className={`text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2 block ${centerLabel ? 'text-center' : ''}`}>{label}</label>
             <div
                 className={`w-full bg-[#0a0a0a] border ${isOpen ? 'border-[#d2ac47]' : 'border-[#d2ac47]/30'} text-[#F9F1D8] p-3 rounded-xl flex justify-between items-center transition-all 
                 ${disabled ? 'opacity-50 cursor-not-allowed border-[#d2ac47]/10' : 'cursor-pointer hover:border-[#d2ac47]/60'}
@@ -414,7 +414,6 @@ const AvatarGenerator: React.FC = () => {
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                             {/* 1. Main Face Input */}
-                            {/* 1. Main Face Input */}
                             <div className="border rounded-2xl p-6 border-[#d2ac47] bg-[#0a0a0a] flex flex-col group overflow-hidden hover:border-[#d2ac47]/60 h-full">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="w-8 h-8 border border-[#d2ac47] rounded-full flex items-center justify-center bg-[#d2ac47]/10 text-[#d2ac47]">
@@ -433,7 +432,7 @@ const AvatarGenerator: React.FC = () => {
                                         className="h-full w-full"
                                     />
                                 </div>
-                                {/* Likeness Slider (Moved here) */}
+                                {/* Likeness Slider */}
                                 <div className="pb-10">
                                     <div className="flex justify-between text-[#d2ac47] text-[9px] font-bold tracking-[0.2em] uppercase mb-1">
                                         <span>Likeness Strength</span>
@@ -445,39 +444,75 @@ const AvatarGenerator: React.FC = () => {
                             </div>
 
                             {/* 2. Body Reference Toggle */}
-                            <div className={`border rounded-2xl p-6 group/body flex flex-col ${error?.includes('Body') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : grabBody ? 'border-solid border-red-500/50 bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5 h-full min-h-[350px] justify-between'} `}>
-                                <div className={`flex items-center gap-3 mb-4 cursor-pointer w-full ${!grabBody && 'h-full justify-center flex-col gap-4'}`} onClick={() => setGrabBody(!grabBody)}>
-                                    <button
-                                        className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabBody ? 'border-red-500 text-red-500 bg-red-950/20' : 'w-12 h-12 border-[#d2ac47]/40 text-[#d2ac47]/40 scale-125'} `}>
-                                        {grabBody ? <XCircle size={16} /> : <Camera size={20} />}
-                                    </button>
-                                    <div className="flex flex-col">
-                                        <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabBody ? 'text-red-500' : 'text-[#d2ac47]/40'}`}>
-                                            Body Reference
-                                        </span>
-                                        {grabBody && <span className="text-[8px] text-red-500/80 uppercase tracking-wider">(Close if unused)</span>}
-                                    </div>
+                            <div className={`border rounded-2xl p-6 group/body flex flex-col h-full ${error?.includes('Body') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : grabBody ? 'border-solid border-red-500/50 bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5'} `}>
+
+                                {/* Header Area: Fixed Height to prevent layout shift */}
+                                <div className="h-10 mb-4 flex items-center gap-3">
+                                    {grabBody ? (
+                                        <>
+                                            <div className={`w-8 h-8 border border-red-500 rounded-full flex items-center justify-center bg-red-950/20 text-red-500 cursor-pointer`} onClick={() => setGrabBody(false)}>
+                                                <XCircle size={16} />
+                                            </div>
+                                            <div className="flex flex-col justify-center">
+                                                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-red-500 leading-none mb-1">Body Reference</span>
+                                                <span className="text-[8px] text-red-500/80 uppercase tracking-wider leading-none">(Close if unused)</span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        /* Placeholder to maintain height */
+                                        <div className="w-full h-full"></div>
+                                    )}
                                 </div>
-                                {grabBody && (
-                                    <div className="animate-fade-in w-full aspect-square relative overflow-hidden rounded-xl mb-3">
-                                        <ImageUploadZone
-                                            onImageUpload={({ url }) => {
-                                                setBodyRefUrl(url);
-                                                setError(null);
-                                            }}
-                                            currentUrl={bodyRefUrl}
-                                            placeholder="Upload Body Ref"
-                                            className="h-full w-full"
-                                        />
-                                    </div>
-                                )}
-                                {/* Body Type Dropdown (Moved Here for UX) */}
+
+                                {/* Main Interaction Area: Aspect Square */}
+                                <div className="w-full aspect-square relative rounded-xl overflow-hidden mb-3">
+                                    {grabBody ? (
+                                        <div className="animate-fade-in w-full h-full">
+                                            <ImageUploadZone
+                                                onImageUpload={({ url }) => {
+                                                    setBodyRefUrl(url);
+                                                    setError(null);
+                                                }}
+                                                currentUrl={bodyRefUrl}
+                                                placeholder="Upload Body Ref"
+                                                className="h-full w-full"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="w-full h-full flex flex-col items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-105" onClick={() => setGrabBody(true)}>
+                                            <button
+                                                className={`rounded-full flex items-center justify-center transition-all duration-500 w-20 h-20 border border-[#d2ac47]/40 text-[#d2ac47]/40 mb-4 hover:border-[#d2ac47] hover:text-[#d2ac47] hover:shadow-[0_0_20px_rgba(210,172,71,0.2)]`}>
+                                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    {/* Left Side Body Curve (Widened) */}
+                                                    <path d="M7 5 C7 8 9 11 10.5 12 C12 13 8 18 7 19" />
+                                                    {/* Right Side Body Curve (Widened & Mirrored) */}
+                                                    <path d="M17 5 C17 8 15 11 13.5 12 C12 13 16 18 17 19" />
+                                                </svg>
+                                            </button>
+                                            <div className="flex flex-col text-center">
+                                                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#d2ac47]/60">
+                                                    Body Reference
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Linker / Separator - Transparent */}
+                                <div className="flex items-center gap-3 py-2 my-2 opacity-80 hover:opacity-100 transition-opacity">
+                                    <div className="h-[1px] flex-1 bg-[#d2ac47]/20"></div>
+                                    <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em] shrink-0">OR</span>
+                                    <div className="h-[1px] flex-1 bg-[#d2ac47]/20"></div>
+                                </div>
+
+                                {/* Dropdown Controls */}
                                 <div>
                                     <CustomSelect
-                                        label={grabBody ? "Structure (From Image)" : "Body Structure"}
+                                        label="Body Structure"
                                         value={bodyType}
                                         onChange={(val) => setBodyType(val)}
                                         disabled={grabBody}
+                                        centerLabel={true}
                                         options={[
                                             { label: 'AI Decide / Empty', value: '' },
                                             { label: 'Fitness Model', value: 'fitness model' },
@@ -494,20 +529,24 @@ const AvatarGenerator: React.FC = () => {
                             </div>
 
                             {/* 3. Composition Reference Toggle */}
-                            <div className={`border rounded-2xl p-6 group/comp flex flex-col overflow-hidden ${error?.includes('Background') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : (grabComposition && !compositionUrl) ? 'border-solid border-red-500/50 bg-[#0a0a0a]' : grabComposition ? 'border-solid border-[#d2ac47]/50 bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5 h-full min-h-[350px] justify-between'} `}>
-                                <div className={`flex items-center gap-3 mb-4 cursor-pointer w-full ${!grabComposition && 'h-full justify-center flex-col gap-4'}`} onClick={() => setGrabComposition(!grabComposition)}>
-                                    <button
-                                        className={`w-8 h-8 border rounded-full flex items-center justify-center transition-all ${grabComposition ? 'border-red-500 text-red-500 bg-red-950/20' : 'w-12 h-12 border-[#d2ac47]/40 text-[#d2ac47]/40 scale-125'} `}>
-                                        {grabComposition ? <XCircle size={16} /> : <Layers size={20} />}
-                                    </button>
-                                    <div className="flex flex-col">
-                                        <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors ${grabComposition ? 'text-red-500' : 'text-[#d2ac47]/40'}`}>
-                                            Background Ref
-                                        </span>
-                                        {grabComposition && <span className="text-[8px] text-red-500/80 uppercase tracking-wider">(Close if unused)</span>}
+                            <div className={`border rounded-2xl p-6 group/comp flex flex-col h-full ${error?.includes('Background') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : (grabComposition && !compositionUrl) ? 'border-solid border-red-500/50 bg-[#0a0a0a]' : grabComposition ? 'border-solid border-[#d2ac47]/50 bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5'} `}>
+
+                                {/* Structural Alignment: Header Spacer or Real Header */}
+                                {grabComposition ? (
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className={`w-8 h-8 border border-red-500 rounded-full flex items-center justify-center bg-red-950/20 text-red-500 cursor-pointer`} onClick={() => setGrabComposition(false)}>
+                                            <XCircle size={16} />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-red-500">Background Ref</span>
+                                            <span className="text-[8px] text-red-500/80 uppercase tracking-wider">(Close if unused)</span>
+                                        </div>
                                     </div>
-                                </div>
-                                {grabComposition && (
+                                ) : (
+                                    <div className="h-8 mb-4"></div> /* Spacer */
+                                )}
+
+                                {grabComposition ? (
                                     <div className="animate-fade-in w-full aspect-square relative overflow-hidden rounded-xl mb-3">
                                         <ImageUploadZone
                                             onImageUpload={({ url }) => setCompositionUrl(url)}
@@ -516,16 +555,30 @@ const AvatarGenerator: React.FC = () => {
                                             className="h-full w-full"
                                         />
                                     </div>
-                                )}
-                                {/* Invisible Slider Clone for Exact Height Match */}
-                                {grabComposition && (
-                                    <div className="invisible pointer-events-none">
-                                        <div className="flex justify-between text-[9px] mb-1">
-                                            <span>Likeness Strength</span>
+                                ) : (
+                                    <div className="w-full aspect-square flex flex-col items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-105" onClick={() => setGrabComposition(true)}>
+                                        <button
+                                            className={`rounded-full flex items-center justify-center transition-all duration-500 w-20 h-20 border border-[#d2ac47]/40 text-[#d2ac47]/40 mb-4 hover:border-[#d2ac47] hover:text-[#d2ac47] hover:shadow-[0_0_20px_rgba(210,172,71,0.2)]`}>
+                                            {/* Backdrop / Background Icon (Custom SVG) */}
+                                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                {/* Frame / Wall */}
+                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                                {/* Cyclorama Curve / Landscape hint */}
+                                                <path d="M3 15C3 15 8 13 11 15C14 17 18 14 21 16" />
+                                                {/* Small Sun/Focus */}
+                                                <circle cx="8.5" cy="8.5" r="1.5" />
+                                            </svg>
+                                        </button>
+                                        <div className="flex flex-col text-center">
+                                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#d2ac47]/60">
+                                                Background Ref
+                                            </span>
                                         </div>
-                                        <div className="w-full h-1" />
                                     </div>
                                 )}
+
+                                {/* Padding filler to match height if necessary, or just rely on h-full on parent */}
+                                <div className="flex-1"></div>
                             </div>
                         </div>
                     </div>
@@ -759,7 +812,7 @@ const AvatarGenerator: React.FC = () => {
                     </div>
                 </div>
 
-            </div>
+            </div >
 
             <style>{`
                 @keyframes spinY {

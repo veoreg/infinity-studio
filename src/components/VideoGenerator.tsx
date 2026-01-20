@@ -73,7 +73,12 @@ const GenerationLogger = () => {
 // Webhook URL (Updated to Supabase Workflow)
 const WEBHOOK_URL = "https://n8n.develotex.io/webhook/wan_context_safeMode_3_SB";
 
+import { useAuth } from '../contexts/AuthContext';
+
+// ... (existing imports)
+
 const VideoGenerator: React.FC = () => {
+    const { user } = useAuth(); // <--- Get logged in user
     const [imageUrl, setImageUrl] = useState('');
     const [fileName, setFileName] = useState('');
     const [textPrompt, setTextPrompt] = useState('');
@@ -100,18 +105,30 @@ const VideoGenerator: React.FC = () => {
     });
 
     const fetchHistory = async () => {
-        // Filter history by the current Guest ID so users don't see others' work
-        const { data } = await supabase
+        let query = supabase
             .from('generations')
             .select('*')
             .eq('status', 'completed')
-            // JSONB filtering syntax for Supabase
-            .contains('metadata', { guest_id: guestId })
             .order('created_at', { ascending: false })
             .limit(20);
 
+        if (user) {
+            // If logged in, fetch MY data associated with my account
+            query = query.eq('user_id', user.id);
+        } else {
+            // If guest, fetch by guest_id metadata
+            query = query.contains('metadata', { guest_id: guestId });
+        }
+
+        const { data } = await query;
         if (data) setGalleryItems(data);
     };
+
+    // RESTORE STATE ON MOUNT + Fetch History
+    React.useEffect(() => {
+        fetchHistory(); // Load some past videos to show it's working
+        // ... (rest of restore logic)
+    }, [guestId, user]); // Re-run if user logs in/out
 
     // RESTORE STATE ON MOUNT + Fetch History
     React.useEffect(() => {
@@ -267,6 +284,7 @@ const VideoGenerator: React.FC = () => {
             const { data: generation, error: dbError } = await supabase
                 .from('generations')
                 .insert({
+                    user_id: user?.id, // Link to authenticated user (if logged in)
                     type: 'video',
                     status: 'pending',
                     prompt: textPrompt,
