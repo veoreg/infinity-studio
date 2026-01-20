@@ -387,7 +387,7 @@ const VideoGenerator: React.FC = () => {
                                             value={textPrompt}
                                             onChange={(e) => setTextPrompt(e.target.value)}
                                             placeholder="Describe the motion, atmosphere, and desire..."
-                                            className="w-full h-full bg-transparent p-3 md:p-6 pt-10 text-[#F9F1D8] placeholder-[#d2ac47]/50 font-sans font-light text-sm resize-none focus:outline-none"
+                                            className="w-full h-full bg-transparent p-3 md:p-6 pt-10 text-[#F9F1D8] placeholder-[#d2ac47]/50 font-sans font-light text-base md:text-sm resize-none focus:outline-none"
                                         />
                                     </div>
 
