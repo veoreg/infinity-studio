@@ -271,9 +271,8 @@ const VideoGenerator: React.FC = () => {
                 filename: fileName,
                 textPrompt,
                 safeMode,
-                resolution_steps: 1080,
-                aspect_ratio: "1080",
-                megapixels: 1,
+                // Removed all technical params (resolution, steps, etc) per strict user instruction
+                // as N8n/Comfy handles the sampling logic internally.
             }).catch(err => {
                 // If N8n times out (Cloudflare error), that's actually FINE in async mode,
                 // provided N8n started processing. Only network errors are real errors.
