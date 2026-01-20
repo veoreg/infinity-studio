@@ -105,10 +105,24 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [] }) => {
                             {/* Main Display (Center) */}
                             <div className="relative flex-1 flex items-center justify-center p-4">
                                 <div className="relative aspect-video w-full max-w-[90%] bg-[#080808] border border-[#d2ac47]/20 rounded-xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.8)] group/item">
-                                    <img src={item.thumb} alt={item.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
+                                    {/* Smart Thumbnail: Use Video if available, else Image */}
+                                    {(item.type === 'video' || item.url?.includes('.mp4') || item.url?.includes('video')) ? (
+                                        <video
+                                            src={item.url}
+                                            poster={item.thumb !== '/placeholder-luxury.png' ? item.thumb : undefined}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+                                            muted
+                                            loop
+                                            playsInline
+                                            onMouseOver={e => e.currentTarget.play()}
+                                            onMouseOut={e => e.currentTarget.pause()}
+                                        />
+                                    ) : (
+                                        <img src={item.thumb} alt={item.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
+                                    )}
 
                                     {/* Play Overlay */}
-                                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                         <div className="w-10 h-10 rounded-full border border-[#d2ac47] flex items-center justify-center bg-black/60 shadow-[0_0_15px_rgba(210,172,71,0.3)]">
                                             <Play size={16} className="text-[#d2ac47] ml-0.5" />
                                         </div>

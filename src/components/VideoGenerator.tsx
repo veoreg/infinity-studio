@@ -661,12 +661,30 @@ const VideoGenerator: React.FC = () => {
                                     onMouseOver={(e) => (e.target as HTMLVideoElement).play()}
                                     onMouseOut={(e) => (e.target as HTMLVideoElement).pause()}
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3 flex flex-col justify-end">
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3 flex flex-col justify-end gap-2">
                                     <button
                                         onClick={() => setVideoUrl(item.video_url)}
                                         className="w-full py-1 text-[9px] bg-[#d2ac47] text-black font-bold uppercase rounded-lg"
                                     >
                                         View Full
+                                    </button>
+                                    <button
+                                        onClick={async (e) => {
+                                            e.stopPropagation();
+                                            if (!window.confirm('Delete this masterpiece?')) return;
+                                            const { error } = await supabase.from('generations').delete().eq('id', item.id);
+                                            if (!error) {
+                                                fetchHistory();
+                                                // Also clear if it's currently playing
+                                                if (videoUrl === item.video_url) {
+                                                    setVideoUrl(null);
+                                                    setImageUrl('');
+                                                }
+                                            }
+                                        }}
+                                        className="w-full py-1 text-[9px] bg-red-950/80 border border-red-500/50 text-red-200 font-bold uppercase rounded-lg hover:bg-red-900 hover:text-white transition-colors"
+                                    >
+                                        Delete
                                     </button>
                                 </div>
                             </div>
