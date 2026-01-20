@@ -206,12 +206,27 @@ const VideoGenerator: React.FC = () => {
         cleanupMonitoring();
 
         // 1. Polling Function
+        // 1. Polling Function
         const checkStatus = async () => {
-            const { data } = await supabase
+            const { data, error } = await supabase
                 .from('generations')
                 .select('status, video_url')
                 .eq('id', generationId)
                 .single();
+
+            // Handle Deleted/Missing Record (Fixes "Stuck" UI)
+            if (error || !data) {
+                // If record not found (PGRST116) or general error, assume it's gone.
+                if (!data || (error as any)?.code === 'PGRST116') {
+                    console.warn("Generation record missing, clearing local state.");
+                    setLoading(false);
+                    cleanupMonitoring();
+                    localStorage.removeItem('active_generation');
+                    // Optional: Don't show error if it looks like a clean reset, or show soft message
+                    // setError('Previous session cleared.'); 
+                }
+                return true;
+            }
 
             if (data?.status === 'completed' && data?.video_url) {
                 setVideoUrl(data.video_url);
