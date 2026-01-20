@@ -270,7 +270,7 @@ const VideoGenerator: React.FC = () => {
                 imageUrl,
                 filename: fileName,
                 textPrompt,
-                // negativePrompt, <--- Disabled until N8n/Comfy supports it to prevent errors
+                negativePrompt: "", // <--- Sending empty string to satisfy N8n structure
                 safeMode,
                 resolution_steps: 1080,
                 aspect_ratio: "1080",
