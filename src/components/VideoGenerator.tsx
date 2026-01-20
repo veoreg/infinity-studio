@@ -603,14 +603,14 @@ const VideoGenerator: React.FC = () => {
             </div>
 
             {/* Recent Creations Gallery (New Section) */}
-            <div className="mt-16 animate-fade-in-up">
-                <div className="flex items-center gap-4 mb-8">
-                    <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#d2ac47]/30"></div>
-                    <h2 className="text-2xl font-serif text-[#F9F1D8] italic">Recent Masterpieces</h2>
-                    <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#d2ac47]/30"></div>
-                </div>
+            {galleryItems.length > 0 && (
+                <div className="mt-16 animate-fade-in-up">
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#d2ac47]/30"></div>
+                        <h2 className="text-2xl font-serif text-[#F9F1D8] italic">Recent Masterpieces</h2>
+                        <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#d2ac47]/30"></div>
+                    </div>
 
-                {galleryItems.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                         {galleryItems.map((item) => (
                             <div key={item.id} className="group relative bg-[#111] border border-[#d2ac47]/10 rounded-2xl overflow-hidden aspect-video shadow-xl transition-all hover:border-[#d2ac47]/40 hover:-translate-y-1">
@@ -632,12 +632,8 @@ const VideoGenerator: React.FC = () => {
                             </div>
                         ))}
                     </div>
-                ) : (
-                    <div className="text-center py-12 border border-dashed border-[#d2ac47]/10 rounded-3xl">
-                        <p className="text-[#d2ac47]/30 text-xs font-mono uppercase">Your legacy awaits...</p>
-                    </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 };
