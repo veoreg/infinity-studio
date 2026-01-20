@@ -71,7 +71,8 @@ const GenerationLogger = () => {
 };
 
 // Webhook URL (Updated to Supabase Workflow)
-const WEBHOOK_URL = "https://n8n.develotex.io/webhook/wan_context_safeMode_3_SB";
+// Webhook URL (Proxied via Vercel/Netlify/Vite)
+const WEBHOOK_URL = "/api/video";
 
 import { useAuth } from '../contexts/AuthContext';
 

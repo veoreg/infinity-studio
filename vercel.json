@@ -1,0 +1,16 @@
+{
+    "rewrites": [
+        {
+            "source": "/api/video",
+            "destination": "https://n8n.develotex.io/webhook/wan_context_safeMode_3_SB"
+        },
+        {
+            "source": "/api/avatar",
+            "destination": "https://n8n.develotex.io/webhook/generate-flux-image"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
+}

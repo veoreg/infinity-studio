@@ -3,6 +3,18 @@
   publish = "dist"
 
 [[redirects]]
+  from = "/api/video"
+  to = "https://n8n.develotex.io/webhook/wan_context_safeMode_3_SB"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/avatar"
+  to = "https://n8n.develotex.io/webhook/generate-flux-image"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200

@@ -6,13 +6,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api/webhook': {
-        target: 'https://n8n.develotex.io/webhook/wan_context_safeMode_3_enhanced-v3',
+      '/api/video': {
+        target: 'https://n8n.develotex.io/webhook/wan_context_safeMode_3_SB',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/webhook/, ''),
-        secure: false, // If the SSL is self-signed or has issues
-        timeout: 900000, // 15 minutes
-        proxyTimeout: 900000, // 15 minutes
+        rewrite: (path) => path.replace(/^\/api\/video/, ''),
+        secure: false,
+        timeout: 900000,
       },
       '/api/avatar': {
         target: 'https://n8n.develotex.io/webhook/generate-flux-image',
@@ -20,7 +19,6 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/avatar/, ''),
         secure: false,
         timeout: 900000,
-        proxyTimeout: 900000,
       }
     }
   }
