@@ -99,7 +99,11 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete }) =>
                         >
                             {/* Backdrop Image */}
                             <div className="absolute inset-0 bg-black">
-                                <img src={item.thumb} alt={item.label} className="w-full h-full object-cover opacity-30 blur-sm scale-110" />
+                                {item.thumb !== '/placeholder-luxury.png' ? (
+                                    <img src={item.thumb} alt={item.label} className="w-full h-full object-cover opacity-30 blur-sm scale-110" />
+                                ) : (
+                                    <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1a1a1a] via-[#0a0a0a] to-[#000000] opacity-50"></div>
+                                )}
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent"></div>
                             </div>
 
