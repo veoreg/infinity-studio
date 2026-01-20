@@ -310,10 +310,11 @@ const VideoGenerator: React.FC = () => {
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch min-h-[450px]">
+            {/* Switched to Flexbox for Mobile Stability, Grid for Desktop */}
+            <div className="flex flex-col xl:grid xl:grid-cols-12 gap-8 items-stretch min-h-[450px]">
 
                 {/* Left Banner - Breathing/Beckoning Effect (Widened) */}
-                <div className="hidden xl:block lg:col-span-4">
+                <div className="hidden xl:block xl:col-span-4">
                     <div className="h-full w-full relative overflow-hidden group border border-[#d2ac47]/20 rounded-3xl shadow-2xl transition-all hover:border-[#d2ac47]/40">
                         <div className="absolute inset-0 bg-[#080808]/20 z-10 mix-blend-overlay"></div>
                         {/* Art Deco Corners - Softened */}
@@ -333,7 +334,7 @@ const VideoGenerator: React.FC = () => {
                 </div>
 
                 {/* Center: Generator Interface (Narrowed & Moved Up) */}
-                <div className="lg:col-span-12 xl:col-span-5 flex flex-col">
+                <div className="w-full xl:w-auto xl:col-span-5 flex flex-col">
                     <div className="bg-velvet-depth border border-[#d2ac47]/20 rounded-3xl p-5 relative overflow-hidden flex-1 flex flex-col justify-start shadow-2xl transition-all hover:border-[#d2ac47]/40">
 
                         {/* Decorative Background Elements */}
@@ -342,8 +343,8 @@ const VideoGenerator: React.FC = () => {
 
                         <div className="space-y-4 relative z-10">
                             {/* Inputs Grid - Split into 2 */}
-                            {/* Inputs Grid - Expanded to Fill Space */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Inputs Container - Flex Col on Mobile, Grid on MD */}
+                            <div className="flex flex-col md:grid md:grid-cols-2 gap-4">
                                 {/* Image Input Frame */}
                                 <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 overflow-hidden flex flex-col rounded-2xl aspect-square min-h-[280px]">
                                     <div className="absolute top-0 left-0 bg-[#d2ac47] text-black text-[9px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] z-20 rounded-br-xl pointer-events-none">
@@ -538,7 +539,7 @@ const VideoGenerator: React.FC = () => {
 
 
                 {/* Right Col: Output & Stats & Coins */}
-                <div className="lg:col-span-12 xl:col-span-3 flex flex-col gap-4">
+                <div className="w-full xl:w-auto xl:col-span-3 flex flex-col gap-4">
 
                     {/* 1. Coins / Credits Widget */}
                     <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl p-4 flex flex-col items-center justify-center shadow-lg relative overflow-hidden group">
