@@ -115,22 +115,18 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete }) =>
                                         <video
                                             src={item.url}
                                             poster={item.thumb !== '/placeholder-luxury.png' ? item.thumb : undefined}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+                                            className="w-full h-full object-contain bg-black shadow-inner"
+                                            controls
                                             muted
                                             loop
                                             playsInline
-                                            onMouseOver={e => e.currentTarget.play()}
-                                            onMouseOut={e => e.currentTarget.pause()}
                                         />
                                     ) : (
                                         <img src={item.thumb} alt={item.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
                                     )}
 
                                     {/* Play Overlay */}
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity gap-3 pointer-events-auto">
-                                        <div className="w-10 h-10 rounded-full border border-[#d2ac47] flex items-center justify-center bg-black/60 shadow-[0_0_15px_rgba(210,172,71,0.3)]">
-                                            <Play size={16} className="text-[#d2ac47] ml-0.5" />
-                                        </div>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity gap-3 pointer-events-none">
 
                                         {/* Delete Button (Only for 'my' tab) */}
                                         {activeTab === 'my' && onDelete && item.id !== 'p1' && !String(item.id).startsWith('p') && (
@@ -141,7 +137,7 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete }) =>
                                                         onDelete(item.id);
                                                     }
                                                 }}
-                                                className="absolute top-2 right-2 p-1.5 bg-red-950/80 text-red-200 rounded-lg hover:bg-red-600 hover:text-white transition-colors border border-red-500/30 shadow-lg"
+                                                className="absolute top-2 right-2 p-1.5 bg-red-950/80 text-red-200 rounded-lg hover:bg-red-600 hover:text-white transition-colors border border-red-500/30 shadow-lg pointer-events-auto"
                                                 title="Delete"
                                             >
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
