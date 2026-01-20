@@ -637,7 +637,21 @@ const VideoGenerator: React.FC = () => {
                         <div className="mb-2 flex items-center justify-between">
                             <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em]">History</span>
                         </div>
-                        <UserGallery newItems={galleryItems} />
+                        <UserGallery
+                            newItems={galleryItems}
+                            onDelete={async (id) => {
+                                const { error } = await supabase.from('generations').delete().eq('id', id);
+                                if (!error) {
+                                    fetchHistory();
+                                    // If currently playing the deleted video, clear the main screen
+                                    const deletedItem = galleryItems.find(i => i.id === id);
+                                    if (deletedItem && videoUrl === deletedItem.video_url) {
+                                        setVideoUrl(null);
+                                        setImageUrl('');
+                                    }
+                                }
+                            }}
+                        />
                     </div>
                 </div>
             </div>
