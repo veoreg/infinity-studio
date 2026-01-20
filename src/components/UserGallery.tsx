@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Play, Globe, Lock } from 'lucide-react';
 
-const MY_CREATIONS = [
-    { id: 101, type: 'video', url: '#', thumb: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=2864&auto=format&fit=crop', label: 'Velvet Gaze', privacy: 'public', date: '2h ago' },
-    { id: 102, type: 'photo', url: '#', thumb: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=2550&auto=format&fit=crop', label: 'Crimson Smile', privacy: 'private', date: '5h ago' },
-    { id: 103, type: 'photo', url: '#', thumb: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=2787&auto=format&fit=crop', label: 'Vintage Soul', privacy: 'public', date: '1d ago' },
-    { id: 105, type: 'video', url: '#', thumb: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=2459&auto=format&fit=crop', label: 'Tokyo Noir', privacy: 'private', date: '2d ago' },
-    { id: 106, type: 'photo', url: '#', thumb: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=2787&auto=format&fit=crop', label: 'Golden Hour', privacy: 'public', date: '3d ago' },
+const PLACEHOLDERS = [
+    { id: 'p1', type: 'placeholder', thumb: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=2864&auto=format&fit=crop', label: 'Your Art Here', privacy: 'private' },
+    { id: 'p2', type: 'placeholder', thumb: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=2550&auto=format&fit=crop', label: 'Create Something', privacy: 'private' },
+    { id: 'p3', type: 'placeholder', thumb: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=2787&auto=format&fit=crop', label: 'Waiting for Muse', privacy: 'private' },
+    { id: 'p4', type: 'placeholder', thumb: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=2459&auto=format&fit=crop', label: 'Start Forging', privacy: 'private' },
 ];
 
 const COMMUNITY_FEED = [
@@ -38,7 +37,9 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [] }) => {
     const [activeTab, setActiveTab] = useState<'my' | 'community'>('my');
     const [currentIndex, setCurrentIndex] = useState(0);
 
-    const rawItems = activeTab === 'my' ? [...newItems, ...MY_CREATIONS] : COMMUNITY_FEED;
+    const rawItems = activeTab === 'my'
+        ? (newItems.length > 0 ? newItems : PLACEHOLDERS)
+        : COMMUNITY_FEED;
 
     // Normalize items to handle Supabase schema
     const items = rawItems.map((item: any) => ({

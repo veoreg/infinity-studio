@@ -89,13 +89,26 @@ const VideoGenerator: React.FC = () => {
     const intervalRef = React.useRef<any | null>(null);
     const channelRef = React.useRef<any | null>(null);
 
+    // Generate or retrieve Guest ID for isolation
+    const [guestId] = useState(() => {
+        let id = localStorage.getItem('endless_guest_id');
+        if (!id) {
+            id = crypto.randomUUID();
+            localStorage.setItem('endless_guest_id', id);
+        }
+        return id;
+    });
+
     const fetchHistory = async () => {
+        // Filter history by the current Guest ID so users don't see others' work
         const { data } = await supabase
             .from('generations')
             .select('*')
             .eq('status', 'completed')
+            // JSONB filtering syntax for Supabase
+            .contains('metadata', { guest_id: guestId })
             .order('created_at', { ascending: false })
-            .limit(10);
+            .limit(20);
 
         if (data) setGalleryItems(data);
     };
@@ -119,7 +132,7 @@ const VideoGenerator: React.FC = () => {
                 localStorage.removeItem('active_generation');
             }
         }
-    }, []);
+    }, [guestId]); // Re-run if guestId changes (unlikely but safe)
 
     const cleanupMonitoring = () => {
         if (intervalRef.current) {
@@ -187,6 +200,8 @@ const VideoGenerator: React.FC = () => {
                 setLoading(false);
                 cleanupMonitoring();
                 localStorage.removeItem('active_generation'); // Done!
+                // Refresh history to show the new video immediately
+                fetchHistory();
                 return true;
             } else if (data?.status === 'failed') {
                 setError('Generation failed on server.');
@@ -211,6 +226,8 @@ const VideoGenerator: React.FC = () => {
                         setLoading(false);
                         cleanupMonitoring();
                         localStorage.removeItem('active_generation');
+                        // Refresh history to show the new video immediately
+                        fetchHistory();
                     } else if (newRecord.status === 'failed') {
                         setError('Generation failed on server.');
                         setLoading(false);
@@ -255,7 +272,8 @@ const VideoGenerator: React.FC = () => {
                     prompt: textPrompt,
                     // negative_prompt: negativePrompt, <--- DB doesn't have this column yet
                     image_url: imageUrl,
-                    metadata: { safe_mode: safeMode }
+                    // Store guest_id for isolation
+                    metadata: { safe_mode: safeMode, guest_id: guestId }
                 })
                 .select()
                 .single();
