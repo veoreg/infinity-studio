@@ -77,7 +77,7 @@ const VideoGenerator: React.FC = () => {
     const [imageUrl, setImageUrl] = useState('');
     const [fileName, setFileName] = useState('');
     const [textPrompt, setTextPrompt] = useState('');
-    const [negativePrompt, setNegativePrompt] = useState('');
+    // const [negativePrompt, setNegativePrompt] = useState(''); <--- Feature Disabled
     const [safeMode, setSafeMode] = useState(true);
     const [loading, setLoading] = useState(false);
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -110,7 +110,7 @@ const VideoGenerator: React.FC = () => {
                 console.log("Restoring session:", data);
                 setImageUrl(data.imageUrl || '');
                 setTextPrompt(data.prompt || '');
-                setNegativePrompt(data.negativePrompt || '');
+                // setNegativePrompt(data.negativePrompt || '');
                 setLoading(true);
                 // Resume monitoring
                 startMonitoring(data.id);
@@ -243,7 +243,7 @@ const VideoGenerator: React.FC = () => {
                     type: 'video',
                     status: 'pending',
                     prompt: textPrompt,
-                    negative_prompt: negativePrompt,
+                    // negative_prompt: negativePrompt, <--- DB doesn't have this column yet
                     image_url: imageUrl,
                     metadata: { safe_mode: safeMode }
                 })
