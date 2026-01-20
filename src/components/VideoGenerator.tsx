@@ -222,8 +222,14 @@ const VideoGenerator: React.FC = () => {
                     setLoading(false);
                     cleanupMonitoring();
                     localStorage.removeItem('active_generation');
-                    // Optional: Don't show error if it looks like a clean reset, or show soft message
-                    // setError('Previous session cleared.'); 
+
+                    // FORCE RESET UI STATE
+                    setImageUrl('');
+                    setVideoUrl(null);
+                    setTextPrompt('');
+                    setFileName('');
+
+                    setError('Session expired or cleared.');
                 }
                 return true;
             }
