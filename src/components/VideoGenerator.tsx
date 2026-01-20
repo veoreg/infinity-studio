@@ -149,14 +149,24 @@ const VideoGenerator: React.FC = () => {
         setError('Generation cancelled by user.');
     };
 
-    const handleDownload = () => {
+    const handleDownload = async () => {
         if (!videoUrl) return;
-        const link = document.createElement('a');
-        link.href = videoUrl;
-        link.download = `infinity_video_${Date.now()}.mp4`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        try {
+            const response = await fetch(videoUrl);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `infinity_video_${Date.now()}.mp4`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Download failed", err);
+            // Fallback if CORS or network blocks blob fetch
+            window.open(videoUrl, '_blank');
+        }
     };
 
     // Reusable Monitor Function
