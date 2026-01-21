@@ -235,6 +235,8 @@ const VideoGenerator: React.FC = () => {
             }
 
             if (data?.status === 'completed' && data?.video_url) {
+                console.log('✅ [POLLING] Видео готово! URL из базы:', data.video_url);
+                console.log('📊 [POLLING] Полные данные записи:', data);
                 setVideoUrl(data.video_url);
                 setLoading(false);
                 cleanupMonitoring();
@@ -260,7 +262,9 @@ const VideoGenerator: React.FC = () => {
                 { event: 'UPDATE', schema: 'public', table: 'generations', filter: `id=eq.${generationId}` },
                 (payload) => {
                     const newRecord = payload.new as any;
+                    console.log('🔔 [REALTIME] Получено обновление из Supabase:', newRecord);
                     if (newRecord.status === 'completed' && newRecord.video_url) {
+                        console.log('✅ [REALTIME] Видео готово! URL:', newRecord.video_url);
                         setVideoUrl(newRecord.video_url);
                         setLoading(false);
                         cleanupMonitoring();
@@ -313,7 +317,7 @@ const VideoGenerator: React.FC = () => {
                     // negative_prompt: negativePrompt, <--- DB doesn't have this column yet
                     image_url: imageUrl,
                     // Store guest_id for isolation
-                    metadata: { safe_mode: safeMode, guest_id: guestId }
+                    metadata: { safe_mode: safeMode ?? true, guest_id: guestId }
                 })
                 .select()
                 .single();
