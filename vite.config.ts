@@ -14,7 +14,7 @@ export default defineConfig({
         timeout: 900000,
       },
       '/api/avatar': {
-        target: 'https://n8n.develotex.io/webhook/generate-flux-image',
+        target: 'https://n8n.develotex.io:443/webhook-test/Flux_Image_Generator_Advanced_Upscl_3+SB',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/avatar/, ''),
         secure: false,

@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Camera, Download, RefreshCw, User, Sparkles, XCircle } from "lucide-react";
+import { Camera, Download, RefreshCw, User, Sparkles, XCircle, ShieldCheck } from "lucide-react";
 import GamificationDashboard from './GamificationDashboard';
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
+import { supabase } from '../lib/supabaseClient';
+import { v4 as uuidv4 } from 'uuid';
 
-// Webhook URL (Proxied via Vite)
-// Webhook URL (Proxied via Vercel/Netlify/Vite)
-const WEBHOOK_URL = "/api/avatar";
+// Webhook URL - Direct n8n endpoint for Avatar Generation
+const WEBHOOK_URL = "https://n8n.develotex.io:443/webhook-test/Flux_Image_Generator_Advanced_Upscl_3+SB";
 
 interface CustomSelectProps {
     label: string;
@@ -72,10 +73,15 @@ const CustomSelect: React.FC<CustomSelectProps & { centerLabel?: boolean }> = ({
     );
 };
 
-const AvatarLogger: React.FC = () => {
+const AvatarLogger = ({ status, error }: { status: string; error: string | null }) => {
     const [log, setLog] = useState("Initializing Neural Network...");
 
     React.useEffect(() => {
+        if (status === 'queued') {
+            setLog("Waiting for available slot in GPU cluster...");
+            return;
+        }
+
         const steps = [
             { msg: "Scanner: Mapping facial structure...", delay: 2000 },
             { msg: "Identity: Preserving unique features...", delay: 6000 },
@@ -98,18 +104,26 @@ const AvatarLogger: React.FC = () => {
         return () => {
             timeouts.forEach(clearTimeout);
         };
-    }, []);
+    }, [status]);
 
     return (
         <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-4 animate-fade-in drop-shadow-[0_4px_4px_rgba(0,0,0,0.9)]">
-            <RefreshCw className="w-12 h-12 text-[#d2ac47] animate-spin" />
-            <div className="font-mono text-[#d2ac47] text-xs uppercase tracking-widest font-bold">
-                {">"} {log}
+            <RefreshCw className={`w-12 h-12 text-[#d2ac47] ${status !== 'failed' ? 'animate-spin' : ''}`} />
+            <div className={`font-mono ${error ? 'text-red-500' : 'text-[#d2ac47]'} text-xs uppercase tracking-widest font-bold`}>
+                {error ? `[ERROR] ${error}` : `> ${log}`}
             </div>
             {/* Progress Bar Simulation */}
-            <div className="w-48 h-1 bg-[#d2ac47]/20 rounded-full overflow-hidden mt-4 bg-black/40 backdrop-blur-sm">
-                <div className="h-full bg-[#d2ac47] animate-[growWidth_50s_ease-out_forwards]" style={{ width: '0%' }}></div>
-            </div>
+            {!error && (
+                <div className="w-48 h-1 bg-[#d2ac47]/20 rounded-full overflow-hidden mt-4 bg-black/40 backdrop-blur-sm">
+                    <div
+                        className={`h-full bg-[#d2ac47] ${status === 'queued' ? 'opacity-30 animated-pulse w-full' : ''}`}
+                        style={{
+                            width: status === 'queued' ? '100%' : '0%',
+                            animation: (status === 'processing' || status === 'pending') ? 'growWidth 60s linear forwards' : 'none'
+                        }}
+                    ></div>
+                </div>
+            )}
             <style>{`
                 @keyframes growWidth {
                     0% { width: 0%; }
@@ -122,7 +136,9 @@ const AvatarLogger: React.FC = () => {
 
 const AvatarGenerator: React.FC = () => {
     const [loading, setLoading] = useState(false);
+    const [currentStatus, setCurrentStatus] = useState<string>('pending');
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+    const [activeItem, setActiveItem] = useState<any | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     // Identity Specs
@@ -152,11 +168,139 @@ const AvatarGenerator: React.FC = () => {
     const [rawPromptMode, setRawPromptMode] = useState(false);
     const [upscale, setUpscale] = useState(false);
 
+    // Generate or retrieve Guest ID for isolation
+    const [guestId] = useState(() => {
+        let id = localStorage.getItem('endless_guest_id');
+        if (!id) {
+            id = uuidv4();
+            localStorage.setItem('endless_guest_id', id);
+        }
+        return id;
+    });
+
     // Gallery State
     const [galleryItems, setGalleryItems] = useState<any[]>([]);
 
-    // Cancellation Ref
+    // Monitoring Refs
     const controllerRef = React.useRef<AbortController | null>(null);
+    const pollingInterval = React.useRef<any>(null);
+    const realtimeChannel = React.useRef<any>(null);
+
+    // Initial fetch
+    useEffect(() => {
+        fetchHistory();
+        return () => cleanupMonitoring();
+    }, []);
+
+    const fetchHistory = async () => {
+        try {
+            const { data, error: dbError } = await supabase
+                .from('generations')
+                .select('*')
+                .eq('type', 'avatar')
+                .or(`status.eq.completed,status.eq.success,status.eq.Success`)
+                .contains('metadata', { guest_id: guestId })
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+            if (dbError) throw dbError;
+            if (data) setGalleryItems(data);
+        } catch (err) {
+            console.error("Failed to fetch gallery history:", err);
+        }
+    };
+
+    const cleanupMonitoring = () => {
+        if (pollingInterval.current) {
+            clearInterval(pollingInterval.current);
+            pollingInterval.current = null;
+        }
+        if (realtimeChannel.current) {
+            supabase.removeChannel(realtimeChannel.current);
+            realtimeChannel.current = null;
+        }
+    };
+
+    const startMonitoring = (generationId: string) => {
+        cleanupMonitoring();
+        setLoading(true);
+        setCurrentStatus('processing');
+
+        // 1. Polling Fallback (Every 10 seconds)
+        pollingInterval.current = setInterval(() => checkStatus(generationId), 10000);
+
+        // 2. Realtime Listener
+        realtimeChannel.current = supabase
+            .channel(`avatar-gen-${generationId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'generations',
+                    filter: `id=eq.${generationId}`
+                },
+                (payload) => {
+                    const newRecord = payload.new as any;
+                    console.log("🔔 [REALTIME] Update received:", newRecord.status);
+
+                    if (newRecord.status) {
+                        setCurrentStatus(newRecord.status);
+                    }
+
+                    const finalUrl = newRecord.result_url || newRecord.video_url || newRecord.image_url;
+                    if ((newRecord.status === 'completed' || newRecord.status === 'success' || newRecord.status === 'Success') && finalUrl) {
+                        console.log("🎯 [REALTIME] Found final URL:", finalUrl);
+                        setGeneratedImage(finalUrl);
+                        setActiveItem(newRecord);
+                        cleanupMonitoring();
+                        setLoading(false);
+                        fetchHistory();
+                    } else if (newRecord.status === 'failed' || newRecord.status === 'error') {
+                        setError(newRecord.error_message || "Generation failed on server.");
+                        cleanupMonitoring();
+                        setLoading(false);
+                    }
+                }
+            )
+            .subscribe();
+
+        // Initial check
+        checkStatus(generationId);
+    };
+
+    const checkStatus = async (generationId: string) => {
+        try {
+            const { data, error: dbError } = await supabase
+                .from('generations')
+                .select('*')
+                .eq('id', generationId)
+                .single();
+
+            if (dbError) throw dbError;
+
+            if (data) {
+                if (data.status) setCurrentStatus(data.status);
+
+                const finalUrl = (data as any).result_url || data.video_url || data.image_url;
+                const isFinished = data.status === 'completed' || data.status === 'success' || data.status === 'Success';
+
+                if (isFinished && finalUrl) {
+                    setGeneratedImage(finalUrl);
+                    setActiveItem(data);
+                    cleanupMonitoring();
+                    setLoading(false);
+                    fetchHistory();
+                } else if (data.status === 'failed' || data.status === 'error') {
+                    setError(data.error_message || "Generation failed.");
+                    cleanupMonitoring();
+                    setLoading(false);
+                }
+            }
+        } catch (err) {
+            console.error("Status check failed:", err);
+        }
+    };
 
     const handleCancel = () => {
         if (controllerRef.current) {
@@ -210,13 +354,29 @@ const AvatarGenerator: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        // reset image only if we want to clear the canvas, 
-        // but users might like to see the old one while waiting. 
-        // Let's clear it to show "working" state clearly or use a loader overlay.
-        // setGeneratedImage(null); 
-
         try {
+            // 1. Create a unique Generation ID (UUID)
+            const generationId = uuidv4();
+
+            // 2. Create an initial record in the 'generations' table
+            const { error: dbError } = await supabase
+                .from('generations')
+                .insert([{
+                    id: generationId,
+                    type: 'avatar',
+                    prompt: userPrompt,
+                    status: 'processing',
+                    image_url: null,
+                    metadata: { guest_id: guestId }
+                }]);
+
+            if (dbError) {
+                console.error("Database initialization failed:", dbError);
+                // We proceed anyway, but warn
+            }
+
             const payload = {
+                generation_id: generationId,
                 gender,
                 age: Number(age) || 18, // Fallback to 18 if empty/invalid
                 nationality,
@@ -241,17 +401,15 @@ const AvatarGenerator: React.FC = () => {
             // Create new AbortController
             controllerRef.current = new AbortController();
 
-            // Request Blob to handle binary image response
-            const response = await axios.post(WEBHOOK_URL, payload, {
-                responseType: 'blob',
+            // Send to webhook (don't wait for blob anymore)
+            await axios.post(WEBHOOK_URL, payload, {
                 headers: { 'Content-Type': 'application/json' },
-                timeout: 240000, // 4 minutes timeout for avatar generation
+                timeout: 30000,
                 signal: controllerRef.current.signal
             });
 
-            // Create Object URL from the blob
-            const imageUrl = URL.createObjectURL(new Blob([response.data]));
-            setGeneratedImage(imageUrl);
+            // Start monitoring for completion
+            startMonitoring(generationId);
 
         } catch (err: any) {
             // Check if the request was canceled by the user
@@ -425,7 +583,7 @@ const AvatarGenerator: React.FC = () => {
                                     </span>
                                 </div>
                                 {/* Drag & Drop Zone */}
-                                <div className="w-full aspect-square relative overflow-hidden rounded-xl mb-3">
+                                <div className="w-full h-64 relative overflow-hidden rounded-xl mb-3">
                                     <ImageUploadZone
                                         onImageUpload={({ url }) => setFaceImageUrl(url)}
                                         currentUrl={faceImageUrl}
@@ -548,7 +706,7 @@ const AvatarGenerator: React.FC = () => {
                                 )}
 
                                 {grabComposition ? (
-                                    <div className="animate-fade-in w-full aspect-square relative overflow-hidden rounded-xl mb-3">
+                                    <div className="animate-fade-in w-full h-64 relative overflow-hidden rounded-xl mb-3">
                                         <ImageUploadZone
                                             onImageUpload={({ url }) => setCompositionUrl(url)}
                                             currentUrl={compositionUrl}
@@ -557,7 +715,7 @@ const AvatarGenerator: React.FC = () => {
                                         />
                                     </div>
                                 ) : (
-                                    <div className="w-full aspect-square flex flex-col items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-105" onClick={() => setGrabComposition(true)}>
+                                    <div className="w-full h-64 flex flex-col items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-105" onClick={() => setGrabComposition(true)}>
                                         <button
                                             className={`rounded-full flex items-center justify-center transition-all duration-500 w-20 h-20 border border-[#d2ac47]/40 text-[#d2ac47]/40 mb-4 hover:border-[#d2ac47] hover:text-[#d2ac47] hover:shadow-[0_0_20px_rgba(210,172,71,0.2)]`}>
                                             {/* Backdrop / Background Icon (Custom SVG) */}
@@ -692,22 +850,33 @@ const AvatarGenerator: React.FC = () => {
 
                     {/* MOBILE ONLY: Image Output (Moved up per user request) */}
                     <div className="lg:hidden mt-8 mb-8">
-                        <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl aspect-[9/16] relative flex items-center justify-center overflow-hidden shadow-2xl group flex-col min-h-[500px]">
-                            {/* 1. LAYER: Generated Image (Bottom) */}
+                        <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl aspect-[9/16] max-h-[550px] mx-auto relative flex items-center justify-center overflow-hidden shadow-2xl group flex-col min-h-[500px]">
+                            {/* 1. LAYER: Ambient Background (Blur Fill) */}
                             {generatedImage && (
                                 <>
-                                    <img src={generatedImage} alt="Generated Avatar" className="w-full h-full object-contain bg-black/80" />
+                                    <div className="absolute inset-0 pointer-events-none">
+                                        <img
+                                            src={generatedImage}
+                                            alt=""
+                                            className="w-full h-full object-cover opacity-60 blur-3xl scale-150 saturate-150"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-black/20"></div>
+                                    </div>
+
+                                    {/* 2. LAYER: Main Sharp Subject */}
+                                    <img src={generatedImage} alt="Generated Avatar" className="relative z-10 w-full h-full object-cover drop-shadow-2xl" />
+
                                     {/* Deco Corners */}
-                                    <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-[#d2ac47] pointer-events-none"></div>
-                                    <div className="absolute top-2 right-2 w-4 h-4 border-t border-r border-[#d2ac47] pointer-events-none"></div>
-                                    <div className="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-[#d2ac47] pointer-events-none"></div>
-                                    <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-[#d2ac47] pointer-events-none"></div>
+                                    <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-[#d2ac47] pointer-events-none z-20"></div>
+                                    <div className="absolute top-2 right-2 w-4 h-4 border-t border-r border-[#d2ac47] pointer-events-none z-20"></div>
+                                    <div className="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-[#d2ac47] pointer-events-none z-20"></div>
+                                    <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-[#d2ac47] pointer-events-none z-20"></div>
                                 </>
                             )}
                             {/* 2. LAYER: Loading Logger */}
                             {loading && (
                                 <div className={`flex flex-col items-center justify-center ${generatedImage ? 'absolute inset-0 z-20 bg-black/50 backdrop-blur-sm' : 'w-full h-full'}`}>
-                                    <AvatarLogger />
+                                    <AvatarLogger status={currentStatus} error={error} />
                                 </div>
                             )}
                             {/* 3. LAYER: Action Buttons */}
@@ -729,6 +898,25 @@ const AvatarGenerator: React.FC = () => {
                                 </div>
                             )}
                         </div>
+
+                        {/* Metadata Footer (Compact Design) - Mobile */}
+                        {activeItem && (
+                            <div className="relative px-4 pb-2 pt-2 text-center shrink-0 border-t border-[#d2ac47]/10 bg-[#080808]/50 overflow-hidden w-full">
+                                <p className="text-[#F9F1D8] text-[13px] font-serif italic mb-1 truncate">
+                                    {activeItem.prompt ? (activeItem.prompt.substring(0, 50) + (activeItem.prompt.length > 50 ? '...' : '')) : (activeItem.label || 'Untitled Masterpiece')}
+                                </p>
+                                <div className="flex items-center justify-center gap-3 text-[8px] uppercase tracking-[0.2em] text-[#d2ac47]/50 font-bold">
+                                    <span>{activeItem.created_at ? new Date(activeItem.created_at).toLocaleString() : 'Just now'}</span>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-[#d2ac47]/20"></div>
+                                    <div className="flex items-center gap-1">
+                                        <ShieldCheck size={10} className="text-green-500/50" />
+                                        <span>Verified Render</span>
+                                    </div>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-[#d2ac47]/20"></div>
+                                    <button className="hover:text-[#d2ac47] transition-colors">Infinity Studio</button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Gallery Moved to Bottom Center */}
@@ -765,25 +953,34 @@ const AvatarGenerator: React.FC = () => {
                     {/* 2. Stats Dashboard (Top) */}
                     <GamificationDashboard />
 
-                    {/* 3. Image Output (Bottom) - DESKTOP ONLY (Hidden on mobile to show upper copy) */}
-                    <div className="hidden lg:flex bg-[#050505] border border-[#d2ac47]/20 rounded-3xl aspect-[9/16] relative items-center justify-center overflow-hidden shadow-2xl group flex-col min-h-[500px]">
-                        {/* 1. LAYER: Generated Image (Bottom) */}
+                    {/* 3. Image Output (VERTICAL 9:16) - DESKTOP ONLY */}
+                    <div className="hidden lg:flex bg-[#050505] border border-[#d2ac47]/20 rounded-3xl aspect-[9/16] max-h-[550px] mx-auto relative items-center justify-center overflow-hidden shadow-2xl group flex-col">
+                        {/* 1. LAYER: Ambient Background (Blur Fill) */}
                         {generatedImage && (
                             <>
-                                <img src={generatedImage} alt="Generated Avatar" className="w-full h-full object-contain bg-black/80" />
-                                {/* Buttons moved to separate layer */}
-                                {/* Deco Corners for Image */}
-                                <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-[#d2ac47] pointer-events-none"></div>
-                                <div className="absolute top-2 right-2 w-4 h-4 border-t border-r border-[#d2ac47] pointer-events-none"></div>
-                                <div className="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-[#d2ac47] pointer-events-none"></div>
-                                <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-[#d2ac47] pointer-events-none"></div>
+                                <div className="absolute inset-0 pointer-events-none">
+                                    <img
+                                        src={generatedImage}
+                                        alt=""
+                                        className="w-full h-full object-cover opacity-60 blur-3xl scale-150 saturate-150"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-black/20"></div>
+                                </div>
+
+                                <img src={generatedImage} alt="Generated Avatar" className="relative z-10 w-full h-full object-contain drop-shadow-2xl shadow-black" />
+
+                                {/* Deco Corners */}
+                                <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-[#d2ac47]/50 rounded-tl-lg pointer-events-none z-20"></div>
+                                <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-[#d2ac47]/50 rounded-tr-lg pointer-events-none z-20"></div>
+                                <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-[#d2ac47]/50 rounded-bl-lg pointer-events-none z-20"></div>
+                                <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-[#d2ac47]/50 rounded-br-lg pointer-events-none z-20"></div>
                             </>
                         )}
 
                         {/* 2. LAYER: Loading Logger (Overlay or Main) */}
                         {loading && (
                             <div className={`flex flex-col items-center justify-center ${generatedImage ? 'absolute inset-0 z-20 bg-black/50 backdrop-blur-sm' : 'w-full h-full'}`}>
-                                <AvatarLogger />
+                                <AvatarLogger status={currentStatus} error={error} />
                             </div>
                         )}
 
@@ -811,6 +1008,25 @@ const AvatarGenerator: React.FC = () => {
                             </div>
                         )}
                     </div>
+
+                    {/* Metadata Footer (Compact Design) - Desktop */}
+                    {activeItem && (
+                        <div className="relative px-4 pb-2 pt-2 text-center shrink-0 border-t border-[#d2ac47]/10 bg-[#080808]/50 overflow-hidden w-full rounded-b-3xl">
+                            <p className="text-[#F9F1D8] text-[13px] font-serif italic mb-1 truncate">
+                                {activeItem.prompt ? (activeItem.prompt.substring(0, 50) + (activeItem.prompt.length > 50 ? '...' : '')) : (activeItem.label || 'Untitled Masterpiece')}
+                            </p>
+                            <div className="flex items-center justify-center gap-3 text-[8px] uppercase tracking-[0.2em] text-[#d2ac47]/50 font-bold">
+                                <span>{activeItem.created_at ? new Date(activeItem.created_at).toLocaleString() : 'Just now'}</span>
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#d2ac47]/20"></div>
+                                <div className="flex items-center gap-1">
+                                    <ShieldCheck size={10} className="text-green-500/50" />
+                                    <span>Verified Render</span>
+                                </div>
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#d2ac47]/20"></div>
+                                <button className="hover:text-[#d2ac47] transition-colors">Infinity Studio</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
             </div >

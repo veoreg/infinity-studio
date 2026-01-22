@@ -1,25 +1,26 @@
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Play, Globe, Lock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, Play, Globe, Lock, Heart, Share2, Maximize2 } from 'lucide-react';
 
 const PLACEHOLDERS = [
-    { id: 'p1', type: 'placeholder', thumb: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=2864&auto=format&fit=crop', label: 'Your Art Here', privacy: 'private' },
-    { id: 'p2', type: 'placeholder', thumb: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=2550&auto=format&fit=crop', label: 'Create Something', privacy: 'private' },
-    { id: 'p3', type: 'placeholder', thumb: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=2787&auto=format&fit=crop', label: 'Waiting for Muse', privacy: 'private' },
-    { id: 'p4', type: 'placeholder', thumb: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=2459&auto=format&fit=crop', label: 'Start Forging', privacy: 'private' },
+    { id: 'p1', type: 'video', url: '/videos/wan22_2026-01-22T15_36_40 FALSE_00001.mp4', thumb: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=2864&auto=format&fit=crop', label: 'Elegance Redefined', privacy: 'private' },
+    { id: 'p2', type: 'video', url: '/videos/infinity_video_1769098200041.mp4', thumb: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=2787&auto=format&fit=crop', label: 'Shadow Bloom', privacy: 'private' },
+    { id: 'p3', type: 'video', url: '/videos/infinity_video_1769099816091.mp4', thumb: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=2787&auto=format&fit=crop', label: 'Dark Angel', privacy: 'private' },
 ];
 
 const COMMUNITY_FEED = [
-    { id: 201, type: 'video', url: '#', thumb: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop', label: 'Liquid Gold', author: 'Au_Artist', likes: 4122 },
-    { id: 202, type: 'photo', url: '#', thumb: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=2787&auto=format&fit=crop', label: 'Desert Rose', author: 'Retro_X', likes: 890 },
-    { id: 203, type: 'photo', url: '#', thumb: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=2787&auto=format&fit=crop', label: 'Urban Legend', author: 'City_Walker', likes: 2561 },
-    { id: 205, type: 'video', url: '#', thumb: 'https://images.unsplash.com/photo-1583243552698-25029a1396eb?q=80&w=2400&auto=format&fit=crop', label: 'Latin Fire', author: 'Maria_D', likes: 1540 },
-    { id: 206, type: 'photo', url: '#', thumb: 'https://images.unsplash.com/photo-1563620915-8478239e9aab?q=80&w=2670&auto=format&fit=crop', label: 'Midnight Blue', author: 'NightOwl', likes: 3200 },
+    { id: 201, type: 'video', url: '/videos/infinity_video_1769040650308.mp4', thumb: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop', label: 'Golden Majesty', author: 'AI_Studio', likes: 12540 },
+    { id: 202, type: 'video', url: '/videos/wan22_2026-01-22T16_45_50 NSFW_00001.mp4', thumb: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=2787&auto=format&fit=crop', label: 'Winter Goddess', author: 'AI_Studio', likes: 21450 },
+    { id: 203, type: 'video', url: '/videos/wan22_2026-01-20T16_41_35 FALSE_00001.mp4', thumb: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=2787&auto=format&fit=crop', label: 'Maldives Diva', author: 'AI_Studio', likes: 8900 },
+    { id: 204, type: 'video', url: '/videos/infinity_video_1769098912544.mp4', thumb: 'https://images.unsplash.com/photo-1583243552698-25029a1396eb?q=80&w=2400&auto=format&fit=crop', label: 'Poolside Dream', author: 'AI_Studio', likes: 15400 },
+    { id: 205, type: 'video', url: '/videos/infinity_video_1769091280526.mp4', thumb: 'https://images.unsplash.com/photo-1563620915-8478239e9aab?q=80&w=2670&auto=format&fit=crop', label: 'Ethereal Motion', author: 'AI_Studio', likes: 8900 },
 ];
 
 export interface GalleryItem {
-    id: number;
+    id: number | string;
     type: string;
-    url: string;
+    url?: string;
+    result_url?: string;
+    video_url?: string;
     thumb: string;
     label: string;
     privacy?: string;
@@ -32,14 +33,211 @@ interface UserGalleryProps {
     newItems?: GalleryItem[];
     columns?: number;
     onDelete?: (id: number | string) => void;
+    onSelect?: (item: GalleryItem) => void;
 }
 
-const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete }) => {
+// -----------------------------------------------------------------------------------------
+// Helper Sub-Component: Handles video state & Premium Apple-Glass Aesthetics
+// -----------------------------------------------------------------------------------------
+const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; isActive: boolean; onDelete?: (id: string | number) => void; onSelect?: (item: any) => void }) => {
+    const videoRef = React.useRef<HTMLVideoElement>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [progress, setProgress] = useState(0);
+
+    const mediaUrl = item.result_url || item.video_url || item.url;
+    const isVideoFile = mediaUrl?.toLowerCase().endsWith('.mp4') || item.type === 'video';
+
+    // Reset state when switching items
+    useEffect(() => {
+        if (!isActive) {
+            setIsPlaying(false);
+            setProgress(0);
+            if (videoRef.current) {
+                videoRef.current.pause();
+                videoRef.current.currentTime = 0;
+            }
+        } else {
+            // Auto-play active slide
+            if (videoRef.current && isVideoFile) {
+                const promise = videoRef.current.play();
+                if (promise !== undefined) {
+                    promise.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+                }
+            }
+        }
+    }, [isActive, item, isVideoFile]);
+
+    const handleTimeUpdate = () => {
+        if (videoRef.current && videoRef.current.duration) {
+            setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100);
+        }
+    };
+
+    const togglePlay = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!videoRef.current) return;
+        if (isPlaying) {
+            videoRef.current.pause();
+            setIsPlaying(false);
+        } else {
+            videoRef.current.play();
+            setIsPlaying(true);
+        }
+    };
+
+    const handleSeek = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!videoRef.current || !videoRef.current.duration) return;
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const width = rect.width;
+        const newTime = (x / width) * videoRef.current.duration;
+        videoRef.current.currentTime = newTime;
+        setProgress((x / width) * 100);
+    };
+
+    // const isVideo = item.type === 'video' || item.url?.includes('.mp4') || item.url?.includes('video');
+    // Replaced by isVideoFile defined above
+
+    return (
+        <div className="relative min-w-full h-full flex flex-col">
+            {/* Background Blur Fill */}
+            <div className="absolute inset-0 bg-black overflow-hidden pointer-events-none">
+                {item.thumb !== '/placeholder-luxury.png' ? (
+                    <img src={item.thumb} alt={item.label} className="w-full h-full object-cover opacity-60 blur-3xl scale-150 saturate-150" />
+                ) : (
+                    <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1a1a1a] via-[#0a0a0a] to-[#000000] opacity-50"></div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20"></div>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="relative flex-1 flex items-center justify-center p-1 overflow-hidden aspect-[2/3]">
+                <div
+                    className="relative w-full h-full bg-[#080808] border border-[#d2ac47]/20 rounded-xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.8)] group/item flex items-center justify-center"
+                    onClick={togglePlay}
+                >
+                    {isVideoFile ? (
+                        <video
+                            ref={videoRef}
+                            src={mediaUrl}
+                            poster={item.thumb !== '/placeholder-luxury.png' ? item.thumb : undefined}
+                            className="w-full h-full object-cover bg-black shadow-inner pointer-events-none"
+                            muted
+                            loop
+                            playsInline
+                            onTimeUpdate={handleTimeUpdate}
+                            onPlay={() => setIsPlaying(true)}
+                            onPause={() => setIsPlaying(false)}
+                        />
+                    ) : (
+                        <img
+                            src={mediaUrl || item.thumb}
+                            alt={item.label}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+                        />
+                    )}
+
+                    {/* Interactive Overlay */}
+                    <div className="absolute inset-0 z-20 pointer-events-none opacity-0 group-hover/item:opacity-100 transition-all duration-500">
+                        {/* Top Icons - Apple Glassmorphism + Soft Glow + Golden Border */}
+                        <div className="absolute top-3 left-3 flex gap-2 pointer-events-auto">
+                            <button className="group/btn relative p-2.5 bg-black/30 backdrop-blur-xl border border-[#d2ac47]/30 rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] hover:border-red-500/50">
+                                <Heart size={18} className="text-[#d2ac47]/60 group-hover/btn:text-red-500 transition-colors" />
+                            </button>
+                            <button className="group/btn relative p-2.5 bg-black/30 backdrop-blur-xl border border-[#d2ac47]/30 rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg hover:shadow-[0_0_20px_rgba(96,165,250,0.4)] hover:border-blue-400/50">
+                                <Share2 size={18} className="text-[#d2ac47]/60 group-hover/btn:text-blue-400 transition-colors" />
+                            </button>
+                        </div>
+
+                        {/* Bottom Control Bar - Unified Premium Position (Now Higher) */}
+                        <div
+                            className="absolute bottom-16 left-4 right-4 h-12 bg-black/40 backdrop-blur-2xl border border-[#d2ac47]/10 rounded-2xl overflow-hidden flex items-center px-4 gap-3 group-hover/item:border-[#d2ac47]/30 transition-all pointer-events-auto shadow-2xl animate-in fade-in duration-1000"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* Play Button */}
+                            <button
+                                className="w-8 h-8 shrink-0 rounded-full bg-[#d2ac47]/10 flex items-center justify-center hover:bg-[#d2ac47] group/play transition-colors"
+                                onClick={togglePlay}
+                            >
+                                {isPlaying ? (
+                                    <div className="w-2.5 h-2.5 bg-[#d2ac47] group-hover/play:bg-black rounded-sm shadow-[0_0_10px_rgba(210,172,71,0.5)]" />
+                                ) : (
+                                    <Play size={12} className="text-[#d2ac47] fill-[#d2ac47] group-hover/play:text-black group-hover/play:fill-black shadow-[0_0_10px_rgba(210,172,71,0.5)]" />
+                                )}
+                            </button>
+
+                            {/* Scrubber - Golden Glow */}
+                            <div className="flex-1 h-full flex items-center justify-center cursor-pointer group/scrub" onClick={handleSeek}>
+                                <div className="w-full h-1.5 bg-white/10 rounded-full relative overflow-visible">
+                                    <div
+                                        className="absolute inset-y-0 left-0 bg-gold-gradient rounded-full shadow-[0_0_15px_rgba(210,172,71,0.6)] transition-all duration-100 ease-linear"
+                                        style={{ width: `${progress}%` }}
+                                    ></div>
+                                    <div
+                                        className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover/scrub:opacity-100 transition-opacity shadow-[0_0_10px_white]"
+                                        style={{ left: `${progress}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+
+                            {/* Meta Info */}
+                            <div className="flex items-center gap-2 text-[8px] text-[#d2ac47]/60 font-mono uppercase tracking-tighter shrink-0 pointer-events-auto">
+                                <Maximize2 size={12} className="opacity-50 hover:text-white cursor-pointer transition-colors" />
+                            </div>
+                        </div>
+
+                        {/* Delete Button - Glass + Red Glow */}
+                        {onDelete && item.id !== 'p1' && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (window.confirm('Delete this item?')) onDelete(item.id);
+                                }}
+                                className="absolute top-3 right-3 p-2.5 bg-red-950/40 backdrop-blur-xl text-red-200/60 rounded-full hover:bg-red-600 hover:text-white transition-all border border-red-500/10 shadow-lg hover:shadow-[0_0_20px_rgba(220,38,38,0.5)] pointer-events-auto opacity-0 group-hover/item:opacity-100"
+                                title="Delete"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Footer Info */}
+            <div className="relative px-4 pb-4 pt-1 text-center shrink-0">
+                <p className="text-[#F9F1D8] text-[11px] font-serif italic mb-0.5 truncate">{item.label}</p>
+                <div className="flex items-center justify-center gap-2 text-[7px] uppercase tracking-widest text-[#d2ac47]/40 font-bold">
+                    <span>{item.date || 'Just now'}</span>
+                    <div className="w-1 h-1 rounded-full bg-[#d2ac47]/10"></div>
+                    {item.privacy === 'public' ? <Globe size={8} /> : <Lock size={8} />}
+                    <div className="w-1 h-1 rounded-full bg-[#d2ac47]/10"></div>
+                    <button
+                        className="hover:text-[#d2ac47] transition-colors uppercase"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (onSelect) onSelect(item);
+                        }}
+                    >
+                        Details
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSelect }) => {
     const [activeTab, setActiveTab] = useState<'my' | 'community'>('my');
     const [currentIndex, setCurrentIndex] = useState(0);
 
+    // Mobile Swipe Logic
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
+    const minSwipeDistance = 50;
+
     const rawItems = activeTab === 'my'
-        ? (newItems.length > 0 ? newItems : PLACEHOLDERS)
+        ? [...(newItems || []), ...PLACEHOLDERS]
         : COMMUNITY_FEED;
 
     // Normalize items to handle Supabase schema
@@ -56,6 +254,29 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete }) =>
 
     const prevSlide = () => {
         setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
+    };
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const handleTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe) {
+            nextSlide();
+        }
+        if (isRightSwipe) {
+            prevSlide();
+        }
     };
 
     return (
@@ -85,7 +306,12 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete }) =>
             </div>
 
             {/* Gallery Window */}
-            <div className="relative flex-1 overflow-hidden group-hover:border-[#d2ac47]/40 transition-colors">
+            <div
+                className="relative flex-1 overflow-hidden group-hover:border-[#d2ac47]/40 transition-colors touch-pan-y"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+            >
 
                 {/* Carousel Track */}
                 <div
@@ -93,77 +319,18 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete }) =>
                     style={{ transform: `translateX(-${currentIndex * 100}%)` }}
                 >
                     {items.map((item, idx) => (
-                        <div
+                        <VideoGalleryItem
                             key={item.id || idx}
-                            className="relative min-w-full h-full flex flex-col"
-                        >
-                            {/* Backdrop Image */}
-                            <div className="absolute inset-0 bg-black">
-                                {item.thumb !== '/placeholder-luxury.png' ? (
-                                    <img src={item.thumb} alt={item.label} className="w-full h-full object-cover opacity-30 blur-sm scale-110" />
-                                ) : (
-                                    <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1a1a1a] via-[#0a0a0a] to-[#000000] opacity-50"></div>
-                                )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent"></div>
-                            </div>
-
-                            {/* Main Display (Center) */}
-                            <div className="relative flex-1 flex items-center justify-center p-4">
-                                <div className="relative aspect-video w-full max-w-[90%] bg-[#080808] border border-[#d2ac47]/20 rounded-xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.8)] group/item">
-                                    {/* Smart Thumbnail: Use Video if available, else Image */}
-                                    {(item.type === 'video' || item.url?.includes('.mp4') || item.url?.includes('video')) ? (
-                                        <video
-                                            src={item.url}
-                                            poster={item.thumb !== '/placeholder-luxury.png' ? item.thumb : undefined}
-                                            className="w-full h-full object-contain bg-black shadow-inner"
-                                            controls
-                                            muted
-                                            loop
-                                            playsInline
-                                        />
-                                    ) : (
-                                        <img src={item.thumb} alt={item.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
-                                    )}
-
-                                    {/* Play Overlay */}
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity gap-3 pointer-events-none">
-
-                                        {/* Delete Button (Only for 'my' tab) */}
-                                        {activeTab === 'my' && onDelete && item.id !== 'p1' && !String(item.id).startsWith('p') && (
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (window.confirm('Delete this item?')) {
-                                                        onDelete(item.id);
-                                                    }
-                                                }}
-                                                className="absolute top-2 right-2 p-1.5 bg-red-950/80 text-red-200 rounded-lg hover:bg-red-600 hover:text-white transition-colors border border-red-500/30 shadow-lg pointer-events-auto"
-                                                title="Delete"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Info Section (Bottom) */}
-                            <div className="relative px-5 pb-5 pt-2 text-center">
-                                <p className="text-[#F9F1D8] text-sm font-serif italic mb-1 truncate">{item.label}</p>
-                                <div className="flex items-center justify-center gap-3 text-[8px] uppercase tracking-widest text-[#d2ac47]/50 font-bold">
-                                    <span>{item.date || 'Just now'}</span>
-                                    <div className="w-1 h-1 rounded-full bg-[#d2ac47]/20"></div>
-                                    {item.privacy === 'public' ? <Globe size={10} /> : <Lock size={10} />}
-                                    <div className="w-1 h-1 rounded-full bg-[#d2ac47]/20"></div>
-                                    <button className="hover:text-[#d2ac47] transition-colors uppercase">Details</button>
-                                </div>
-                            </div>
-                        </div>
+                            item={item}
+                            isActive={idx === currentIndex}
+                            onDelete={onDelete}
+                            onSelect={onSelect}
+                        />
                     ))}
                 </div>
 
-                {/* Counter Tag */}
-                <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md border border-[#d2ac47]/20 px-3 py-1 rounded-full z-30">
+                {/* Counter Tag - Unified Premium Position (Now Lower) */}
+                <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md border border-[#d2ac47]/20 px-3 py-1 rounded-full z-30 shadow-lg">
                     <span className="text-[#d2ac47] text-[8px] font-bold tracking-widest">{currentIndex + 1} / {items.length}</span>
                 </div>
             </div>
