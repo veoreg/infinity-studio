@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Camera, Download, RefreshCw, User, Sparkles, XCircle, ShieldCheck } from "lucide-react";
+import { Camera, Download, RefreshCw, User, Sparkles, XCircle } from "lucide-react";
 import GamificationDashboard from './GamificationDashboard';
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
 
 // Webhook URL - Direct n8n endpoint for Avatar Generation
-const WEBHOOK_URL = "https://n8n.develotex.io:443/webhook-test/Flux_Image_Generator_Advanced_Upscl_3+SB";
+const WEBHOOK_URL = "/api/avatar";
 
 interface CustomSelectProps {
     label: string;
@@ -83,13 +83,15 @@ const AvatarLogger = ({ status, error }: { status: string; error: string | null 
         }
 
         const steps = [
-            { msg: "Scanner: Mapping facial structure...", delay: 2000 },
-            { msg: "Identity: Preserving unique features...", delay: 6000 },
-            { msg: "Composition: Aligning pose and body...", delay: 12000 },
-            { msg: "Detailing: Generating realistic skin...", delay: 18000 },
-            { msg: "Lighting: Ray-tracing illumination...", delay: 32000 },
-            { msg: "Polishing: Blending visual elements...", delay: 42000 },
-            { msg: "Studio: Developing final photograph...", delay: 48000 }
+            { msg: "Scanner: Initializing biometric handshake...", delay: 800 },
+            { msg: "Scanner: Mapping facial topography...", delay: 3000 },
+            { msg: "Identity: Extracting structural dna...", delay: 7000 },
+            { msg: "Composition: Rigging anatomical skeletal structure...", delay: 12000 },
+            { msg: "Engine: Seeding neural latent space...", delay: 18000 },
+            { msg: "Detailing: Generating hyper-realistic skin textures...", delay: 28000 },
+            { msg: "Lighting: Simulating cinematic ray-tracing...", delay: 38000 },
+            { msg: "Optics: Applying vintage lens aberrations...", delay: 48000 },
+            { msg: "Studio: Developing final masterpiece...", delay: 55000 }
         ];
 
         let timeouts: any[] = [];
@@ -107,10 +109,10 @@ const AvatarLogger = ({ status, error }: { status: string; error: string | null 
     }, [status]);
 
     return (
-        <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-4 animate-fade-in drop-shadow-[0_4px_4px_rgba(0,0,0,0.9)]">
-            <RefreshCw className={`w-12 h-12 text-[#d2ac47] ${status !== 'failed' ? 'animate-spin' : ''}`} />
-            <div className={`font-mono ${error ? 'text-red-500' : 'text-[#d2ac47]'} text-xs uppercase tracking-widest font-bold`}>
-                {error ? `[ERROR] ${error}` : `> ${log}`}
+        <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-8 text-center space-y-6 z-50">
+            <RefreshCw className={`w-14 h-14 text-[#d2ac47] ${status !== 'failed' ? 'animate-spin' : ''} drop-shadow-[0_0_15px_rgba(210,172,71,0.5)]`} />
+            <div className={`font-mono ${error ? 'text-red-500' : 'text-[#d2ac47]'} text-xs uppercase tracking-[0.3em] font-bold`}>
+                {error ? `[FATAL ERROR] ${error}` : `> ${log}`}
             </div>
             {/* Progress Bar Simulation */}
             {!error && (
@@ -185,12 +187,28 @@ const AvatarGenerator: React.FC = () => {
     const controllerRef = React.useRef<AbortController | null>(null);
     const pollingInterval = React.useRef<any>(null);
     const realtimeChannel = React.useRef<any>(null);
+    const lastTrackingId = React.useRef<string | null>(null);
 
     // Initial fetch
     useEffect(() => {
         fetchHistory();
         return () => cleanupMonitoring();
     }, []);
+
+    // Fail-safe: If the item appears in the gallery (history), resolve loading
+    useEffect(() => {
+        if (loading && lastTrackingId.current) {
+            const found = galleryItems.find(item => item.id === lastTrackingId.current);
+            const foundUrl = found?.result_url || found?.image_url || found?.url;
+            if (found && foundUrl) {
+                console.log("🛡️ [FAIL-SAFE] Found matching item in gallery. Resolving loading.");
+                setGeneratedImage(foundUrl);
+                setActiveItem(found);
+                cleanupMonitoring();
+                setLoading(false);
+            }
+        }
+    }, [galleryItems, loading]);
 
     const fetchHistory = async () => {
         try {
@@ -225,6 +243,7 @@ const AvatarGenerator: React.FC = () => {
         cleanupMonitoring();
         setLoading(true);
         setCurrentStatus('processing');
+        lastTrackingId.current = generationId;
 
         // 1. Polling Fallback (Every 10 seconds)
         pollingInterval.current = setInterval(() => checkStatus(generationId), 10000);
@@ -242,21 +261,24 @@ const AvatarGenerator: React.FC = () => {
                 },
                 (payload) => {
                     const newRecord = payload.new as any;
-                    console.log("🔔 [REALTIME] Update received:", newRecord.status);
+                    console.log("🔔 [REALTIME] Update received for ID:", generationId, "Status:", newRecord.status);
 
                     if (newRecord.status) {
                         setCurrentStatus(newRecord.status);
                     }
 
-                    const finalUrl = newRecord.result_url || newRecord.video_url || newRecord.image_url;
-                    if ((newRecord.status === 'completed' || newRecord.status === 'success' || newRecord.status === 'Success') && finalUrl) {
-                        console.log("🎯 [REALTIME] Found final URL:", finalUrl);
+                    const finalUrl = newRecord.result_url || newRecord.image_url || newRecord.url || (newRecord.metadata?.result_url);
+                    const isFinished = newRecord.status === 'completed' || newRecord.status === 'success' || newRecord.status === 'Success';
+
+                    if (isFinished && finalUrl) {
+                        console.log("🎯 [REALTIME] SUCCESS! Resolving with URL:", finalUrl);
                         setGeneratedImage(finalUrl);
                         setActiveItem(newRecord);
                         cleanupMonitoring();
                         setLoading(false);
                         fetchHistory();
                     } else if (newRecord.status === 'failed' || newRecord.status === 'error') {
+                        console.error("❌ [REALTIME] Generation reported failure:", newRecord.error_message);
                         setError(newRecord.error_message || "Generation failed on server.");
                         cleanupMonitoring();
                         setLoading(false);
@@ -280,18 +302,22 @@ const AvatarGenerator: React.FC = () => {
             if (dbError) throw dbError;
 
             if (data) {
+                console.log("📋 [POLLING] FULL DATA:", JSON.stringify(data, null, 2));
+                console.log("📋 [POLLING] Status:", data.status, "| result_url:", data.result_url, "| image_url:", data.image_url);
                 if (data.status) setCurrentStatus(data.status);
 
-                const finalUrl = (data as any).result_url || data.video_url || data.image_url;
+                const finalUrl = (data as any).result_url || data.image_url || data.url || (data.metadata?.result_url);
                 const isFinished = data.status === 'completed' || data.status === 'success' || data.status === 'Success';
 
                 if (isFinished && finalUrl) {
+                    console.log("🚀 [POLLING] SUCCESS! Final URL found:", finalUrl);
                     setGeneratedImage(finalUrl);
                     setActiveItem(data);
                     cleanupMonitoring();
                     setLoading(false);
                     fetchHistory();
                 } else if (data.status === 'failed' || data.status === 'error') {
+                    console.error("❌ [POLLING] FAILURE:", data.error_message);
                     setError(data.error_message || "Generation failed.");
                     cleanupMonitoring();
                     setLoading(false);
@@ -401,15 +427,31 @@ const AvatarGenerator: React.FC = () => {
             // Create new AbortController
             controllerRef.current = new AbortController();
 
-            // Send to webhook (don't wait for blob anymore)
-            await axios.post(WEBHOOK_URL, payload, {
-                headers: { 'Content-Type': 'application/json' },
-                timeout: 30000,
-                signal: controllerRef.current.signal
-            });
-
-            // Start monitoring for completion
+            // Start monitoring for completion via Supabase BEFORE sending the request
+            // This ensures that even if the POST times out, we are already listening for the update.
             startMonitoring(generationId);
+
+            // Send to webhook
+            try {
+                await axios.post(WEBHOOK_URL, payload, {
+                    headers: { 'Content-Type': 'application/json' },
+                    timeout: 60000, // Increase timeout to 60s
+                    signal: controllerRef.current.signal
+                });
+            } catch (postErr: any) {
+                // If it's a timeout, we ignore it because monitoring is already running.
+                // The backend (n8n) will continue processing and update Supabase.
+                if (postErr.code === 'ECONNABORTED' || postErr.message?.includes('timeout')) {
+                    console.log("⏱️ POST timed out, but monitoring is active. Waiting for Supabase update...");
+                    return; // Stay in loading state, monitoring will handle resolution
+                } else if (axios.isCancel(postErr) || postErr.name === 'CanceledError') {
+                    throw postErr; // Re-throw to be handled by the outer catch
+                } else {
+                    console.warn("⚠️ Webhook response error, but monitoring continues. If status doesn't change, check backend.", postErr);
+                    // We don't throw here to allow monitoring to catch potential success even if webhook response had issues
+                    return;
+                }
+            }
 
         } catch (err: any) {
             // Check if the request was canceled by the user
@@ -434,7 +476,6 @@ const AvatarGenerator: React.FC = () => {
             }
 
             setError(errMsg);
-        } finally {
             setLoading(false);
         }
     };
@@ -444,21 +485,41 @@ const AvatarGenerator: React.FC = () => {
 
 
             {/* Header */}
-            <div className="text-center mb-12 relative z-10">
+            <div className="text-center mb-12 relative z-10 transition-all duration-1000">
                 <div className="inline-flex items-center gap-4 mb-4">
-                    <div className="h-[1px] w-12 bg-[#d2ac47]"></div>
-                    <span className="text-[#d2ac47] text-[10px] font-bold tracking-[0.4em] uppercase">Identity Forge</span>
-                    <div className="h-[1px] w-12 bg-[#d2ac47]"></div>
+                    <div className="h-[1px] w-24 bg-gradient-to-r from-transparent to-[#d2ac47]"></div>
+                    <span className="text-[#d2ac47] text-[10px] font-bold tracking-[0.4em] uppercase animate-pulse">Identity Forge</span>
+                    <div className="h-[1px] w-24 bg-gradient-to-l from-transparent to-[#d2ac47]"></div>
                 </div>
-                <h2 className="text-4xl md:text-6xl font-serif text-[#F9F1D8] mb-4 drop-shadow-[0_0_15px_rgba(210,172,71,0.2)]">
+                <h2 className="text-4xl md:text-7xl font-serif text-[#F9F1D8] mb-4 drop-shadow-[0_0_25px_rgba(210,172,71,0.3)] tracking-tight">
                     Create Your <span className="text-gold-luxury italic">Avatar</span>
                 </h2>
+                <p className="text-[#d2ac47]/60 text-xs uppercase tracking-[0.3em] font-light max-w-lg mx-auto">
+                    The ultimate forge for high-fidelity personal identities and artistic portraits.
+                </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Switched to Flexbox for Mobile Stability, Grid for Desktop - Match Video/Premium Style */}
+            <div className="flex flex-col xl:grid xl:grid-cols-12 gap-8 items-stretch">
 
-                {/* LEFT COLUMN: Controls */}
-                <div className="lg:col-span-8 space-y-8 relative z-10">
+                {/* Left Banner - Restored High-Res & Art Deco Corners to match Video Generator exactly */}
+                <div className="hidden xl:block xl:col-span-3">
+                    <div className="h-full w-full relative overflow-hidden group border border-[#d2ac47]/20 rounded-3xl shadow-2xl transition-all hover:border-[#d2ac47]/40">
+                        <div className="absolute inset-0 bg-[#080808]/20 z-10 mix-blend-overlay"></div>
+                        {/* Art Deco Corners - Matched to Video Gen */}
+                        <div className="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-[#d2ac47]/50 rounded-tl-xl z-30"></div>
+                        <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-[#d2ac47]/50 rounded-tr-xl z-30"></div>
+
+                        <img
+                            src="/banner_sitting_brunette_high_res.png"
+                            alt="Identity Mirror"
+                            className="w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-[4000ms] ease-out"
+                        />
+                    </div>
+                </div>
+
+                {/* Center COLUMN: Forge / Inputs (Increased Width) */}
+                <div className="w-full xl:col-span-6 space-y-6 relative z-10">
 
                     {/* 1. Identity Matrix - Art Deco Panel */}
                     <div className="bg-[#121212] border border-[#d2ac47]/20 rounded-3xl p-8 relative shadow-2xl group transition-all hover:border-[#d2ac47]/40">
@@ -573,26 +634,29 @@ const AvatarGenerator: React.FC = () => {
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                             {/* 1. Main Face Input */}
-                            <div className="border rounded-2xl p-6 border-[#d2ac47] bg-[#0a0a0a] flex flex-col group overflow-hidden hover:border-[#d2ac47]/60 h-full">
-                                <div className="flex items-center gap-3 mb-4">
+                            <div className="border rounded-2xl p-6 border-[#d2ac47] bg-[#0a0a0a] flex flex-col group overflow-hidden hover:border-[#d2ac47]/60 h-[480px]">
+                                <div className="flex items-center gap-3 mb-4 h-8 shrink-0">
                                     <div className="w-8 h-8 border border-[#d2ac47] rounded-full flex items-center justify-center bg-[#d2ac47]/10 text-[#d2ac47]">
                                         <User size={16} />
                                     </div>
                                     <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#d2ac47]">
-                                        Face Reference (Required)
+                                        Face Reference
                                     </span>
                                 </div>
                                 {/* Drag & Drop Zone */}
-                                <div className="w-full h-64 relative overflow-hidden rounded-xl mb-3">
+                                <div className="flex-1 relative overflow-hidden rounded-xl mb-3 bg-black/40">
                                     <ImageUploadZone
-                                        onImageUpload={({ url }) => setFaceImageUrl(url)}
+                                        onImageUpload={({ url }) => {
+                                            setFaceImageUrl(url);
+                                            setError(null);
+                                        }}
                                         currentUrl={faceImageUrl}
-                                        placeholder="Upload Face Photo"
+                                        placeholder="Face Photo"
                                         className="h-full w-full"
                                     />
                                 </div>
-                                {/* Likeness Slider */}
-                                <div className="pb-10">
+                                {/* Likeness Slider - Moved into a Fixed Height Container */}
+                                <div className="h-16 shrink-0 flex flex-col justify-end">
                                     <div className="flex justify-between text-[#d2ac47] text-[9px] font-bold tracking-[0.2em] uppercase mb-1">
                                         <span>Likeness Strength</span>
                                         <span>{instantIdWeight}</span>
@@ -603,28 +667,33 @@ const AvatarGenerator: React.FC = () => {
                             </div>
 
                             {/* 2. Body Reference Toggle */}
-                            <div className={`border rounded-2xl p-6 group/body flex flex-col h-full ${error?.includes('Body') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : grabBody ? 'border-solid border-red-500/50 bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5'} `}>
+                            <div className={`border rounded-2xl p-6 group/body flex flex-col h-[480px] transition-all duration-500 ${error?.includes('Body') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : (grabBody && !bodyRefUrl) ? 'border-solid border-red-500/50 bg-red-950/5' : grabBody ? 'border-solid border-[#d2ac47]/50 bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5'} `}>
 
-                                {/* Header Area: Fixed Height to prevent layout shift */}
-                                <div className="h-10 mb-4 flex items-center gap-3">
+                                {/* Header Area: Fixed Height */}
+                                <div className="h-8 mb-4 flex items-center gap-3 shrink-0">
                                     {grabBody ? (
                                         <>
-                                            <div className={`w-8 h-8 border border-red-500 rounded-full flex items-center justify-center bg-red-950/20 text-red-500 cursor-pointer`} onClick={() => setGrabBody(false)}>
-                                                <XCircle size={16} />
+                                            <div
+                                                className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 transform hover:rotate-90 bg-red-500/10 text-red-500 border border-red-500/50 hover:bg-red-500/20 hover:border-red-500"
+                                                onClick={() => setGrabBody(false)}
+                                                title="Close Slot"
+                                            >
+                                                <XCircle size={16} strokeWidth={2} />
                                             </div>
-                                            <div className="flex flex-col justify-center">
-                                                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-red-500 leading-none mb-1">Body Reference</span>
-                                                <span className="text-[8px] text-red-500/80 uppercase tracking-wider leading-none">(Close if unused)</span>
+                                            <div className="flex flex-col justify-center leading-none">
+                                                <span className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-0.5 ${!bodyRefUrl ? 'text-red-500' : 'text-[#d2ac47]'}`}>Body Reference</span>
+                                                <span className={`text-[8px] uppercase tracking-wider ${!bodyRefUrl ? 'text-red-500/40' : 'text-[#d2ac47]/40'}`}>(CLOSE IF UNUSED)</span>
                                             </div>
                                         </>
                                     ) : (
-                                        /* Placeholder to maintain height */
-                                        <div className="w-full h-full"></div>
+                                        <div className="w-full text-center">
+                                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#d2ac47]/40">BODY REFERENCE</span>
+                                        </div>
                                     )}
                                 </div>
 
-                                {/* Main Interaction Area: Aspect Square */}
-                                <div className="w-full aspect-square relative rounded-xl overflow-hidden mb-3">
+                                {/* Main Interaction Area */}
+                                <div className="flex-1 relative rounded-xl overflow-hidden mb-3 bg-black/20">
                                     {grabBody ? (
                                         <div className="animate-fade-in w-full h-full">
                                             <ImageUploadZone
@@ -633,39 +702,32 @@ const AvatarGenerator: React.FC = () => {
                                                     setError(null);
                                                 }}
                                                 currentUrl={bodyRefUrl}
-                                                placeholder="Upload Body Ref"
+                                                placeholder="Body Reference Image"
                                                 className="h-full w-full"
                                             />
                                         </div>
                                     ) : (
-                                        <div className="w-full h-full flex flex-col items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-105" onClick={() => setGrabBody(true)}>
-                                            <button
-                                                className={`rounded-full flex items-center justify-center transition-all duration-500 w-20 h-20 border border-[#d2ac47]/40 text-[#d2ac47]/40 mb-4 hover:border-[#d2ac47] hover:text-[#d2ac47] hover:shadow-[0_0_20px_rgba(210,172,71,0.2)]`}>
-                                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                                    {/* Left Side Body Curve (Widened) */}
+                                        <div className="w-full h-full flex flex-col items-center justify-center cursor-pointer transition-all duration-500 hover:bg-[#d2ac47]/5" onClick={() => setGrabBody(true)}>
+                                            <div className="w-16 h-16 rounded-full border border-[#d2ac47]/20 text-[#d2ac47]/30 flex items-center justify-center mb-3 group-hover/body:border-[#d2ac47]/60 group-hover/body:text-[#d2ac47] transition-all">
+                                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                                                     <path d="M7 5 C7 8 9 11 10.5 12 C12 13 8 18 7 19" />
-                                                    {/* Right Side Body Curve (Widened & Mirrored) */}
                                                     <path d="M17 5 C17 8 15 11 13.5 12 C12 13 16 18 17 19" />
                                                 </svg>
-                                            </button>
-                                            <div className="flex flex-col text-center">
-                                                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#d2ac47]/60">
-                                                    Body Reference
-                                                </span>
                                             </div>
+                                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#d2ac47]/40 text-center px-4">Click to Upload Body Reference</span>
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Linker / Separator - Transparent */}
-                                <div className="flex items-center gap-3 py-2 my-2 opacity-80 hover:opacity-100 transition-opacity">
-                                    <div className="h-[1px] flex-1 bg-[#d2ac47]/20"></div>
-                                    <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em] shrink-0">OR</span>
-                                    <div className="h-[1px] flex-1 bg-[#d2ac47]/20"></div>
+                                {/* OR Block */}
+                                <div className="flex items-center gap-3 h-6 shrink-0 opacity-60">
+                                    <div className="h-[1px] flex-1 bg-[#d2ac47]/30"></div>
+                                    <span className="text-[#d2ac47] text-[8px] font-bold tracking-[0.2em]">OR</span>
+                                    <div className="h-[1px] flex-1 bg-[#d2ac47]/30"></div>
                                 </div>
 
-                                {/* Dropdown Controls */}
-                                <div>
+                                {/* Dropdown Controls - Fixed Height */}
+                                <div className="h-16 flex flex-col justify-end shrink-0">
                                     <CustomSelect
                                         label="Body Structure"
                                         value={bodyType}
@@ -688,56 +750,62 @@ const AvatarGenerator: React.FC = () => {
                             </div>
 
                             {/* 3. Composition Reference Toggle */}
-                            <div className={`border rounded-2xl p-6 group/comp flex flex-col h-full ${error?.includes('Background') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : (grabComposition && !compositionUrl) ? 'border-solid border-red-500/50 bg-[#0a0a0a]' : grabComposition ? 'border-solid border-[#d2ac47]/50 bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5'} `}>
+                            <div className={`border rounded-2xl p-6 group/comp flex flex-col h-[480px] transition-all duration-500 ${error?.includes('Background') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : (grabComposition && !compositionUrl) ? 'border-solid border-red-500/50 bg-[#0a0a0a]' : grabComposition ? 'border-solid border-[#d2ac47]/50 bg-[#0a0a0a]' : 'border-dashed border-[#d2ac47]/30 bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5'} `}>
 
                                 {/* Structural Alignment: Header Spacer or Real Header */}
-                                {grabComposition ? (
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <div className={`w-8 h-8 border border-red-500 rounded-full flex items-center justify-center bg-red-950/20 text-red-500 cursor-pointer`} onClick={() => setGrabComposition(false)}>
-                                            <XCircle size={16} />
+                                <div className="h-8 mb-4 flex items-center gap-3 shrink-0">
+                                    {grabComposition ? (
+                                        <>
+                                            <div
+                                                className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 transform hover:rotate-90 bg-red-500/10 text-red-500 border border-red-500/50 hover:bg-red-500/20 hover:border-red-500"
+                                                onClick={() => setGrabComposition(false)}
+                                                title="Close Slot"
+                                            >
+                                                <XCircle size={16} strokeWidth={2} />
+                                            </div>
+                                            <div className="flex flex-col leading-none">
+                                                <span className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-0.5 ${!compositionUrl ? 'text-red-500' : 'text-[#d2ac47]'}`}>Background Reference</span>
+                                                <span className={`text-[8px] uppercase tracking-wider ${!compositionUrl ? 'text-red-500/40' : 'text-[#d2ac47]/40'}`}>(CLOSE IF UNUSED)</span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="w-full text-center">
+                                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#d2ac47]/40">BACKGROUND REFERENCE</span>
                                         </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-red-500">Background Ref</span>
-                                            <span className="text-[8px] text-red-500/80 uppercase tracking-wider">(Close if unused)</span>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="h-8 mb-4"></div> /* Spacer */
-                                )}
+                                    )}
+                                </div>
 
-                                {grabComposition ? (
-                                    <div className="animate-fade-in w-full h-64 relative overflow-hidden rounded-xl mb-3">
-                                        <ImageUploadZone
-                                            onImageUpload={({ url }) => setCompositionUrl(url)}
-                                            currentUrl={compositionUrl}
-                                            placeholder="Upload Background"
-                                            className="h-full w-full"
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="w-full h-64 flex flex-col items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-105" onClick={() => setGrabComposition(true)}>
-                                        <button
-                                            className={`rounded-full flex items-center justify-center transition-all duration-500 w-20 h-20 border border-[#d2ac47]/40 text-[#d2ac47]/40 mb-4 hover:border-[#d2ac47] hover:text-[#d2ac47] hover:shadow-[0_0_20px_rgba(210,172,71,0.2)]`}>
-                                            {/* Backdrop / Background Icon (Custom SVG) */}
-                                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                                {/* Frame / Wall */}
-                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                                                {/* Cyclorama Curve / Landscape hint */}
-                                                <path d="M3 15C3 15 8 13 11 15C14 17 18 14 21 16" />
-                                                {/* Small Sun/Focus */}
-                                                <circle cx="8.5" cy="8.5" r="1.5" />
-                                            </svg>
-                                        </button>
-                                        <div className="flex flex-col text-center">
-                                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#d2ac47]/60">
-                                                Background Ref
-                                            </span>
+                                <div className="flex-1 relative overflow-hidden rounded-xl mb-3 bg-black/20 focus-within:ring-1 ring-[#d2ac47]/30">
+                                    {grabComposition ? (
+                                        <div className="animate-fade-in w-full h-full">
+                                            <ImageUploadZone
+                                                onImageUpload={({ url }) => {
+                                                    setCompositionUrl(url);
+                                                    setError(null);
+                                                }}
+                                                currentUrl={compositionUrl}
+                                                placeholder="Background Reference Image"
+                                                className="h-full w-full"
+                                            />
                                         </div>
-                                    </div>
-                                )}
+                                    ) : (
+                                        <div className="w-full h-full flex flex-col items-center justify-center cursor-pointer transition-all duration-500 hover:bg-[#d2ac47]/5" onClick={() => setGrabComposition(true)}>
+                                            <div className="w-16 h-16 rounded-full border border-[#d2ac47]/20 text-[#d2ac47]/30 flex items-center justify-center mb-3 group-hover/comp:border-[#d2ac47]/60 group-hover/comp:text-[#d2ac47] transition-all">
+                                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                                    <path d="M3 15C3 15 8 13 11 15C14 17 18 14 21 16" />
+                                                    <circle cx="8.5" cy="8.5" r="1.5" />
+                                                </svg>
+                                            </div>
+                                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#d2ac47]/40 text-center px-4">Click to Upload Background Reference</span>
+                                        </div>
+                                    )}
+                                </div>
 
-                                {/* Padding filler to match height if necessary, or just rely on h-full on parent */}
-                                <div className="flex-1"></div>
+                                {/* Placeholder to maintain height consistency with the slider column */}
+                                <div className="h-16 shrink-0 flex items-center justify-center">
+                                    <div className="w-8 h-[1px] bg-[#d2ac47]/10"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -831,9 +899,9 @@ const AvatarGenerator: React.FC = () => {
                         {loading && (
                             <button
                                 onClick={handleCancel}
-                                className="px-6 py-5 border border-[#d2ac47] bg-[#1a1a1a] text-[#d2ac47] hover:bg-red-950/40 hover:text-red-400 hover:border-red-500 transition-all text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 group/cancel rounded-xl shadow-[0_0_10px_rgba(210,172,71,0.1)]"
+                                className="px-6 py-5 border border-red-500/30 bg-[#1a1a1a] text-red-500 hover:bg-red-500/10 hover:border-red-500 transition-all text-xs font-bold uppercase tracking-[0.2em] flex items-center justify-center rounded-xl shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] group/cancel"
                             >
-                                <XCircle size={20} className="group-hover/cancel:rotate-90 transition-transform duration-300" />
+                                <XCircle size={20} className="transition-transform duration-300 group-hover/cancel:rotate-90" />
                             </button>
                         )}
                         <button
@@ -845,99 +913,17 @@ const AvatarGenerator: React.FC = () => {
                             {loading ? "Forging Identity..." : "Generate Avatar"}
                         </button>
                     </div>
-
-
-
-                    {/* MOBILE ONLY: Image Output (Moved up per user request) */}
-                    <div className="lg:hidden mt-8 mb-8">
-                        <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl aspect-[9/16] max-h-[550px] mx-auto relative flex items-center justify-center overflow-hidden shadow-2xl group flex-col min-h-[500px]">
-                            {/* 1. LAYER: Ambient Background (Blur Fill) */}
-                            {generatedImage && (
-                                <>
-                                    <div className="absolute inset-0 pointer-events-none">
-                                        <img
-                                            src={generatedImage}
-                                            alt=""
-                                            className="w-full h-full object-cover opacity-60 blur-3xl scale-150 saturate-150"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-black/20"></div>
-                                    </div>
-
-                                    {/* 2. LAYER: Main Sharp Subject */}
-                                    <img src={generatedImage} alt="Generated Avatar" className="relative z-10 w-full h-full object-cover drop-shadow-2xl" />
-
-                                    {/* Deco Corners */}
-                                    <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-[#d2ac47] pointer-events-none z-20"></div>
-                                    <div className="absolute top-2 right-2 w-4 h-4 border-t border-r border-[#d2ac47] pointer-events-none z-20"></div>
-                                    <div className="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-[#d2ac47] pointer-events-none z-20"></div>
-                                    <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-[#d2ac47] pointer-events-none z-20"></div>
-                                </>
-                            )}
-                            {/* 2. LAYER: Loading Logger */}
-                            {loading && (
-                                <div className={`flex flex-col items-center justify-center ${generatedImage ? 'absolute inset-0 z-20 bg-black/50 backdrop-blur-sm' : 'w-full h-full'}`}>
-                                    <AvatarLogger status={currentStatus} error={error} />
-                                </div>
-                            )}
-                            {/* 3. LAYER: Action Buttons */}
-                            {generatedImage && (
-                                <div className="absolute top-12 left-0 w-full z-30 flex justify-center gap-4 transition-opacity duration-300">
-                                    <button onClick={handleGenerate} disabled={loading} className="btn-gold px-6 py-3 text-xs tracking-widest uppercase flex items-center gap-2 border border-[#d2ac47]/50 rounded-xl hover:bg-[#d2ac47] hover:text-black shadow-[0_4px_10px_rgba(0,0,0,0.5)]">
-                                        <RefreshCw size={16} className={loading ? "animate-spin" : ""} /> Regenerate
-                                    </button>
-                                    <button onClick={handleDownload} className="btn-gold px-6 py-3 text-xs tracking-widest uppercase flex items-center gap-2 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.5)]">
-                                        <Download size={16} /> Download
-                                    </button>
-                                </div>
-                            )}
-                            {/* 4. LAYER: Placeholder */}
-                            {!generatedImage && !loading && (
-                                <div className="text-[#d2ac47]/20 flex flex-col items-center gap-2">
-                                    <Camera size={48} strokeWidth={1} />
-                                    <span className="text-[9px] tracking-[0.3em] uppercase">Output Ready</span>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Metadata Footer (Compact Design) - Mobile */}
-                        {activeItem && (
-                            <div className="relative px-4 pb-2 pt-2 text-center shrink-0 border-t border-[#d2ac47]/10 bg-[#080808]/50 overflow-hidden w-full">
-                                <p className="text-[#F9F1D8] text-[13px] font-serif italic mb-1 truncate">
-                                    {activeItem.prompt ? (activeItem.prompt.substring(0, 50) + (activeItem.prompt.length > 50 ? '...' : '')) : (activeItem.label || 'Untitled Masterpiece')}
-                                </p>
-                                <div className="flex items-center justify-center gap-3 text-[8px] uppercase tracking-[0.2em] text-[#d2ac47]/50 font-bold">
-                                    <span>{activeItem.created_at ? new Date(activeItem.created_at).toLocaleString() : 'Just now'}</span>
-                                    <div className="w-1.5 h-1.5 rounded-full bg-[#d2ac47]/20"></div>
-                                    <div className="flex items-center gap-1">
-                                        <ShieldCheck size={10} className="text-green-500/50" />
-                                        <span>Verified Render</span>
-                                    </div>
-                                    <div className="w-1.5 h-1.5 rounded-full bg-[#d2ac47]/20"></div>
-                                    <button className="hover:text-[#d2ac47] transition-colors">Infinity Studio</button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Gallery Moved to Bottom Center */}
-                    <div className="mt-8 border-t border-[#d2ac47]/10 pt-4">
-                        <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em] mb-4 block">Recent Creations</span>
-                        <UserGallery newItems={galleryItems} columns={3} />
-                    </div>
-
                 </div>
 
-                {/* RIGHT COLUMN: Output - High Density Panel */}
-                <div className="lg:col-span-4 sticky top-32 z-10 space-y-4">
-
+                {/* RIGHT COLUMN: History & Workspace */}
+                <div className="xl:col-span-3 space-y-4 flex flex-col h-full">
                     {/* 1. Coins / Credits Widget */}
                     <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl p-6 flex flex-col items-center justify-center shadow-lg relative overflow-hidden group">
                         <div className="absolute inset-0 bg-gradient-to-b from-[#d2ac47]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         <span className="text-[#d2ac47]/60 text-[9px] uppercase tracking-[0.3em] mb-1">Balance</span>
                         <div className="flex items-center gap-2 text-[#F9F1D8] drop-shadow-[0_0_10px_rgba(210,172,71,0.5)]">
-                            {/* Gold Coin Icon */}
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ffd700] via-[#fbeea4] to-[#b8860b] border border-[#fbeea4] shadow-[0_0_15px_rgba(255,215,0,0.6)] flex items-center justify-center mr-2" style={{ animation: 'spinY 5s linear infinite' }}>
-                                <div className="w-5 h-5 rounded-full border border-[#b8860b]/50"></div>
+                            <div className="w-8 h-8 rounded-full bg-gold-gradient shadow-[0_0_15px_rgba(255,215,0,0.6)] flex items-center justify-center mr-2">
+                                <div className="w-5 h-5 rounded-full border border-black/20"></div>
                             </div>
                             <span className="text-3xl font-serif font-bold">2,450</span>
                             <div className="flex flex-col leading-none">
@@ -945,99 +931,149 @@ const AvatarGenerator: React.FC = () => {
                                 <span className="text-[9px] text-[#d2ac47]/60 uppercase tracking-widest">Available</span>
                             </div>
                         </div>
-                        <button className="mt-2 px-4 py-1.5 border border-[#d2ac47]/30 rounded-full text-[#d2ac47] text-[7px] uppercase tracking-[0.2em] hover:bg-[#d2ac47] hover:text-black transition-all">
-                            Add Funds
-                        </button>
                     </div>
 
-                    {/* 2. Stats Dashboard (Top) */}
+                    {/* 2. Stats Dashboard */}
                     <GamificationDashboard />
 
-                    {/* 3. Image Output (VERTICAL 9:16) - DESKTOP ONLY */}
-                    <div className="hidden lg:flex bg-[#050505] border border-[#d2ac47]/20 rounded-3xl aspect-[9/16] max-h-[550px] mx-auto relative items-center justify-center overflow-hidden shadow-2xl group flex-col">
+                    {/* 3. History / Gallery - VERTICAL PRO BLOCK */}
+                    <div className="bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden h-[800px] shrink-0">
+                        <div className="flex items-center justify-between h-10 px-4">
+                            <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em]">History</span>
+                        </div>
+                        <UserGallery
+                            newItems={galleryItems}
+                            onDelete={async (id) => {
+                                const { error } = await supabase.from('generations').delete().eq('id', id);
+                                if (!error) fetchHistory();
+                            }}
+                            onSelect={(item) => {
+                                setGeneratedImage(item.result_url || (item as any).image_url || (item as any).url || null);
+                                setActiveItem(item);
+                            }}
+                        />
+                    </div>
+
+                    {/* 4. Output Area - ALIGNED BLOCK */}
+                    <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl relative flex items-center justify-center overflow-hidden shadow-2xl group flex-col w-full transition-all duration-700 h-[280px] shrink-0">
                         {/* 1. LAYER: Ambient Background (Blur Fill) */}
+                        <div className="absolute inset-0 pointer-events-none">
+                            {generatedImage ? (
+                                <img
+                                    src={generatedImage}
+                                    alt=""
+                                    className="w-full h-full object-cover opacity-40 blur-3xl scale-150 saturate-150"
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-[radial-gradient(circle_at_center,_#1a1a1a_0%,_#050505_100%)] opacity-50"></div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-black/20"></div>
+                        </div>
+
                         {generatedImage && (
                             <>
-                                <div className="absolute inset-0 pointer-events-none">
-                                    <img
-                                        src={generatedImage}
-                                        alt=""
-                                        className="w-full h-full object-cover opacity-60 blur-3xl scale-150 saturate-150"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-black/20"></div>
-                                </div>
-
                                 <img src={generatedImage} alt="Generated Avatar" className="relative z-10 w-full h-full object-contain drop-shadow-2xl shadow-black" />
 
                                 {/* Deco Corners */}
-                                <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-[#d2ac47]/50 rounded-tl-lg pointer-events-none z-20"></div>
-                                <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-[#d2ac47]/50 rounded-tr-lg pointer-events-none z-20"></div>
-                                <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-[#d2ac47]/50 rounded-bl-lg pointer-events-none z-20"></div>
-                                <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-[#d2ac47]/50 rounded-br-lg pointer-events-none z-20"></div>
+                                <div className="absolute top-4 left-4 w-6 h-6 border-t border-l border-[#d2ac47]/50 pointer-events-none z-20 rounded-tl-lg"></div>
+                                <div className="absolute top-4 right-4 w-6 h-6 border-t border-r border-[#d2ac47]/50 pointer-events-none z-20 rounded-tr-lg"></div>
+                                <div className="absolute bottom-4 left-4 w-6 h-6 border-b border-l border-[#d2ac47]/50 pointer-events-none z-20 rounded-bl-lg"></div>
+                                <div className="absolute bottom-4 right-4 w-6 h-6 border-b border-r border-[#d2ac47]/50 pointer-events-none z-20 rounded-br-lg"></div>
                             </>
                         )}
 
-                        {/* 2. LAYER: Loading Logger (Overlay or Main) */}
+                        {/* 2. LAYER: Loading Logger */}
                         {loading && (
                             <div className={`flex flex-col items-center justify-center ${generatedImage ? 'absolute inset-0 z-20 bg-black/50 backdrop-blur-sm' : 'w-full h-full'}`}>
                                 <AvatarLogger status={currentStatus} error={error} />
                             </div>
                         )}
 
-                        {/* 3. LAYER: Action Buttons (Top Overlay) */}
+                        {/* 3. LAYER: Action Buttons (Top Overlay - Adjusted for sidebar width) */}
                         {generatedImage && (
-                            <div className="absolute top-12 left-0 w-full z-30 flex justify-center gap-4 transition-opacity duration-300">
+                            <div className="absolute top-4 left-0 w-full z-30 flex flex-col items-center gap-2 px-4 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
                                 <button
                                     onClick={handleGenerate}
                                     disabled={loading}
-                                    className={`btn-gold px-6 py-3 text-xs tracking-widest uppercase flex items-center gap-2 border border-[#d2ac47]/50 rounded-xl hover:bg-[#d2ac47] hover:text-black shadow-[0_4px_10px_rgba(0,0,0,0.5)] ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    className={`w-full py-2 text-[9px] tracking-widest uppercase flex items-center justify-center gap-2 border border-[#d2ac47] bg-black/60 backdrop-blur-md rounded-lg hover:bg-[#d2ac47] hover:text-black shadow-2xl transition-all ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
-                                    <RefreshCw size={16} className={loading ? "animate-spin" : ""} /> {loading ? "Processing..." : "Regenerate"}
+                                    <RefreshCw size={12} className={loading ? "animate-spin" : ""} /> {loading ? "Processing..." : "Regenerate"}
                                 </button>
-                                <button onClick={handleDownload} className="btn-gold px-6 py-3 text-xs tracking-widest uppercase flex items-center gap-2 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.5)]">
-                                    <Download size={16} /> Download
+                                <button onClick={handleDownload} className="w-full py-2 text-[9px] tracking-widest uppercase flex items-center justify-center gap-2 bg-gold-gradient text-black rounded-lg shadow-2xl transition-all hover:scale-105">
+                                    <Download size={12} /> Download
                                 </button>
                             </div>
                         )}
 
-                        {/* 4. LAYER: Placeholder (Only if nothing else) */}
+                        {/* 4. LAYER: Placeholder */}
                         {!generatedImage && !loading && (
-                            <div className="text-[#d2ac47]/20 flex flex-col items-center gap-2">
-                                <Camera size={48} strokeWidth={1} />
-                                <span className="text-[9px] tracking-[0.3em] uppercase">Output Ready</span>
+                            <div className="text-[#d2ac47]/10 flex flex-col items-center gap-2">
+                                <Camera size={48} strokeWidth={0.5} />
+                                <span className="text-[8px] tracking-[0.4em] uppercase font-bold">Active Workspace</span>
+                            </div>
+                        )}
+
+                        {/* Metadata Footer (Inside Output) */}
+                        {activeItem && (
+                            <div className="absolute bottom-0 left-0 w-full px-3 pb-2 pt-2 text-center z-20 border-t border-[#d2ac47]/10 bg-black/80 backdrop-blur-xl">
+                                <p className="text-[#F9F1D8] text-[10px] font-serif italic mb-0.5 truncate">
+                                    {activeItem.prompt ? (activeItem.prompt.substring(0, 40) + (activeItem.prompt.length > 40 ? '...' : '')) : (activeItem.label || 'Untitled')}
+                                </p>
+                                <div className="flex items-center justify-center gap-2 text-[7px] uppercase tracking-[0.2em] text-[#d2ac47]/40 font-bold">
+                                    <span>Verified Forge</span>
+                                </div>
                             </div>
                         )}
                     </div>
-
-                    {/* Metadata Footer (Compact Design) - Desktop */}
-                    {activeItem && (
-                        <div className="relative px-4 pb-2 pt-2 text-center shrink-0 border-t border-[#d2ac47]/10 bg-[#080808]/50 overflow-hidden w-full rounded-b-3xl">
-                            <p className="text-[#F9F1D8] text-[13px] font-serif italic mb-1 truncate">
-                                {activeItem.prompt ? (activeItem.prompt.substring(0, 50) + (activeItem.prompt.length > 50 ? '...' : '')) : (activeItem.label || 'Untitled Masterpiece')}
-                            </p>
-                            <div className="flex items-center justify-center gap-3 text-[8px] uppercase tracking-[0.2em] text-[#d2ac47]/50 font-bold">
-                                <span>{activeItem.created_at ? new Date(activeItem.created_at).toLocaleString() : 'Just now'}</span>
-                                <div className="w-1.5 h-1.5 rounded-full bg-[#d2ac47]/20"></div>
-                                <div className="flex items-center gap-1">
-                                    <ShieldCheck size={10} className="text-green-500/50" />
-                                    <span>Verified Render</span>
-                                </div>
-                                <div className="w-1.5 h-1.5 rounded-full bg-[#d2ac47]/20"></div>
-                                <button className="hover:text-[#d2ac47] transition-colors">Infinity Studio</button>
-                            </div>
-                        </div>
-                    )}
                 </div>
+            </div>
 
-            </div >
+            {/* Recent Creations Gallery (New Section - Match Video Style) */}
+            {galleryItems.length > 0 && (
+                <div className="mt-12 animate-fade-in-up">
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#d2ac47]/30"></div>
+                        <h2 className="text-2xl font-serif text-[#F9F1D8] italic">Recent Masterpieces</h2>
+                        <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#d2ac47]/30"></div>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                        {galleryItems.map((item) => (
+                            <div
+                                key={item.id}
+                                className="group/item relative bg-[#080808] border border-[#d2ac47]/10 rounded-2xl overflow-hidden aspect-[9/16] shadow-2xl transition-all hover:border-[#d2ac47]/40 hover:-translate-y-1 cursor-pointer"
+                                onClick={() => {
+                                    setGeneratedImage(item.result_url || item.image_url || item.url);
+                                    setActiveItem(item);
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                            >
+                                <img
+                                    src={item.result_url || item.image_url || item.url}
+                                    alt={item.label}
+                                    className="w-full h-full object-cover grayscale-[0.2] transition-all group-hover/item:grayscale-0 group-hover/item:scale-105 duration-500"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity p-4 flex flex-col justify-end">
+                                    <p className="text-[#F9F1D8] text-[10px] font-serif italic truncate">{item.prompt || item.label || 'Untitled'}</p>
+                                    <span className="text-[#d2ac47] text-[8px] uppercase tracking-widest font-bold mt-1">View Full</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <style>{`
+                @keyframes breathe {
+                    0% { transform: scale(1); filter: brightness(0.8); }
+                    100% { transform: scale(1.05); filter: brightness(1.1); }
+                }
                 @keyframes spinY {
                     0% { transform: rotateY(0deg); }
                     100% { transform: rotateY(360deg); }
                 }
             `}</style>
-        </div >
+        </div>
     );
 };
 

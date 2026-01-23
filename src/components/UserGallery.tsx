@@ -111,10 +111,16 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20"></div>
             </div>
 
-            {/* Main Content Area */}
-            <div className="relative flex-1 flex items-center justify-center p-1 overflow-hidden aspect-[2/3]">
+            {/* Main Content Area - Blur Fill Layout */}
+            <div className="relative flex-1 flex items-center justify-center p-0 overflow-hidden bg-black">
+                {/* 1. Blur Fill Layer */}
+                <div className="absolute inset-0 pointer-events-none">
+                    <img src={item.thumb} alt="" className="w-full h-full object-cover opacity-30 blur-2xl scale-125 saturate-150" />
+                    <div className="absolute inset-0 bg-black/40"></div>
+                </div>
+
                 <div
-                    className="relative w-full h-full bg-[#080808] border border-[#d2ac47]/20 rounded-xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.8)] group/item flex items-center justify-center"
+                    className="relative w-full h-full z-10 overflow-hidden group/item flex items-center justify-center transition-all duration-500"
                     onClick={togglePlay}
                 >
                     {isVideoFile ? (
@@ -122,7 +128,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                             ref={videoRef}
                             src={mediaUrl}
                             poster={item.thumb !== '/placeholder-luxury.png' ? item.thumb : undefined}
-                            className="w-full h-full object-cover bg-black shadow-inner pointer-events-none"
+                            className="w-full h-full object-contain bg-transparent shadow-2xl pointer-events-none"
                             muted
                             loop
                             playsInline
@@ -134,7 +140,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                         <img
                             src={mediaUrl || item.thumb}
                             alt={item.label}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+                            className="w-full h-full object-contain drop-shadow-[0_0_30px_rgba(0,0,0,0.8)] group-hover:scale-105 transition-transform duration-1000"
                         />
                     )}
 
