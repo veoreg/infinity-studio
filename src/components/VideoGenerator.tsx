@@ -669,7 +669,7 @@ const VideoGenerator: React.FC = () => {
                             <div className="flex flex-col md:grid md:grid-cols-2 gap-4">
                                 {/* Image Input Frame */}
                                 <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 overflow-hidden flex flex-col rounded-2xl h-64">
-                                    <div className="absolute top-0 left-0 bg-[#d2ac47] text-black text-[9px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] z-20 rounded-br-xl pointer-events-none">
+                                    <div className="absolute top-0 left-0 bg-[#d2ac47] text-black text-[9px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] z-20 rounded-tl-2xl rounded-br-xl pointer-events-none">
                                         Source Image
                                     </div>
 
@@ -702,7 +702,7 @@ const VideoGenerator: React.FC = () => {
 
                                     {/* Vision Prompt (Full Height) */}
                                     <div className="relative flex-1 flex flex-col border-b border-[#d2ac47]/10">
-                                        <div className="absolute top-0 left-0 bg-[#d2ac47] text-black text-[9px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] z-20 rounded-br-xl">
+                                        <div className="absolute top-0 left-0 bg-[#d2ac47] text-black text-[9px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] z-20 rounded-tl-2xl rounded-br-xl">
                                             Vision Prompt
                                         </div>
                                         <textarea
