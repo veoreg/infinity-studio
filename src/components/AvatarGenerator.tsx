@@ -922,7 +922,7 @@ const AvatarGenerator: React.FC = () => {
                         <div className="absolute inset-0 bg-gradient-to-b from-[#d2ac47]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         <span className="text-[#d2ac47]/60 text-[9px] uppercase tracking-[0.3em] mb-1">Balance</span>
                         <div className="flex items-center gap-2 text-[#F9F1D8] drop-shadow-[0_0_10px_rgba(210,172,71,0.5)]">
-                            <div className="w-8 h-8 rounded-full bg-gold-gradient shadow-[0_0_15px_rgba(255,215,0,0.6)] flex items-center justify-center mr-2">
+                            <div className="w-8 h-8 rounded-full bg-gold-gradient shadow-[0_0_15px_rgba(255,215,0,0.6)] flex items-center justify-center mr-2" style={{ animation: 'spinY 5s linear infinite' }}>
                                 <div className="w-5 h-5 rounded-full border border-black/20"></div>
                             </div>
                             <span className="text-3xl font-serif font-bold">2,450</span>
