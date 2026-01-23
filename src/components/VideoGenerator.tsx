@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
-import { Play, Loader2, XCircle, ShieldCheck, Flame, Download, Layers, Wand2, Video, Heart, Share2, Maximize2 } from 'lucide-react';
+import { Play, Loader2, XCircle, ShieldCheck, Flame, Download, Layers, Wand2, Video as VideoIcon, Image as ImageIcon, Heart, Share2, Maximize2 } from 'lucide-react';
 import GamificationDashboard from './GamificationDashboard';
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
@@ -180,6 +180,13 @@ const RecentMasterpieceItem = ({ item, onViewFull, onDelete }: { item: any; onVi
 
             {/* 3. LAYER: Interactive Items */}
             <div className="absolute inset-0 z-20 pointer-events-none opacity-0 group-hover/item:opacity-100 transition-all duration-500">
+                {/* Type Indicator - Top Right (Below Delete) */}
+                <div className="absolute top-16 right-3 flex flex-col gap-2">
+                    <div className="p-2 bg-black/40 backdrop-blur-md border border-[#d2ac47]/20 rounded-lg text-[#d2ac47]/60 shadow-lg animate-in zoom-in duration-300">
+                        {isVideoFile ? <VideoIcon size={14} /> : <ImageIcon size={14} />}
+                    </div>
+                </div>
+
                 {/* Top Icons - Apple Glass + Soft Glow + Golden Border */}
                 <div className="absolute top-3 left-3 flex gap-2 pointer-events-auto">
                     <button className="group/btn relative p-2.5 bg-black/30 backdrop-blur-xl border border-[#d2ac47]/30 rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] hover:border-red-500/50">
@@ -190,41 +197,43 @@ const RecentMasterpieceItem = ({ item, onViewFull, onDelete }: { item: any; onVi
                     </button>
                 </div>
 
-                {/* Bottom Video Panel Bar - Transparent Apple Style + Golden Glow Scrubber */}
-                <div
-                    className="absolute bottom-3 left-3 right-3 h-10 bg-black/40 backdrop-blur-md border border-[#d2ac47]/10 rounded-xl overflow-hidden flex items-center px-3 gap-3 pointer-events-auto shadow-2xl animate-in fade-in duration-1000"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    {/* Play Button */}
-                    <button
-                        className="w-6 h-6 shrink-0 rounded-full bg-[#d2ac47]/10 flex items-center justify-center hover:bg-[#d2ac47] group/play transition-colors"
-                        onClick={togglePlay}
+                {/* Bottom Video Panel Bar - ONLY FOR VIDEOS */}
+                {isVideoFile && (
+                    <div
+                        className="absolute bottom-3 left-3 right-3 h-10 bg-black/40 backdrop-blur-md border border-[#d2ac47]/10 rounded-xl overflow-hidden flex items-center px-3 gap-3 pointer-events-auto shadow-2xl animate-in fade-in duration-1000"
+                        onClick={(e) => e.stopPropagation()}
                     >
-                        {isPlaying ? (
-                            <div className="w-2 h-2 bg-[#d2ac47] group-hover/play:bg-black rounded-sm shadow-[0_0_10px_rgba(210,172,71,0.5)]" />
-                        ) : (
-                            <Play size={10} className="text-[#d2ac47] fill-[#d2ac47] group-hover/play:text-black group-hover/play:fill-black shadow-[0_0_10px_rgba(210,172,71,0.5)]" />
-                        )}
-                    </button>
+                        {/* Play Button */}
+                        <button
+                            className="w-6 h-6 shrink-0 rounded-full bg-[#d2ac47]/10 flex items-center justify-center hover:bg-[#d2ac47] group/play transition-colors"
+                            onClick={togglePlay}
+                        >
+                            {isPlaying ? (
+                                <div className="w-2 h-2 bg-[#d2ac47] group-hover/play:bg-black rounded-sm shadow-[0_0_10px_rgba(210,172,71,0.5)]" />
+                            ) : (
+                                <Play size={10} className="text-[#d2ac47] fill-[#d2ac47] group-hover/play:text-black group-hover/play:fill-black shadow-[0_0_10px_rgba(210,172,71,0.5)]" />
+                            )}
+                        </button>
 
-                    {/* Scrubber - Golden Glow */}
-                    <div className="flex-1 h-full flex items-center justify-center cursor-pointer group/scrub" onClick={handleSeek}>
-                        <div className="w-full h-1 bg-white/10 rounded-full relative overflow-visible">
-                            <div
-                                className="absolute inset-y-0 left-0 bg-gold-gradient rounded-full shadow-[0_0_15px_rgba(210,172,71,0.6)] transition-all duration-100 ease-linear"
-                                style={{ width: `${progress}%` }}
-                            ></div>
-                            <div
-                                className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-white rounded-full opacity-0 group-hover/scrub:opacity-100 transition-opacity shadow-[0_0_10px_white]"
-                                style={{ left: `${progress}%` }}
-                            ></div>
+                        {/* Scrubber - Golden Glow */}
+                        <div className="flex-1 h-full flex items-center justify-center cursor-pointer group/scrub" onClick={handleSeek}>
+                            <div className="w-full h-1 bg-white/10 rounded-full relative overflow-visible">
+                                <div
+                                    className="absolute inset-y-0 left-0 bg-gold-gradient rounded-full shadow-[0_0_15px_rgba(210,172,71,0.6)] transition-all duration-100 ease-linear"
+                                    style={{ width: `${progress}%` }}
+                                ></div>
+                                <div
+                                    className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-white rounded-full opacity-0 group-hover/scrub:opacity-100 transition-opacity shadow-[0_0_10px_white]"
+                                    style={{ left: `${progress}%` }}
+                                ></div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 text-[7px] text-[#d2ac47]/60 font-mono uppercase tracking-tighter shrink-0">
+                            <Maximize2 size={10} className="opacity-50 hover:text-white cursor-pointer transition-colors" />
                         </div>
                     </div>
-
-                    <div className="flex items-center gap-1 text-[7px] text-[#d2ac47]/60 font-mono uppercase tracking-tighter shrink-0">
-                        <Maximize2 size={10} className="opacity-50 hover:text-white cursor-pointer transition-colors" />
-                    </div>
-                </div>
+                )}
 
                 {/* Hover Action: View Full */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
@@ -401,19 +410,37 @@ const VideoGenerator: React.FC = () => {
         }
     };
 
-    const handleCancel = () => {
+    const handleCancel = async () => {
+        const savedGen = localStorage.getItem('active_generation');
+        let genId = null;
+        if (savedGen) {
+            try {
+                genId = JSON.parse(savedGen).id;
+            } catch (e) {
+                console.error("Failed to parse saved generation for cancel", e);
+            }
+        }
+
         // 1. Abort Upload/Request
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
             abortControllerRef.current = null;
         }
-        // 2. Stop Listeners
+
+        // 2. Call N8n Cancel Webhook (Async)
+        if (genId) {
+            console.log("🛑 Sending cancel request for:", genId);
+            axios.post('/api/cancel-generation', { generation_id: genId })
+                .catch(err => console.warn("Cancel webhook error (non-critical):", err));
+        }
+
+        // 3. Stop Listeners
         cleanupMonitoring();
 
-        // 3. Clear Storage
+        // 4. Clear Storage
         localStorage.removeItem('active_generation');
 
-        // 4. Reset UI
+        // 5. Reset UI
         setLoading(false);
         setError('Generation cancelled by user.');
     };
@@ -436,6 +463,14 @@ const VideoGenerator: React.FC = () => {
             console.error("Download failed", err);
             // Fallback if CORS or network blocks blob fetch
             window.open(videoUrl, '_blank');
+        }
+    };
+
+    const handleUseAsReference = () => {
+        if (videoUrl && !videoUrl.toLowerCase().endsWith('.mp4')) {
+            setImageUrl(videoUrl);
+            setFileName('Reference Image');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
@@ -864,7 +899,21 @@ const VideoGenerator: React.FC = () => {
                                     )}
 
                                     {/* Top Overlay: Download & Meta (Styled like Safe/Spicy) */}
-                                    <div className="absolute top-4 right-4 flex items-start justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-30">
+                                    <div className="absolute top-4 right-4 flex flex-col items-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-30">
+                                        {/* Use as Reference Button - Only for Images */}
+                                        {videoUrl && !videoUrl.toLowerCase().endsWith('.mp4') && (
+                                            <button
+                                                onClick={handleUseAsReference}
+                                                className="px-6 py-2 border border-[#d2ac47]/50 bg-black/60 backdrop-blur-xl text-[#d2ac47] hover:bg-[#d2ac47] hover:text-black transition-all text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 rounded-xl shadow-[0_0_20px_rgba(210,172,71,0.3)] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] z-50 overflow-hidden group/ref pointer-events-auto"
+                                            >
+                                                <span className="relative z-10 flex items-center gap-2">
+                                                    <Layers size={14} className="group-hover/ref:scale-120 transition-transform" />
+                                                    Use as Reference
+                                                </span>
+                                                <div className="absolute inset-0 bg-gold-gradient opacity-0 group-hover/ref:opacity-20 transition-opacity"></div>
+                                            </button>
+                                        )}
+
                                         {/* Download Button - Improved Premium Style: Golden Glow */}
                                         <button
                                             onClick={handleDownload}
@@ -880,7 +929,7 @@ const VideoGenerator: React.FC = () => {
                                 </div>
                             ) : (
                                 <div className="text-[#d2ac47] flex flex-col items-center gap-4 opacity-50 group-hover:opacity-80 transition-opacity transform group-hover:scale-105 duration-500">
-                                    <Video size={64} strokeWidth={1} />
+                                    <VideoIcon size={64} strokeWidth={1} />
                                     <span className="text-[10px] tracking-[0.4em] uppercase font-bold">Active Workspace</span>
                                 </div>
                             )}
@@ -999,6 +1048,7 @@ const VideoGenerator: React.FC = () => {
                                 setVideoUrl(item.result_url || item.video_url || item.url || null);
                                 setActiveItem(item);
                             }}
+                            onRefresh={() => fetchHistory()}
                         />
                     </div>
                 </div>

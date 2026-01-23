@@ -84,14 +84,14 @@ const AvatarLogger = ({ status, error }: { status: string; error: string | null 
 
         const steps = [
             { msg: "Scanner: Initializing biometric handshake...", delay: 800 },
-            { msg: "Scanner: Mapping facial topography...", delay: 3000 },
-            { msg: "Identity: Extracting structural dna...", delay: 7000 },
-            { msg: "Composition: Rigging anatomical skeletal structure...", delay: 12000 },
-            { msg: "Engine: Seeding neural latent space...", delay: 18000 },
-            { msg: "Detailing: Generating hyper-realistic skin textures...", delay: 28000 },
-            { msg: "Lighting: Simulating cinematic ray-tracing...", delay: 38000 },
-            { msg: "Optics: Applying vintage lens aberrations...", delay: 48000 },
-            { msg: "Studio: Developing final masterpiece...", delay: 55000 }
+            { msg: "Scanner: Precise facial topography mapping...", delay: 3000 },
+            { msg: "Identity: Extracting structural DNA markers...", delay: 7000 },
+            { msg: "Composition: Rigging skeletal anatomical frame...", delay: 12000 },
+            { msg: "Engine: Seeding neural latent space (FLUX.1)...", delay: 18000 },
+            { msg: "Detailing: Perfecting epidermal micro-textures...", delay: 28000 },
+            { msg: "Lighting: Global illumination & ray-tracing...", delay: 38000 },
+            { msg: "Optics: Simulating prime lens aberrations...", delay: 48000 },
+            { msg: "Studio: Finalizing digital masterpiece...", delay: 55000 }
         ];
 
         let timeouts: any[] = [];
@@ -142,6 +142,7 @@ const AvatarGenerator: React.FC = () => {
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
     const [activeItem, setActiveItem] = useState<any | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [activeGenerationId, setActiveGenerationId] = useState<string | null>(null);
 
     // Identity Specs
     const [gender, setGender] = useState('female');
@@ -328,13 +329,28 @@ const AvatarGenerator: React.FC = () => {
         }
     };
 
-    const handleCancel = () => {
+    const handleCancel = async () => {
+        const genId = activeGenerationId || lastTrackingId.current || localStorage.getItem('active_avatar_id');
+
+        // 1. Abort Upload/Request
         if (controllerRef.current) {
             controllerRef.current.abort();
             controllerRef.current = null;
-            setLoading(false);
-            setError('Generation stopped by user.');
         }
+
+        // 2. Call N8n Cancel Webhook (Async)
+        if (genId) {
+            console.log("🛑 Sending cancel request for Avatar:", genId);
+            axios.post('/api/cancel-generation', { generation_id: genId })
+                .catch(err => console.warn("Avatar cancel webhook error (non-critical):", err));
+        }
+
+        // 3. Cleanup
+        cleanupMonitoring();
+        setLoading(false);
+        setActiveGenerationId(null);
+        localStorage.removeItem('active_avatar_id');
+        setError('Generation stopped by user.');
     };
 
     const handleDownload = () => {
@@ -428,7 +444,8 @@ const AvatarGenerator: React.FC = () => {
             controllerRef.current = new AbortController();
 
             // Start monitoring for completion via Supabase BEFORE sending the request
-            // This ensures that even if the POST times out, we are already listening for the update.
+            setActiveGenerationId(generationId);
+            localStorage.setItem('active_avatar_id', generationId);
             startMonitoring(generationId);
 
             // Send to webhook
@@ -936,26 +953,8 @@ const AvatarGenerator: React.FC = () => {
                     {/* 2. Stats Dashboard */}
                     <GamificationDashboard />
 
-                    {/* 3. History / Gallery - VERTICAL PRO BLOCK */}
-                    <div className="bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden h-[800px] shrink-0">
-                        <div className="flex items-center justify-between h-10 px-4">
-                            <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em]">History</span>
-                        </div>
-                        <UserGallery
-                            newItems={galleryItems}
-                            onDelete={async (id) => {
-                                const { error } = await supabase.from('generations').delete().eq('id', id);
-                                if (!error) fetchHistory();
-                            }}
-                            onSelect={(item) => {
-                                setGeneratedImage(item.result_url || (item as any).image_url || (item as any).url || null);
-                                setActiveItem(item);
-                            }}
-                        />
-                    </div>
-
-                    {/* 4. Output Area - ALIGNED BLOCK */}
-                    <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl relative flex items-center justify-center overflow-hidden shadow-2xl group flex-col w-full transition-all duration-700 h-[280px] shrink-0">
+                    {/* 3. Output Area - ALIGNED BLOCK (Now at Top) */}
+                    <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl relative flex items-center justify-center overflow-hidden shadow-2xl group flex-col w-full transition-all duration-700 h-[580px] shrink-0">
                         {/* 1. LAYER: Ambient Background (Blur Fill) */}
                         <div className="absolute inset-0 pointer-events-none">
                             {generatedImage ? (
@@ -1024,6 +1023,25 @@ const AvatarGenerator: React.FC = () => {
                                 </div>
                             </div>
                         )}
+                    </div>
+
+                    {/* 4. History / Gallery - VERTICAL PRO BLOCK (Now at Bottom) */}
+                    <div className="bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden h-[500px] shrink-0">
+                        <div className="flex items-center justify-between h-10 px-4">
+                            <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em]">History</span>
+                        </div>
+                        <UserGallery
+                            newItems={galleryItems}
+                            onDelete={async (id) => {
+                                const { error } = await supabase.from('generations').delete().eq('id', id);
+                                if (!error) fetchHistory();
+                            }}
+                            onSelect={(item) => {
+                                setGeneratedImage(item.result_url || (item as any).image_url || (item as any).url || null);
+                                setActiveItem(item);
+                            }}
+                            onRefresh={() => fetchHistory()}
+                        />
                     </div>
                 </div>
             </div>

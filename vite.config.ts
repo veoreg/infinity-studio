@@ -19,6 +19,12 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/avatar/, ''),
         secure: false,
         timeout: 900000,
+      },
+      '/api/cancel-generation': {
+        target: 'https://n8n.develotex.io/webhook/cancel-generation',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/cancel-generation/, ''),
+        secure: false,
       }
     }
   }

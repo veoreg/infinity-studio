@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Play, Globe, Lock, Heart, Share2, Maximize2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Globe, Lock, Heart, Share2, Maximize2, Image as ImageIcon, Video as VideoIcon } from 'lucide-react';
 
 const PLACEHOLDERS = [
     { id: 'p1', type: 'video', url: '/videos/wan22_2026-01-22T15_36_40 FALSE_00001.mp4', thumb: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=2864&auto=format&fit=crop', label: 'Elegance Redefined', privacy: 'private' },
@@ -34,6 +34,7 @@ interface UserGalleryProps {
     columns?: number;
     onDelete?: (id: number | string) => void;
     onSelect?: (item: GalleryItem) => void;
+    onRefresh?: () => void;
 }
 
 // -----------------------------------------------------------------------------------------
@@ -146,6 +147,13 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
 
                     {/* Interactive Overlay */}
                     <div className="absolute inset-0 z-20 pointer-events-none opacity-0 group-hover/item:opacity-100 transition-all duration-500">
+                        {/* Type Indicator - Top Right (Below Delete) */}
+                        <div className="absolute top-16 right-3 flex flex-col gap-2">
+                            <div className="p-2 bg-black/40 backdrop-blur-md border border-[#d2ac47]/20 rounded-lg text-[#d2ac47]/60 shadow-lg animate-in zoom-in duration-300">
+                                {isVideoFile ? <VideoIcon size={14} /> : <ImageIcon size={14} />}
+                            </div>
+                        </div>
+
                         {/* Top Icons - Apple Glassmorphism + Soft Glow + Golden Border */}
                         <div className="absolute top-3 left-3 flex gap-2 pointer-events-auto">
                             <button className="group/btn relative p-2.5 bg-black/30 backdrop-blur-xl border border-[#d2ac47]/30 rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] hover:border-red-500/50">
@@ -156,42 +164,59 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                             </button>
                         </div>
 
-                        {/* Bottom Control Bar - Unified Premium Position (Now Higher) */}
-                        <div
-                            className="absolute bottom-16 left-4 right-4 h-12 bg-black/40 backdrop-blur-2xl border border-[#d2ac47]/10 rounded-2xl overflow-hidden flex items-center px-4 gap-3 group-hover/item:border-[#d2ac47]/30 transition-all pointer-events-auto shadow-2xl animate-in fade-in duration-1000"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            {/* Play Button */}
-                            <button
-                                className="w-8 h-8 shrink-0 rounded-full bg-[#d2ac47]/10 flex items-center justify-center hover:bg-[#d2ac47] group/play transition-colors"
-                                onClick={togglePlay}
+                        {/* Bottom Control Bar - Only for Videos */}
+                        {isVideoFile && (
+                            <div
+                                className="absolute bottom-16 left-4 right-4 h-12 bg-black/40 backdrop-blur-2xl border border-[#d2ac47]/10 rounded-2xl overflow-hidden flex items-center px-4 gap-3 group-hover/item:border-[#d2ac47]/30 transition-all pointer-events-auto shadow-2xl animate-in fade-in duration-1000"
+                                onClick={(e) => e.stopPropagation()}
                             >
-                                {isPlaying ? (
-                                    <div className="w-2.5 h-2.5 bg-[#d2ac47] group-hover/play:bg-black rounded-sm shadow-[0_0_10px_rgba(210,172,71,0.5)]" />
-                                ) : (
-                                    <Play size={12} className="text-[#d2ac47] fill-[#d2ac47] group-hover/play:text-black group-hover/play:fill-black shadow-[0_0_10px_rgba(210,172,71,0.5)]" />
-                                )}
-                            </button>
+                                {/* Play Button */}
+                                <button
+                                    className="w-8 h-8 shrink-0 rounded-full bg-[#d2ac47]/10 flex items-center justify-center hover:bg-[#d2ac47] group/play transition-colors"
+                                    onClick={togglePlay}
+                                >
+                                    {isPlaying ? (
+                                        <div className="w-2.5 h-2.5 bg-[#d2ac47] group-hover/play:bg-black rounded-sm shadow-[0_0_10px_rgba(210,172,71,0.5)]" />
+                                    ) : (
+                                        <Play size={12} className="text-[#d2ac47] fill-[#d2ac47] group-hover/play:text-black group-hover/play:fill-black shadow-[0_0_10px_rgba(210,172,71,0.5)]" />
+                                    )}
+                                </button>
 
-                            {/* Scrubber - Golden Glow */}
-                            <div className="flex-1 h-full flex items-center justify-center cursor-pointer group/scrub" onClick={handleSeek}>
-                                <div className="w-full h-1.5 bg-white/10 rounded-full relative overflow-visible">
-                                    <div
-                                        className="absolute inset-y-0 left-0 bg-gold-gradient rounded-full shadow-[0_0_15px_rgba(210,172,71,0.6)] transition-all duration-100 ease-linear"
-                                        style={{ width: `${progress}%` }}
-                                    ></div>
-                                    <div
-                                        className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover/scrub:opacity-100 transition-opacity shadow-[0_0_10px_white]"
-                                        style={{ left: `${progress}%` }}
-                                    ></div>
+                                {/* Scrubber - Golden Glow */}
+                                <div className="flex-1 h-full flex items-center justify-center cursor-pointer group/scrub" onClick={handleSeek}>
+                                    <div className="w-full h-1.5 bg-white/10 rounded-full relative overflow-visible">
+                                        <div
+                                            className="absolute inset-y-0 left-0 bg-gold-gradient rounded-full shadow-[0_0_15px_rgba(210,172,71,0.6)] transition-all duration-100 ease-linear"
+                                            style={{ width: `${progress}%` }}
+                                        ></div>
+                                        <div
+                                            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover/scrub:opacity-100 transition-opacity shadow-[0_0_10px_white]"
+                                            style={{ left: `${progress}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+
+                                {/* Meta Info */}
+                                <div className="flex items-center gap-2 text-[8px] text-[#d2ac47]/60 font-mono uppercase tracking-tighter shrink-0 pointer-events-auto">
+                                    <Maximize2 size={12} className="opacity-50 hover:text-white cursor-pointer transition-colors" />
                                 </div>
                             </div>
+                        )}
 
-                            {/* Meta Info */}
-                            <div className="flex items-center gap-2 text-[8px] text-[#d2ac47]/60 font-mono uppercase tracking-tighter shrink-0 pointer-events-auto">
-                                <Maximize2 size={12} className="opacity-50 hover:text-white cursor-pointer transition-colors" />
+                        {/* Full View Button for Images (Replacement for Scrubber) */}
+                        {!isVideoFile && (
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <button
+                                    className="px-6 py-2.5 bg-[#d2ac47]/80 backdrop-blur-xl text-black text-[10px] font-bold uppercase tracking-[0.2em] rounded-full shadow-[0_0_20px_rgba(210,172,71,0.4)] pointer-events-auto hover:bg-[#d2ac47] hover:scale-110 active:scale-95 transition-all"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (onSelect) onSelect(item);
+                                    }}
+                                >
+                                    View Full
+                                </button>
                             </div>
-                        </div>
+                        )}
 
                         {/* Delete Button - Glass + Red Glow */}
                         {onDelete && item.id !== 'p1' && (
@@ -233,7 +258,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
     );
 };
 
-const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSelect }) => {
+const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSelect, onRefresh }) => {
     const [activeTab, setActiveTab] = useState<'my' | 'community'>('my');
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -242,17 +267,21 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSe
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
     const minSwipeDistance = 50;
 
-    const rawItems = activeTab === 'my'
-        ? [...(newItems || []), ...PLACEHOLDERS]
-        : COMMUNITY_FEED;
+    const rawItems = React.useMemo(() => (
+        activeTab === 'my'
+            ? [...(newItems || []), ...PLACEHOLDERS]
+            : COMMUNITY_FEED
+    ), [activeTab, newItems]);
 
-    // Normalize items to handle Supabase schema
-    const items = rawItems.map((item: any) => ({
-        ...item,
-        thumb: item.image_url || item.thumb || '/placeholder-luxury.png',
-        url: item.video_url || item.url,
-        label: item.prompt ? (item.prompt.substring(0, 20) + '...') : (item.label || 'Untitled')
-    }));
+    // Normalize items to handle Supabase schema - Memoized to prevent flickering
+    const items = React.useMemo(() => (
+        rawItems.map((item: any) => ({
+            ...item,
+            thumb: item.image_url || item.thumb || '/placeholder-luxury.png',
+            url: item.video_url || item.url,
+            label: item.prompt ? (item.prompt.substring(0, 20) + '...') : (item.label || 'Untitled')
+        }))
+    ), [rawItems]);
 
     const nextSlide = () => {
         setCurrentIndex((prev) => (prev + 1) % items.length);
@@ -291,13 +320,20 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSe
             <div className="flex items-center justify-between px-4 py-3 bg-[#0a0a0a] border-b border-[#d2ac47]/10 sticky top-0 z-40">
                 <div className="flex gap-4">
                     <button
-                        onClick={() => { setActiveTab('my'); setCurrentIndex(0); }}
+                        onClick={() => {
+                            setActiveTab('my');
+                            setCurrentIndex(0);
+                            if (onRefresh) onRefresh();
+                        }}
                         className={`text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'my' ? 'text-[#d2ac47]' : 'text-[#d2ac47]/30 hover:text-[#d2ac47]/60'}`}
                     >
                         My Library
                     </button>
                     <button
-                        onClick={() => { setActiveTab('community'); setCurrentIndex(0); }}
+                        onClick={() => {
+                            setActiveTab('community');
+                            setCurrentIndex(0);
+                        }}
                         className={`text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'community' ? 'text-[#d2ac47]' : 'text-[#d2ac47]/30 hover:text-[#d2ac47]/60'}`}
                     >
                         Trending
