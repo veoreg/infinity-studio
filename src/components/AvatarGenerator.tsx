@@ -210,7 +210,6 @@ const AvatarGenerator: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [currentStatus, setCurrentStatus] = useState<string>('pending');
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-    const [activeItem, setActiveItem] = useState<any | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [activeGenerationId, setActiveGenerationId] = useState<string | null>(null);
 
@@ -274,7 +273,6 @@ const AvatarGenerator: React.FC = () => {
             if (found && foundUrl) {
                 console.log("🛡️ [FAIL-SAFE] Found matching item in gallery. Resolving loading.");
                 setGeneratedImage(foundUrl);
-                setActiveItem(found);
                 cleanupMonitoring();
                 setLoading(false);
             }
@@ -348,7 +346,6 @@ const AvatarGenerator: React.FC = () => {
                     if (isFinished && finalUrl) {
                         console.log("🎯 [REALTIME] SUCCESS! Resolving with URL:", finalUrl);
                         setGeneratedImage(finalUrl);
-                        setActiveItem(newRecord);
                         cleanupMonitoring();
                         setLoading(false);
                         fetchHistory();
@@ -387,7 +384,6 @@ const AvatarGenerator: React.FC = () => {
                 if (isFinished && finalUrl) {
                     console.log("🚀 [POLLING] SUCCESS! Final URL found:", finalUrl);
                     setGeneratedImage(finalUrl);
-                    setActiveItem(data);
                     cleanupMonitoring();
                     setLoading(false);
                     fetchHistory();
@@ -1118,7 +1114,6 @@ const AvatarGenerator: React.FC = () => {
                             }}
                             onSelect={(item) => {
                                 setGeneratedImage(item.result_url || (item as any).image_url || (item as any).url || null);
-                                setActiveItem(item);
                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                             }}
                             onRefresh={() => fetchHistory()}
@@ -1143,7 +1138,6 @@ const AvatarGenerator: React.FC = () => {
                                 className="group/item relative bg-[#080808] border border-[#d2ac47]/10 rounded-2xl overflow-hidden aspect-[9/16] shadow-2xl transition-all hover:border-[#d2ac47]/40 hover:-translate-y-1 cursor-pointer"
                                 onClick={() => {
                                     setGeneratedImage(item.result_url || item.image_url || item.url);
-                                    setActiveItem(item);
                                     window.scrollTo({ top: 0, behavior: 'smooth' });
                                 }}
                             >
