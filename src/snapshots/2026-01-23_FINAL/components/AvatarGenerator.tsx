@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Camera, Download, RefreshCw, User, Sparkles, XCircle, Wand2 } from "lucide-react";
+import { Camera, Download, RefreshCw, User, Sparkles, XCircle } from "lucide-react";
 import GamificationDashboard from './GamificationDashboard';
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
@@ -83,15 +83,15 @@ const AvatarLogger = ({ status, error }: { status: string; error: string | null 
         }
 
         const steps = [
-            { msg: "Scanner: Initializing biometric handshake...", delay: 1500 },
-            { msg: "Scanner: Precise facial topography mapping...", delay: 8000 },
-            { msg: "Identity: Extracting structural DNA markers...", delay: 18000 },
-            { msg: "Composition: Rigging skeletal anatomical frame...", delay: 30000 },
-            { msg: "Engine: Seeding neural latent space (FLUX.1)...", delay: 45000 },
-            { msg: "Detailing: Perfecting epidermal micro-textures...", delay: 65000 },
-            { msg: "Lighting: Global illumination & ray-tracing...", delay: 85000 },
-            { msg: "Optics: Simulating prime lens aberrations...", delay: 98000 },
-            { msg: "Studio: Finalizing digital masterpiece...", delay: 105000 }
+            { msg: "Scanner: Initializing biometric handshake...", delay: 800 },
+            { msg: "Scanner: Precise facial topography mapping...", delay: 3000 },
+            { msg: "Identity: Extracting structural DNA markers...", delay: 7000 },
+            { msg: "Composition: Rigging skeletal anatomical frame...", delay: 12000 },
+            { msg: "Engine: Seeding neural latent space (FLUX.1)...", delay: 18000 },
+            { msg: "Detailing: Perfecting epidermal micro-textures...", delay: 28000 },
+            { msg: "Lighting: Global illumination & ray-tracing...", delay: 38000 },
+            { msg: "Optics: Simulating prime lens aberrations...", delay: 48000 },
+            { msg: "Studio: Finalizing digital masterpiece...", delay: 55000 }
         ];
 
         let timeouts: any[] = [];
@@ -121,7 +121,7 @@ const AvatarLogger = ({ status, error }: { status: string; error: string | null 
                         className={`h-full bg-[#d2ac47] ${status === 'queued' ? 'opacity-30 animated-pulse w-full' : ''}`}
                         style={{
                             width: status === 'queued' ? '100%' : '0%',
-                            animation: (status === 'processing' || status === 'pending') ? 'growWidth 105s linear forwards' : 'none'
+                            animation: (status === 'processing' || status === 'pending') ? 'growWidth 60s linear forwards' : 'none'
                         }}
                     ></div>
                 </div>
@@ -132,76 +132,6 @@ const AvatarLogger = ({ status, error }: { status: string; error: string | null 
                     100% { width: 100%; }
                 }
             `}</style>
-        </div>
-    );
-};
-
-// -----------------------------------------------------------------------------------------
-// Helper Component: EditPhotoModal
-// Elegant popup for text-based photo editing requests
-// -----------------------------------------------------------------------------------------
-const EditPhotoModal = ({ isOpen, onClose, onSubmit, prompt, setPrompt, loading }: {
-    isOpen: boolean;
-    onClose: () => void;
-    onSubmit: () => void;
-    prompt: string;
-    setPrompt: (v: string) => void;
-    loading: boolean;
-}) => {
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose}></div>
-            <div className="relative w-full max-w-lg bg-[#0a0a0a] border border-[#d2ac47]/30 rounded-3xl p-8 shadow-[0_0_50px_rgba(0,0,0,1)] overflow-hidden animate-in zoom-in duration-300">
-                {/* Art Deco Background */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gold-gradient opacity-5 blur-3xl rounded-full"></div>
-
-                <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-[#d2ac47]/10 rounded-lg border border-[#d2ac47]/20">
-                                <Wand2 size={20} className="text-[#d2ac47]" />
-                            </div>
-                            <h3 className="text-xl font-serif text-[#F9F1D8] italic">AI Photo Editor</h3>
-                        </div>
-                        <button onClick={onClose} className="p-2 text-[#d2ac47]/40 hover:text-[#d2ac47] transition-colors rounded-full hover:bg-white/5">
-                            <XCircle size={24} />
-                        </button>
-                    </div>
-
-                    <p className="text-[10px] text-[#d2ac47]/60 uppercase tracking-[0.2em] mb-4">
-                        Powered by Qwen Edit Model (Beta)
-                    </p>
-
-                    <div className="space-y-4">
-                        <div className="relative">
-                            <textarea
-                                value={prompt}
-                                onChange={(e) => setPrompt(e.target.value)}
-                                placeholder="Example: Change hair color to red, add sunglasses, or change outfit..."
-                                className="w-full h-32 bg-black/40 border border-[#d2ac47]/20 rounded-2xl p-4 text-[#F9F1D8] placeholder-[#d2ac47]/20 font-sans font-light text-sm focus:outline-none focus:border-[#d2ac47]/50 focus:ring-1 ring-[#d2ac47]/30 transition-all resize-none"
-                            />
-                        </div>
-
-                        <div className="flex gap-3">
-                            <button
-                                onClick={onClose}
-                                className="flex-1 py-4 border border-[#d2ac47]/20 text-[#d2ac47]/40 hover:text-[#d2ac47] hover:border-[#d2ac47]/50 transition-all text-[10px] font-bold uppercase tracking-[0.3em] rounded-xl bg-transparent"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={onSubmit}
-                                disabled={!prompt.trim() || loading}
-                                className="flex-[2] py-4 bg-gold-gradient text-black font-bold uppercase tracking-[0.3em] text-[10px] rounded-xl shadow-[0_0_20px_rgba(210,172,71,0.3)] hover:shadow-[0_0_30px_rgba(210,172,71,0.5)] transform hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:grayscale disabled:scale-100"
-                            >
-                                {loading ? "Queuing Workflow..." : "Start AI Edit"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     );
 };
@@ -280,10 +210,6 @@ const AvatarGenerator: React.FC = () => {
             }
         }
     }, [galleryItems, loading]);
-
-    // AI Edit State
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [editPrompt, setEditPrompt] = useState('');
 
     const fetchHistory = async () => {
         try {
@@ -414,12 +340,9 @@ const AvatarGenerator: React.FC = () => {
 
         // 2. Call N8n Cancel Webhook (Async)
         if (genId) {
-            console.log("🛑 [CANCEL] Attempting to stop generation ID:", genId);
+            console.log("🛑 Sending cancel request for Avatar:", genId);
             axios.post('/api/cancel-generation', { generation_id: genId })
-                .then(res => console.log("✅ [CANCEL] Webhook Response:", res.status))
-                .catch(err => console.error("⚠️ [CANCEL] Webhook error:", err.message));
-        } else {
-            console.warn("⚠️ [CANCEL] No active generation ID found to cancel.");
+                .catch(err => console.warn("Avatar cancel webhook error (non-critical):", err));
         }
 
         // 3. Cleanup
@@ -430,25 +353,16 @@ const AvatarGenerator: React.FC = () => {
         setError('Generation stopped by user.');
     };
 
-    const handleDownload = async () => {
+    const handleDownload = () => {
         if (!generatedImage) return;
 
-        try {
-            const response = await fetch(generatedImage);
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `infinity_avatar_${Date.now()}.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-        } catch (err) {
-            console.error("Download failed", err);
-            // Fallback if CORS or network blocks blob fetch
-            window.open(generatedImage, '_blank');
-        }
+        // Trigger Download
+        const link = document.createElement('a');
+        link.href = generatedImage;
+        link.download = `infinity_avatar_${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
         // Add to Gallery
         const newItem = {
@@ -535,16 +449,12 @@ const AvatarGenerator: React.FC = () => {
             startMonitoring(generationId);
 
             // Send to webhook
-            console.log("📡 [WEBHOOK] Sending request to:", WEBHOOK_URL);
-            console.log("📦 [WEBHOOK] Payload:", JSON.stringify(payload, null, 2));
-
             try {
-                const response = await axios.post(WEBHOOK_URL, payload, {
+                await axios.post(WEBHOOK_URL, payload, {
                     headers: { 'Content-Type': 'application/json' },
-                    timeout: 60000,
+                    timeout: 60000, // Increase timeout to 60s
                     signal: controllerRef.current.signal
                 });
-                console.log("✅ [WEBHOOK] Response Status:", response.status);
             } catch (postErr: any) {
                 // If it's a timeout, we ignore it because monitoring is already running.
                 // The backend (n8n) will continue processing and update Supabase.
@@ -598,10 +508,10 @@ const AvatarGenerator: React.FC = () => {
                     <span className="text-[#d2ac47] text-[10px] font-bold tracking-[0.4em] uppercase animate-pulse">Identity Forge</span>
                     <div className="h-[1px] w-24 bg-gradient-to-l from-transparent to-[#d2ac47]"></div>
                 </div>
-                <h2 className="text-3xl md:text-7xl font-serif text-[#F9F1D8] mb-3 md:mb-4 drop-shadow-[0_0_25px_rgba(210,172,71,0.3)] tracking-tight">
+                <h2 className="text-4xl md:text-7xl font-serif text-[#F9F1D8] mb-4 drop-shadow-[0_0_25px_rgba(210,172,71,0.3)] tracking-tight">
                     Create Your <span className="text-gold-luxury italic">Avatar</span>
                 </h2>
-                <p className="text-[#d2ac47]/60 text-[9px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] font-light max-w-lg mx-auto px-4">
+                <p className="text-[#d2ac47]/60 text-xs uppercase tracking-[0.3em] font-light max-w-lg mx-auto">
                     The ultimate forge for high-fidelity personal identities and artistic portraits.
                 </p>
             </div>
@@ -626,13 +536,11 @@ const AvatarGenerator: React.FC = () => {
                 </div>
 
                 {/* Center COLUMN: Forge / Inputs (Increased Width) */}
-                <div className="w-full xl:col-span-6 space-y-6 relative z-10 order-1 xl:order-2">
-                    {/* MOBILE ONLY: Move Output Area here if needed, or keep it in sidebar but ensure sidebar is order-2 */}
-
+                <div className="w-full xl:col-span-6 space-y-6 relative z-10">
 
                     {/* 1. Identity Matrix - Art Deco Panel */}
-                    <div className="bg-[#121212] border border-[#d2ac47]/20 rounded-3xl p-5 md:p-8 relative shadow-2xl group transition-all hover:border-[#d2ac47]/40 mx-2 md:mx-0">
-                        <div className="absolute top-0 left-0 px-4 md:px-6 py-2 bg-[#d2ac47] text-black text-[9px] md:text-[10px] font-bold tracking-[0.2em] uppercase rounded-tl-3xl rounded-br-2xl shadow-lg">
+                    <div className="bg-[#121212] border border-[#d2ac47]/20 rounded-3xl p-8 relative shadow-2xl group transition-all hover:border-[#d2ac47]/40">
+                        <div className="absolute top-0 left-0 px-6 py-2 bg-[#d2ac47] text-black text-[10px] font-bold tracking-[0.2em] uppercase rounded-tl-3xl rounded-br-2xl shadow-lg">
                             Identity Matrix
                         </div>
 
@@ -736,14 +644,14 @@ const AvatarGenerator: React.FC = () => {
                     </div>
 
                     {/* 2. Visual Sources - Art Deco Panel */}
-                    <div className="bg-[#121212] border border-[#d2ac47]/20 rounded-3xl p-5 md:p-8 relative shadow-2xl transition-all hover:border-[#d2ac47]/40 mx-2 md:mx-0">
-                        <div className="absolute top-0 left-0 px-4 md:px-6 py-2 bg-[#d2ac47] text-black text-[9px] md:text-[10px] font-bold tracking-[0.2em] uppercase rounded-tl-3xl rounded-br-2xl shadow-lg">
+                    <div className="bg-[#121212] border border-[#d2ac47]/20 rounded-3xl p-4 md:p-8 relative shadow-2xl transition-all hover:border-[#d2ac47]/40">
+                        <div className="absolute top-0 left-0 px-6 py-2 bg-[#d2ac47] text-black text-[10px] font-bold tracking-[0.2em] uppercase rounded-tl-3xl rounded-br-2xl shadow-lg">
                             Visual Source
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                             {/* 1. Main Face Input */}
-                            <div className="border rounded-2xl p-4 md:p-6 border-[#d2ac47] bg-[#0a0a0a] flex flex-col group overflow-hidden hover:border-[#d2ac47]/60 h-[380px] md:h-[480px]">
+                            <div className="border rounded-2xl p-6 border-[#d2ac47] bg-[#0a0a0a] flex flex-col group overflow-hidden hover:border-[#d2ac47]/60 h-[480px]">
                                 <div className="flex items-center gap-3 mb-4 h-8 shrink-0">
                                     <div className="w-8 h-8 border border-[#d2ac47] rounded-full flex items-center justify-center bg-[#d2ac47]/10 text-[#d2ac47]">
                                         <User size={16} />
@@ -764,8 +672,8 @@ const AvatarGenerator: React.FC = () => {
                                         className="h-full w-full"
                                     />
                                 </div>
-                                {/* Likeness Slider - Centered vertically for better balance */}
-                                <div className="h-16 shrink-0 flex flex-col justify-center">
+                                {/* Likeness Slider - Moved into a Fixed Height Container */}
+                                <div className="h-16 shrink-0 flex flex-col justify-end">
                                     <div className="flex justify-between text-[#d2ac47] text-[9px] font-bold tracking-[0.2em] uppercase mb-1">
                                         <span>Likeness Strength</span>
                                         <span>{instantIdWeight}</span>
@@ -835,8 +743,8 @@ const AvatarGenerator: React.FC = () => {
                                     <div className="h-[1px] flex-1 bg-[#d2ac47]/30"></div>
                                 </div>
 
-                                {/* Dropdown Controls - Centered vertically */}
-                                <div className="h-16 flex flex-col justify-center shrink-0">
+                                {/* Dropdown Controls - Fixed Height */}
+                                <div className="h-16 flex flex-col justify-end shrink-0">
                                     <CustomSelect
                                         label="Body Structure"
                                         value={bodyType}
@@ -976,14 +884,14 @@ const AvatarGenerator: React.FC = () => {
                                     </div>
 
                                     {/* Row 2: Toggles (Split Width) */}
-                                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                    <div className="flex items-center gap-3">
                                         {/* Raw Prompt Toggle */}
                                         <button
                                             onClick={() => setRawPromptMode(!rawPromptMode)}
                                             className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 border transition-all rounded-xl ${rawPromptMode ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
                                         >
                                             <div className={`w-2 h-2 rounded-full ${rawPromptMode ? 'bg-black' : 'bg-[#d2ac47]/50'}`}></div>
-                                            <span className="text-[10px] md:text-xs uppercase tracking-widest font-bold">Raw Prompt</span>
+                                            <span className="text-xs uppercase tracking-widest font-bold">Raw Prompt</span>
                                         </button>
 
                                         {/* Upscale Toggle */}
@@ -992,7 +900,7 @@ const AvatarGenerator: React.FC = () => {
                                             className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 border transition-all rounded-xl ${upscale ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
                                         >
                                             <Sparkles size={16} className={upscale ? 'text-black' : ''} />
-                                            <span className="text-[10px] md:text-xs uppercase tracking-widest font-bold">Upscale</span>
+                                            <span className="text-xs uppercase tracking-widest font-bold">Upscale</span>
                                         </button>
                                     </div>
                                 </div>
@@ -1025,13 +933,36 @@ const AvatarGenerator: React.FC = () => {
                 </div>
 
                 {/* RIGHT COLUMN: History & Workspace */}
-                <div className="xl:col-span-3 space-y-4 flex flex-col h-auto order-2 xl:order-3">
+                <div className="xl:col-span-3 space-y-4 flex flex-col h-full">
+                    {/* 1. Coins / Credits Widget */}
+                    <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl p-6 flex flex-col items-center justify-center shadow-lg relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#d2ac47]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <span className="text-[#d2ac47]/60 text-[9px] uppercase tracking-[0.3em] mb-1">Balance</span>
+                        <div className="flex items-center gap-2 text-[#F9F1D8] drop-shadow-[0_0_10px_rgba(210,172,71,0.5)]">
+                            <div className="w-8 h-8 rounded-full bg-gold-gradient shadow-[0_0_15px_rgba(255,215,0,0.6)] flex items-center justify-center mr-2" style={{ animation: 'spinY 5s linear infinite' }}>
+                                <div className="w-5 h-5 rounded-full border border-black/20"></div>
+                            </div>
+                            <span className="text-3xl font-serif font-bold">2,450</span>
+                            <div className="flex flex-col leading-none">
+                                <span className="text-xs text-[#d2ac47] font-bold uppercase tracking-wider">Credits</span>
+                                <span className="text-[9px] text-[#d2ac47]/60 uppercase tracking-widest">Available</span>
+                            </div>
+                        </div>
+                    </div>
 
-                    {/* 1. Output Area - MOVED TO TOP ON MOBILE (order-1) vs (order-3 on PC) */}
-                    <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl relative flex items-center justify-center overflow-hidden shadow-2xl group flex-col w-full transition-all duration-700 h-[450px] md:h-[580px] shrink-0 mx-2 md:mx-0 order-1 xl:order-3">
+                    {/* 2. Stats Dashboard */}
+                    <GamificationDashboard />
+
+                    {/* 3. Output Area - ALIGNED BLOCK (Now at Top) */}
+                    <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl relative flex items-center justify-center overflow-hidden shadow-2xl group flex-col w-full transition-all duration-700 h-[580px] shrink-0">
+                        {/* 1. LAYER: Ambient Background (Blur Fill) */}
                         <div className="absolute inset-0 pointer-events-none">
                             {generatedImage ? (
-                                <img src={generatedImage} alt="" className="w-full h-full object-cover opacity-40 blur-3xl scale-150 saturate-150" />
+                                <img
+                                    src={generatedImage}
+                                    alt=""
+                                    className="w-full h-full object-cover opacity-40 blur-3xl scale-150 saturate-150"
+                                />
                             ) : (
                                 <div className="w-full h-full bg-[radial-gradient(circle_at_center,_#1a1a1a_0%,_#050505_100%)] opacity-50"></div>
                             )}
@@ -1041,74 +972,63 @@ const AvatarGenerator: React.FC = () => {
                         {generatedImage && (
                             <>
                                 <img src={generatedImage} alt="Generated Avatar" className="relative z-10 w-full h-full object-contain drop-shadow-2xl shadow-black" />
+
+                                {/* Deco Corners */}
                                 <div className="absolute top-4 left-4 w-6 h-6 border-t border-l border-[#d2ac47]/50 pointer-events-none z-20 rounded-tl-lg"></div>
                                 <div className="absolute top-4 right-4 w-6 h-6 border-t border-r border-[#d2ac47]/50 pointer-events-none z-20 rounded-tr-lg"></div>
-
-                                {/* Action Buttons Overlay */}
-                                <div className="absolute bottom-4 right-4 z-40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-3">
-                                    <button
-                                        onClick={() => setIsEditModalOpen(true)}
-                                        className="p-3 bg-black/40 backdrop-blur-xl border border-[#d2ac47]/30 text-[#d2ac47] rounded-full shadow-xl hover:bg-[#d2ac47] hover:text-black transition-all hover:scale-110"
-                                        title="AI Photo Editor"
-                                    >
-                                        <Wand2 size={20} />
-                                    </button>
-                                    <button
-                                        onClick={handleDownload}
-                                        className="p-3 bg-gold-gradient text-black rounded-full shadow-xl hover:scale-110 transition-all"
-                                        title="Download Image"
-                                    >
-                                        <Download size={20} />
-                                    </button>
-                                </div>
+                                <div className="absolute bottom-4 left-4 w-6 h-6 border-b border-l border-[#d2ac47]/50 pointer-events-none z-20 rounded-bl-lg"></div>
+                                <div className="absolute bottom-4 right-4 w-6 h-6 border-b border-r border-[#d2ac47]/50 pointer-events-none z-20 rounded-br-lg"></div>
                             </>
                         )}
 
+                        {/* 2. LAYER: Loading Logger */}
                         {loading && (
-                            <div className="absolute inset-0 z-50">
+                            <div className={`flex flex-col items-center justify-center ${generatedImage ? 'absolute inset-0 z-20 bg-black/50 backdrop-blur-sm' : 'w-full h-full'}`}>
                                 <AvatarLogger status={currentStatus} error={error} />
                             </div>
                         )}
 
+                        {/* 3. LAYER: Action Buttons (Top Overlay - Adjusted for sidebar width) */}
+                        {generatedImage && (
+                            <div className="absolute top-4 left-0 w-full z-30 flex flex-col items-center gap-2 px-4 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
+                                <button
+                                    onClick={handleGenerate}
+                                    disabled={loading}
+                                    className={`w-full py-2 text-[9px] tracking-widest uppercase flex items-center justify-center gap-2 border border-[#d2ac47] bg-black/60 backdrop-blur-md rounded-lg hover:bg-[#d2ac47] hover:text-black shadow-2xl transition-all ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    <RefreshCw size={12} className={loading ? "animate-spin" : ""} /> {loading ? "Processing..." : "Regenerate"}
+                                </button>
+                                <button onClick={handleDownload} className="w-full py-2 text-[9px] tracking-widest uppercase flex items-center justify-center gap-2 bg-gold-gradient text-black rounded-lg shadow-2xl transition-all hover:scale-105">
+                                    <Download size={12} /> Download
+                                </button>
+                            </div>
+                        )}
+
+                        {/* 4. LAYER: Placeholder */}
                         {!generatedImage && !loading && (
-                            <div className="text-[#d2ac47]/30 flex flex-col items-center gap-4 animate-pulse">
-                                <Camera size={64} strokeWidth={0.5} />
-                                <div className="flex flex-col items-center gap-2">
-                                    <span className="text-[10px] tracking-[0.4em] uppercase font-bold">Active Workspace</span>
-                                    <span className="text-[8px] text-[#d2ac47]/40 uppercase tracking-[0.2em] font-medium italic">Generation result will appear here</span>
+                            <div className="text-[#d2ac47]/10 flex flex-col items-center gap-2">
+                                <Camera size={48} strokeWidth={0.5} />
+                                <span className="text-[8px] tracking-[0.4em] uppercase font-bold">Active Workspace</span>
+                            </div>
+                        )}
+
+                        {/* Metadata Footer (Inside Output) */}
+                        {activeItem && (
+                            <div className="absolute bottom-0 left-0 w-full px-3 pb-2 pt-2 text-center z-20 border-t border-[#d2ac47]/10 bg-black/80 backdrop-blur-xl">
+                                <p className="text-[#F9F1D8] text-[10px] font-serif italic mb-0.5 truncate">
+                                    {activeItem.prompt ? (activeItem.prompt.substring(0, 40) + (activeItem.prompt.length > 40 ? '...' : '')) : (activeItem.label || 'Untitled')}
+                                </p>
+                                <div className="flex items-center justify-center gap-2 text-[7px] uppercase tracking-[0.2em] text-[#d2ac47]/40 font-bold">
+                                    <span>Verified Forge</span>
                                 </div>
                             </div>
                         )}
                     </div>
 
-                    {/* 2. Stats & Credits - (order-2 on mobile) vs (order-1 on PC) */}
-                    <div className="order-2 xl:order-1 space-y-4">
-                        {/* 1. Coins / Credits Widget - RESTORED PREMIUM STYLE */}
-                        <div className="bg-[#050505] border border-[#d2ac47]/20 rounded-3xl p-4 flex flex-col items-center justify-center shadow-lg relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-b from-[#d2ac47]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            <span className="text-[#d2ac47]/60 text-[9px] uppercase tracking-[0.3em] mb-1">Balance</span>
-                            <div className="flex items-center gap-2 text-[#F9F1D8] drop-shadow-[0_0_10px_rgba(210,172,71,0.5)]">
-                                {/* Gold Coin Icon */}
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ffd700] via-[#fbeea4] to-[#b8860b] border border-[#fbeea4] shadow-[0_0_15px_rgba(255,215,0,0.6)] flex items-center justify-center mr-2" style={{ animation: 'spinY 5s linear infinite' }}>
-                                    <div className="w-5 h-5 rounded-full border border-[#b8860b]/50"></div>
-                                </div>
-                                <span className="text-4xl font-serif font-bold">2,450</span>
-                                <div className="flex flex-col leading-none">
-                                    <span className="text-xs text-[#d2ac47] font-bold uppercase tracking-wider">Credits</span>
-                                    <span className="text-[9px] text-[#d2ac47]/60 uppercase tracking-widest">Available</span>
-                                </div>
-                            </div>
-                            <button className="mt-2 px-3 py-1 border border-[#d2ac47]/30 text-[#d2ac47] text-[7px] uppercase tracking-[0.2em] hover:bg-[#d2ac47] hover:text-black transition-all rounded-full">
-                                Add Funds
-                            </button>
-                        </div>
-                        <GamificationDashboard />
-                    </div>
-
-                    {/* 3. History / Gallery - (order-3 on mobile) vs (order-4 on PC) */}
-                    <div className="bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-1 md:p-2 shadow-2xl relative flex flex-col overflow-hidden h-[500px] md:h-[750px] shrink-0 mx-2 md:mx-0 order-3 xl:order-4">
-                        <div className="flex items-center justify-between h-8 md:h-10 px-4 mt-2">
-                            <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em]">Personal History</span>
+                    {/* 4. History / Gallery - VERTICAL PRO BLOCK (Now at Bottom) */}
+                    <div className="bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden h-[500px] shrink-0">
+                        <div className="flex items-center justify-between h-10 px-4">
+                            <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em]">History</span>
                         </div>
                         <UserGallery
                             newItems={galleryItems}
@@ -1119,7 +1039,6 @@ const AvatarGenerator: React.FC = () => {
                             onSelect={(item) => {
                                 setGeneratedImage(item.result_url || (item as any).image_url || (item as any).url || null);
                                 setActiveItem(item);
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
                             }}
                             onRefresh={() => fetchHistory()}
                         />
@@ -1127,12 +1046,12 @@ const AvatarGenerator: React.FC = () => {
                 </div>
             </div>
 
-            {/* Recent Creations Gallery (Showcase Masterpieces) */}
+            {/* Recent Creations Gallery (New Section - Match Video Style) */}
             {galleryItems.length > 0 && (
-                <div className="mt-12 animate-fade-in-up px-2 md:px-0">
+                <div className="mt-12 animate-fade-in-up">
                     <div className="flex items-center gap-4 mb-8">
                         <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#d2ac47]/30"></div>
-                        <h2 className="text-2xl font-serif text-[#F9F1D8] italic">Showcase Masterpieces</h2>
+                        <h2 className="text-2xl font-serif text-[#F9F1D8] italic">Recent Masterpieces</h2>
                         <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#d2ac47]/30"></div>
                     </div>
 
@@ -1162,19 +1081,11 @@ const AvatarGenerator: React.FC = () => {
                 </div>
             )}
 
-            <EditPhotoModal
-                isOpen={isEditModalOpen}
-                onClose={() => setIsEditModalOpen(false)}
-                onSubmit={() => {
-                    setIsEditModalOpen(false);
-                    alert("AI Edit Request (Coming Soon): " + editPrompt);
-                }}
-                prompt={editPrompt}
-                setPrompt={setEditPrompt}
-                loading={loading}
-            />
-
             <style>{`
+                @keyframes breathe {
+                    0% { transform: scale(1); filter: brightness(0.8); }
+                    100% { transform: scale(1.05); filter: brightness(1.1); }
+                }
                 @keyframes spinY {
                     0% { transform: rotateY(0deg); }
                     100% { transform: rotateY(360deg); }

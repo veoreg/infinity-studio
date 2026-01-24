@@ -10,7 +10,19 @@
 
 [[redirects]]
   from = "/api/avatar"
-  to = "https://n8n.develotex.io/webhook/generate-flux-image"
+  to = "https://n8n.develotex.io/webhook/Flux_Image_Generator_Advanced_Upscl_3+SB"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/edit"
+  to = "https://n8n.develotex.io/webhook/Flux_Image_Generator_Advanced_Upscl_3+SB"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/cancel-generation"
+  to = "https://n8n.develotex.io/webhook/cancel-generation"
   status = 200
   force = true
 
@@ -18,3 +30,4 @@
   from = "/*"
   to = "/index.html"
   status = 200
+

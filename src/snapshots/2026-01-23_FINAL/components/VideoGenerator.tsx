@@ -429,12 +429,9 @@ const VideoGenerator: React.FC = () => {
 
         // 2. Call N8n Cancel Webhook (Async)
         if (genId) {
-            console.log("🛑 [CANCEL] Attempting to stop generation ID:", genId);
+            console.log("🛑 Sending cancel request for:", genId);
             axios.post('/api/cancel-generation', { generation_id: genId })
-                .then(res => console.log("✅ [CANCEL] Webhook Response:", res.status))
-                .catch(err => console.error("⚠️ [CANCEL] Webhook error:", err.message));
-        } else {
-            console.warn("⚠️ [CANCEL] No active generation ID found to cancel.");
+                .catch(err => console.warn("Cancel webhook error (non-critical):", err));
         }
 
         // 3. Stop Listeners
@@ -662,10 +659,10 @@ const VideoGenerator: React.FC = () => {
                     <span className="text-[#d2ac47] text-[10px] font-bold tracking-[0.4em] uppercase">Generation 2.4 Active</span>
                     <div className="h-[1px] w-12 bg-[#d2ac47]"></div>
                 </div>
-                <h1 className="text-3xl md:text-6xl font-serif text-[#F9F1D8] mb-4 leading-tight drop-shadow-[0_0_25px_rgba(210,172,71,0.2)] px-4">
+                <h1 className="text-4xl md:text-6xl font-serif text-[#F9F1D8] mb-4 leading-tight drop-shadow-[0_0_25px_rgba(210,172,71,0.2)]">
                     Infinity Video<span className="text-[#d2ac47]">...</span>
                 </h1>
-                <p className="text-[#F9F1D8]/60 max-w-2xl mx-auto font-sans text-[10px] md:text-xs tracking-[0.1em] leading-relaxed uppercase px-6">
+                <p className="text-[#F9F1D8]/60 max-w-2xl mx-auto font-sans text-xs tracking-[0.1em] leading-relaxed uppercase">
                     Forging digital desire. The pinnacle of <i className="text-gold-luxury italic lowercase text-lg">AI Aesthetics</i>.
                 </p>
             </div>
@@ -695,7 +692,7 @@ const VideoGenerator: React.FC = () => {
 
                 {/* Center: Generator Interface (Narrowed & Moved Up) */}
                 <div className="w-full xl:w-auto xl:col-span-5 flex flex-col">
-                    <div className="bg-velvet-depth border border-[#d2ac47]/20 rounded-3xl p-4 md:p-5 relative overflow-hidden flex-1 flex flex-col justify-start shadow-2xl transition-all hover:border-[#d2ac47]/40 mx-2 md:mx-0">
+                    <div className="bg-velvet-depth border border-[#d2ac47]/20 rounded-3xl p-5 relative overflow-hidden flex-1 flex flex-col justify-start shadow-2xl transition-all hover:border-[#d2ac47]/40">
 
                         {/* Decorative Background Elements */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47]/50 to-transparent"></div>
@@ -706,7 +703,7 @@ const VideoGenerator: React.FC = () => {
                             {/* Inputs Container - Flex Col on Mobile, Grid on MD */}
                             <div className="flex flex-col md:grid md:grid-cols-2 gap-4">
                                 {/* Image Input Frame */}
-                                <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 overflow-hidden flex flex-col rounded-2xl h-56 md:h-64">
+                                <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 overflow-hidden flex flex-col rounded-2xl h-64">
                                     <div className="absolute top-0 left-0 bg-[#d2ac47] text-black text-[9px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] z-20 rounded-tl-2xl rounded-br-xl pointer-events-none">
                                         Source Image
                                     </div>
@@ -736,7 +733,7 @@ const VideoGenerator: React.FC = () => {
                                 </div>
 
                                 {/* Prompt Input Frame */}
-                                <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 flex flex-col rounded-2xl h-56 md:h-64">
+                                <div className="group relative border border-[#d2ac47]/30 bg-[#0a0a0a] hover:border-[#d2ac47] transition-all duration-500 flex flex-col rounded-2xl h-64">
 
                                     {/* Vision Prompt (Full Height) */}
                                     <div className="relative flex-1 flex flex-col border-b border-[#d2ac47]/10">
@@ -1027,8 +1024,8 @@ const VideoGenerator: React.FC = () => {
                     {/* 2. Gamification Stats (Moved here) */}
                     <GamificationDashboard />
 
-                    {/* 3. History / Gallery - Taller on Mobile, Elastic & Stable on PC */}
-                    <div className="flex-1 bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden min-h-[680px] xl:min-h-[800px] mx-2 md:mx-0">
+                    {/* 3. History / Gallery (Dump) - Moved to Bottom Right */}
+                    <div className="flex-1 bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden">
                         <div className="flex items-center justify-between h-10 px-0">
                             <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em] pl-4">History</span>
                         </div>
@@ -1038,6 +1035,7 @@ const VideoGenerator: React.FC = () => {
                                 const { error } = await supabase.from('generations').delete().eq('id', id);
                                 if (!error) {
                                     fetchHistory();
+                                    // If currently playing the deleted video, clear the main screen
                                     const deletedItem = galleryItems.find(i => i.id === id);
                                     if (deletedItem && videoUrl === (deletedItem.result_url || deletedItem.video_url || deletedItem.url)) {
                                         setVideoUrl(null);

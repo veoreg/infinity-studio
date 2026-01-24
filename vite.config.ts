@@ -14,16 +14,23 @@ export default defineConfig({
         timeout: 900000,
       },
       '/api/avatar': {
-        target: 'https://n8n.develotex.io/webhook/Flux_Image_Generator_Advanced_Upscl_3+SB',
+        target: 'https://n8n.develotex.io',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/avatar/, ''),
+        rewrite: (path) => path.replace(/^\/api\/avatar/, '/webhook/Flux_Image_Generator_Advanced_Upscl_3+SB'),
+        secure: false,
+        timeout: 900000,
+      },
+      '/api/edit': {
+        target: 'https://n8n.develotex.io',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/edit/, '/webhook/Flux_Image_Generator_Advanced_Upscl_3+SB'),
         secure: false,
         timeout: 900000,
       },
       '/api/cancel-generation': {
-        target: 'https://n8n.develotex.io/webhook/cancel-generation',
+        target: 'https://n8n.develotex.io',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/cancel-generation/, ''),
+        rewrite: (path) => path.replace(/^\/api\/cancel-generation/, '/webhook/cancel-generation'),
         secure: false,
       }
     }

@@ -55,8 +55,8 @@ Frontend API Call → N8N Webhook → ComfyUI → Supabase Storage
     - **Golden Icons**: Matte glass buttons with neon glow on hover + golden borders in inactive state.
     - **Golden Scrubber**: Smooth fade-in animation and premium golden progress bar.
     - **Consolidated Galleries**: Both main gallery and "Recent Masterpieces" now share the same premium component structure.
-- **Snapshot**: **100% Safe Backup** located at `src/snapshots/22.01.26_vid1`.
-- **Deployment**: Vercel/Netlify auto-deploy active.
+- **Snapshot**: **100% Safe Backup** located at `src/snapshots/2026-01-23_FINAL`.
+- **Deployment**: Vercel/Netlify auto-deploy active. Инструкция по ручному деплою: `DEPLOYMENT_GUIDE.md`.
 
 ## 📝 Задачи на будущее
 - [ ] Настроить автоматическое пополнение баланса/кредитов.

@@ -6,7 +6,15 @@
         },
         {
             "source": "/api/avatar",
-            "destination": "https://n8n.develotex.io/webhook/generate-flux-image"
+            "destination": "https://n8n.develotex.io/webhook/Flux_Image_Generator_Advanced_Upscl_3+SB"
+        },
+        {
+            "source": "/api/cancel-generation",
+            "destination": "https://n8n.develotex.io/webhook/cancel-generation"
+        },
+        {
+            "source": "/api/edit",
+            "destination": "https://n8n.develotex.io/webhook/Flux_Image_Generator_Advanced_Upscl_3+SB"
         },
         {
             "source": "/(.*)",
