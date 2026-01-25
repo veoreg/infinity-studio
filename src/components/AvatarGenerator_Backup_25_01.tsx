@@ -49,7 +49,7 @@ const CustomSelect: React.FC<CustomSelectProps & { centerLabel?: boolean }> = ({
 
             {/* Dropdown Options - Absolute positioned with high Z-index */}
             {isOpen && (
-                <div className="absolute top-full left-0 min-w-full w-auto whitespace-nowrap bg-[#050505] border border-[#d2ac47] z-[99999] shadow-[0_10px_40px_rgba(0,0,0,0.9)] animate-fade-in-down mt-2 rounded-xl overflow-hidden max-h-[300px] overflow-y-auto custom-scrollbar">
+                <div className="absolute top-full left-0 min-w-full w-auto whitespace-nowrap bg-[#050505] border border-[#d2ac47] z-[100] shadow-[0_10px_40px_rgba(0,0,0,0.9)] animate-fade-in-down mt-2 rounded-xl overflow-hidden max-h-[300px] overflow-y-auto custom-scrollbar">
                     {options.map((opt) => (
                         <div
                             key={opt.value}
@@ -750,11 +750,12 @@ const AvatarGenerator: React.FC = () => {
 
                 {/* Left Banner - Restored High-Res & Art Deco Corners to match Video Generator exactly */}
                 {/* Left Panel: Showcase Gallery (Vertical List) */}
-                <div className="order-2 xl:order-1 xl:col-span-3 xl:h-[1100px] overflow-y-auto custom-scrollbar pr-2">
+                {/* Left Panel: Showcase Gallery (Vertical List) */}
+                <div className="hidden xl:block xl:col-span-3 h-[1100px] overflow-y-auto custom-scrollbar pr-2 order-3 xl:order-1">
                     <div className="flex items-center justify-between mb-6 px-2">
                         <div className="flex items-center gap-2 text-[#d2ac47]">
                             <Sparkles size={16} />
-                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase">Source Frames</span>
+                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase">Source Frames & History</span>
                         </div>
 
                         {/* Load & Edit Button (User Request) */}
@@ -774,7 +775,7 @@ const AvatarGenerator: React.FC = () => {
                                 onChange={async (e) => {
                                     if (e.target.files && e.target.files[0]) {
                                         const file = e.target.files[0];
-                                        // Quick Upload using Supabase
+                                        // Quick Upload using Supabase (Inline for speed)
                                         const fileExt = file.name.split('.').pop();
                                         const uniqueName = `edit_source_${Date.now()}.${fileExt}`;
                                         try {
@@ -795,57 +796,49 @@ const AvatarGenerator: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                        {galleryItems
-                            .filter(item => {
-                                const url = item.result_url || item.video_url || item.url || '';
-                                return !url.toLowerCase().endsWith('.mp4') && item.type !== 'video';
-                            })
-                            .map((item) => (
-                                <div
-                                    key={item.id}
-                                    className="group/item relative bg-[#080808] border border-[#d2ac47]/20 rounded-xl overflow-hidden aspect-[9/16] shrink-0 cursor-pointer transition-all hover:border-[#d2ac47] hover:shadow-[0_0_20px_rgba(210,172,71,0.2)]"
-                                    onClick={() => {
-                                        setGeneratedImage(item.result_url || item.image_url || item.url);
-                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                    }}
-                                >
-                                    <img
-                                        src={item.result_url || item.image_url || item.url}
-                                        alt={item.label}
-                                        className="w-full h-full object-cover transition-all duration-700 group-hover/item:scale-110"
-                                    />
+                        {galleryItems.map((item) => (
+                            <div
+                                key={item.id}
+                                className="group/item relative bg-[#080808] border border-[#d2ac47]/20 rounded-xl overflow-hidden aspect-[9/16] shrink-0 cursor-pointer transition-all hover:border-[#d2ac47] hover:shadow-[0_0_20px_rgba(210,172,71,0.2)]"
+                                onClick={() => {
+                                    setGeneratedImage(item.result_url || item.image_url || item.url);
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                            >
+                                <img
+                                    src={item.result_url || item.image_url || item.url}
+                                    alt={item.label}
+                                    className="w-full h-full object-cover transition-all duration-700 group-hover/item:scale-110"
+                                />
 
-                                    {/* Hover Overlay - Premium "Inject Frame" Button */}
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2 block">
-                                        <div className="w-full py-2 bg-[#d2ac47] text-black text-[8px] font-black uppercase tracking-[0.2em] text-center rounded-lg transform translate-y-4 group-hover/item:translate-y-0 transition-transform duration-300 flex items-center justify-center gap-1 shadow-[0_5px_15px_rgba(0,0,0,0.5)]">
-                                            <span>Inject Frame</span>
-                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
-                                                <path d="M5 12h14" />
-                                                <path d="M12 5l7 7-7 7" />
-                                            </svg>
-                                        </div>
+                                {/* Hover Overlay - Premium "Inject Frame" Button */}
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2 block">
+                                    <div className="w-full py-2 bg-[#d2ac47] text-black text-[8px] font-black uppercase tracking-[0.2em] text-center rounded-lg transform translate-y-4 group-hover/item:translate-y-0 transition-transform duration-300 flex items-center justify-center gap-1 shadow-[0_5px_15px_rgba(0,0,0,0.5)]">
+                                        <span>Inject Frame</span>
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
+                                            <path d="M5 12h14" />
+                                            <path d="M12 5l7 7-7 7" />
+                                        </svg>
                                     </div>
-
-                                    {/* Selection Indicator */}
-                                    {generatedImage === (item.result_url || item.image_url || item.url) && (
-                                        <div className="absolute inset-0 border-2 border-[#d2ac47] rounded-xl pointer-events-none box-border shadow-[inset_0_0_20px_rgba(210,172,71,0.5)]"></div>
-                                    )}
                                 </div>
-                            ))}
+
+                                {/* Selection Indicator (Active State Simulation) */}
+                                {generatedImage === (item.result_url || item.image_url || item.url) && (
+                                    <div className="absolute inset-0 border-2 border-[#d2ac47] rounded-xl pointer-events-none box-border shadow-[inset_0_0_20px_rgba(210,172,71,0.5)]"></div>
+                                )}
+                            </div>
+                        ))}
                     </div>
 
-                    {galleryItems.filter(item => {
-                        const url = item.result_url || item.video_url || item.url || '';
-                        return !url.toLowerCase().endsWith('.mp4') && item.type !== 'video';
-                    }).length === 0 && (
-                            <div className="text-[#d2ac47]/30 text-xs text-center py-10 font-mono text-[10px] uppercase tracking-widest border border-dashed border-[#d2ac47]/10 rounded-xl mt-4">
-                                NO SOURCE IMAGES
-                            </div>
-                        )}
+                    {galleryItems.length === 0 && (
+                        <div className="text-[#d2ac47]/30 text-xs text-center py-10 font-mono text-[10px] uppercase tracking-widest border border-dashed border-[#d2ac47]/10 rounded-xl mt-4">
+                            NO SOURCE FRAMES
+                        </div>
+                    )}
                 </div>
 
                 {/* Center COLUMN: Canvas / Preview (Span 6) */}
-                <div className="order-1 xl:order-2 w-full xl:col-span-6 space-y-6 relative z-10">
+                <div className="w-full xl:col-span-6 space-y-6 relative z-10 order-1 xl:order-2">
 
                     {/* NEW: Compact Identity Toolbar (Above Canvas) */}
                     <div className="bg-[#121212]/90 backdrop-blur-md border border-[#d2ac47]/20 rounded-xl px-2 py-1 flex flex-col md:flex-row gap-2 items-center justify-between shadow-lg relative z-[60]">
@@ -1213,104 +1206,105 @@ const AvatarGenerator: React.FC = () => {
                         </div>
 
                         {/* 3. Style & Prompt - Art Deco Panel */}
+                        <div className="bg-[#121212] border border-[#d2ac47]/20 rounded-3xl p-8 relative shadow-2xl transition-all hover:border-[#d2ac47]/40">
+                            <div className="absolute top-0 left-0 px-6 py-2 bg-[#d2ac47] text-black text-[10px] font-bold tracking-[0.2em] uppercase rounded-tl-3xl rounded-br-2xl shadow-lg">
+                                Fine Tuning
+                            </div>
 
+                            <div className="mt-6 space-y-6">
+                                {/* Art Style Dropdown */}
+                                <div>
+                                    <CustomSelect
+                                        label="Art Style"
+                                        value={artStyle}
+                                        onChange={(val) => setArtStyle(val)}
+                                        options={[
+                                            { label: 'AI Decide / Empty', value: '' },
+                                            { label: 'Realistic RAW', value: 'Realistic RAW' },
+                                            { label: 'Vintage Pin-Up', value: 'Vintage Pin-Up' },
+                                            { label: 'Private Polaroid', value: 'Private Polaroid' },
+                                            { label: 'Analogue Film', value: 'Analogue Film' },
+                                            { label: 'Anime / Manga', value: 'Anime / Manga' },
+                                            { label: 'Hentai / NSFW', value: 'Hentai / NSFW' },
+                                            { label: 'Fashion Editorial', value: 'Fashion Editorial' },
+                                            { label: 'Gothic Noir', value: 'Gothic Noir' }
+                                        ]}
+                                    />
+                                </div>
+
+
+
+                                <div>
+                                    <label className="text-[#d2ac47] text-[10px] font-bold tracking-[0.2em] uppercase mb-2 block">Prompt Details</label>
+                                    <textarea value={userPrompt} onChange={(e) => setUserPrompt(e.target.value)}
+                                        className="w-full bg-[#0a0a0a] border border-[#d2ac47]/30 text-[#F9F1D8] p-3 text-sm h-24 focus:outline-none focus:border-[#d2ac47] rounded-xl shadow-inner"
+                                        placeholder="Describe specific details..." />
+                                    {/* Advanced Controls: Seed & Raw Mode */}
+                                    {/* Layout Refactor: Seed Row, Then Toggles Row */}
+                                    <div className="flex flex-col gap-3 mt-3">
+                                        {/* Row 1: Seed Control (Full Width) */}
+                                        <div className="w-full flex items-center gap-2 bg-[#0a0a0a] border border-[#d2ac47]/20 p-4 rounded-xl">
+                                            <span className="text-[#d2ac47] text-xs uppercase tracking-wider whitespace-nowrap">Seed:</span>
+                                            <input
+                                                type="number"
+                                                value={seed === -1 ? '' : seed}
+                                                placeholder="Random"
+                                                onChange={(e) => setSeed(e.target.value === '' ? -1 : parseInt(e.target.value))}
+                                                className="bg-transparent text-[#F9F1D8] text-sm font-mono w-full focus:outline-none placeholder-[#d2ac47]/30"
+                                            />
+                                            <button
+                                                onClick={() => setSeed(Math.floor(Math.random() * 2147483647))}
+                                                className="text-[#d2ac47]/50 hover:text-[#d2ac47] transition-colors"
+                                                title="Spin Random Seed"
+                                            >
+                                                <RefreshCw size={16} className="active:animate-spin" />
+                                            </button>
+                                        </div>
+
+                                        {/* Row 2: Toggles (Split Width) */}
+                                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                            {/* Raw Prompt Toggle */}
+                                            <button
+                                                onClick={() => setRawPromptMode(!rawPromptMode)}
+                                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 border transition-all rounded-xl ${rawPromptMode ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
+                                            >
+                                                <div className={`w-2 h-2 rounded-full ${rawPromptMode ? 'bg-black' : 'bg-[#d2ac47]/50'}`}></div>
+                                                <span className="text-[10px] md:text-xs uppercase tracking-widest font-bold">Raw Prompt</span>
+                                            </button>
+
+                                            {/* Upscale Toggle */}
+                                            <button
+                                                onClick={() => setUpscale(!upscale)}
+                                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 border transition-all rounded-xl ${upscale ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
+                                            >
+                                                <Sparkles size={16} className={upscale ? 'text-black' : ''} />
+                                                <span className="text-[10px] md:text-xs uppercase tracking-widest font-bold">Upscale</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Error Message Display (Moved Up for Visibility) */}
                         {error && <div className="text-red-400 text-center font-serif italic bg-red-950/30 p-4 border border-red-900/50 rounded-xl animate-pulse mb-4">{error}</div>}
                     </div>
                 </div>
-                {/* Right Panel: Gallery + Fine Tuning (Stacked) */}
-                <div className="order-3 xl:order-3 w-full xl:col-span-3 h-auto xl:h-[1100px] flex flex-col gap-4">
-
-                    {/* 1. Gallery (Styled like VideoGenerator) */}
-                    <div className="order-2 xl:order-1 flex-1 bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden mx-2 md:mx-0 min-h-0">
-                        <div className="flex items-center justify-between h-10 px-0">
-                            <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em] pl-4">History</span>
-                        </div>
-                        <UserGallery
-                            newItems={galleryItems}
-                            onRefresh={fetchHistory}
-                            onSelect={(item) => {
-                                const url = item.result_url || item.video_url || item.url;
-                                if (url) setGeneratedImage(url);
-                            }}
-                            onDelete={async (id) => {
-                                const { error } = await supabase.from('generations').delete().eq('id', id);
-                                if (!error) fetchHistory();
-                            }}
-                        />
-                    </div>
-
-                    {/* 2. Fine Tuning Block (Moved Here - Compacted) */}
-                    <div className="order-1 xl:order-2 bg-[#121212] border border-[#d2ac47]/20 rounded-3xl p-5 relative shadow-2xl transition-all hover:border-[#d2ac47]/40 shrink-0">
-                        <div className="absolute top-0 left-0 px-4 py-1.5 bg-[#d2ac47] text-black text-[9px] font-bold tracking-[0.2em] uppercase rounded-tl-3xl rounded-br-2xl shadow-lg">
-                            Fine Tuning
-                        </div>
-
-                        <div className="mt-4 space-y-4">
-                            {/* Art Style */}
-                            <CustomSelect
-                                label="Art Style"
-                                value={artStyle}
-                                onChange={(val) => setArtStyle(val)}
-                                options={[
-                                    { label: 'AI Decide / Empty', value: '' },
-                                    { label: 'Realistic RAW', value: 'Realistic RAW' },
-                                    { label: 'Vintage Pin-Up', value: 'Vintage Pin-Up' },
-                                    { label: 'Private Polaroid', value: 'Private Polaroid' },
-                                    { label: 'Analogue Film', value: 'Analogue Film' },
-                                    { label: 'Anime / Manga', value: 'Anime / Manga' },
-                                    { label: 'Hentai / NSFW', value: 'Hentai / NSFW' },
-                                    { label: 'Fashion Editorial', value: 'Fashion Editorial' },
-                                    { label: 'Gothic Noir', value: 'Gothic Noir' }
-                                ]}
-                            />
-
-                            <div>
-                                <label className="text-[#d2ac47] text-[9px] font-bold tracking-[0.2em] uppercase mb-1 block">Prompt Details</label>
-                                <textarea value={userPrompt} onChange={(e) => setUserPrompt(e.target.value)}
-                                    className="w-full bg-[#0a0a0a] border border-[#d2ac47]/30 text-[#F9F1D8] p-3 text-xs h-20 focus:outline-none focus:border-[#d2ac47] rounded-xl shadow-inner resize-none"
-                                    placeholder="Describe specific details..." />
-
-                                <div className="flex flex-col gap-2 mt-2">
-                                    <div className="w-full flex items-center gap-2 bg-[#0a0a0a] border border-[#d2ac47]/20 p-2 rounded-xl">
-                                        <span className="text-[#d2ac47] text-[9px] uppercase tracking-wider whitespace-nowrap">Seed:</span>
-                                        <input
-                                            type="number"
-                                            value={seed === -1 ? '' : seed}
-                                            placeholder="Random"
-                                            onChange={(e) => setSeed(e.target.value === '' ? -1 : parseInt(e.target.value))}
-                                            className="bg-transparent text-[#F9F1D8] text-xs font-mono w-full focus:outline-none placeholder-[#d2ac47]/30"
-                                        />
-                                        <button
-                                            onClick={() => setSeed(Math.floor(Math.random() * 2147483647))}
-                                            className="text-[#d2ac47]/50 hover:text-[#d2ac47] transition-colors"
-                                            title="Spin Random Seed"
-                                        >
-                                            <RefreshCw size={14} className="active:animate-spin" />
-                                        </button>
-                                    </div>
-
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => setRawPromptMode(!rawPromptMode)}
-                                            className={`flex-1 flex items-center justify-center gap-1 py-2 border transition-all rounded-xl ${rawPromptMode ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
-                                        >
-                                            <div className={`w-1.5 h-1.5 rounded-full ${rawPromptMode ? 'bg-black' : 'bg-[#d2ac47]/50'}`}></div>
-                                            <span className="text-[8px] uppercase tracking-widest font-bold">Raw</span>
-                                        </button>
-                                        <button
-                                            onClick={() => setUpscale(!upscale)}
-                                            className={`flex-1 flex items-center justify-center gap-1 py-2 border transition-all rounded-xl ${upscale ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[#d2ac47]/30 text-[#d2ac47]/60 hover:text-[#d2ac47] hover:border-[#d2ac47]'}`}
-                                        >
-                                            <Sparkles size={12} className={upscale ? 'text-black' : ''} />
-                                            <span className="text-[8px] uppercase tracking-widest font-bold">Upscale</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                {/* Right Panel: Asset Sidebar (Moved to Right) */}
+                <div className="hidden xl:block xl:col-span-3 h-[1100px] order-2 xl:order-3 bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-1 overflow-hidden">
+                    <UserGallery
+                        newItems={galleryItems}
+                        compact={true}
+                        onRefresh={fetchHistory}
+                        onSelect={(item) => {
+                            const url = item.result_url || item.video_url || item.url;
+                            if (url) setGeneratedImage(url);
+                        }}
+                        onDelete={async (id) => {
+                            const { error } = await supabase.from('generations').delete().eq('id', id);
+                            if (!error) fetchHistory();
+                        }}
+                    />
                 </div>
             </div > {/* End of Main Grid */}
 
@@ -1342,7 +1336,7 @@ const AvatarGenerator: React.FC = () => {
                             body: JSON.stringify(payload)
                         });
 
-                        if (!response.ok) throw new Error('Failed to start edit workflow via Main Hook');
+                        if (!response.ok) throw new Error('Failed to start edit workflow');
 
                         // Note: n8n will update the DB, and our Supabase subscription in App.tsx 
                         // will automatically detect the new image and update the UI.

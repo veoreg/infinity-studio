@@ -35,6 +35,7 @@ interface UserGalleryProps {
     onDelete?: (id: number | string) => void;
     onSelect?: (item: GalleryItem) => void;
     onRefresh?: () => void;
+    compact?: boolean;
 }
 
 // -----------------------------------------------------------------------------------------

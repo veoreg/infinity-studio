@@ -4,6 +4,7 @@ import AvatarGenerator from './components/AvatarGenerator'
 import GoldenDust from './components/GoldenDust'
 import HolidayPromo from './components/HolidayPromo'
 import AuthModal from './components/AuthModal'
+import CompactHeaderInfo from './components/CompactHeaderInfo'
 import { Video, Sparkles, User, LogOut } from 'lucide-react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 
@@ -57,7 +58,8 @@ function AppContent() {
             </div>
 
             {/* Auth / Profile Section */}
-            <div className="flex items-center gap-6 order-2 md:order-3">
+            <div className="flex items-center gap-4 order-2 md:order-3">
+              <CompactHeaderInfo />
               {user ? (
                 <div className="flex items-center gap-4">
                   <span className="hidden md:inline text-[10px] uppercase tracking-widest text-[#d2ac47]/80 font-bold">{user.email?.split('@')[0]}</span>

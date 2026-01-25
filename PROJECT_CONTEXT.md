@@ -38,7 +38,7 @@ Frontend API Call → N8N Webhook → ComfyUI → Supabase Storage
 - **Realtime**: Подписки на изменения для мониторинга статуса генерации
 - **REST API**: CRUD операции с таблицей `generations`
 - **Storage**: Хранение сгенерированных картинок и видео
-- **Auth**: Система аутентификации (планируется)
+- **Auth**: Система аутентификации
 
 ### Краткое объяснение для коллег
 > "Фронтенд на Vercel с автодеплоем по git push. Бэкенд — serverless на N8N webhooks, база — Supabase. Нет традиционных серверов — современный JAMstack подход."
@@ -50,6 +50,11 @@ Frontend API Call → N8N Webhook → ComfyUI → Supabase Storage
 - **User Gallery**: Полноценная лента-кинолента с историей генераций из Supabase.
 - **Gamification**: Система баллов/монет и достижений (интерфейс).
 
+### 4. AI Image Refiner (Editor)
+- **UI**: Interactive "Before/After" slider with side-by-side layout on desktop.
+- **Workflow**: Uses a dedicated branch in n8n (via `job_type: edit` switch).
+- **History Logic**: Edits create NEW records in Supabase `generations` table with a reference to the `parent_id` in metadata.
+- **VLM Guidance**: Quen VLM interprets user's natural language instructions to generate specific ComfyUI parameters.
 - [x] **UI Overhaul (22 Jan 2026)**:
     - **Apple Glass Aesthetic**: Semi-transparent, blurred backdrops (bg-black/40) for controls.
     - **Golden Icons**: Matte glass buttons with neon glow on hover + golden borders in inactive state.
@@ -73,6 +78,13 @@ Frontend API Call → N8N Webhook → ComfyUI → Supabase Storage
 - **Supabase**: Используется проект `dems-projects`.
 - **Main Workflow (100% Work)**: `e:\AI_girl_flux_dev\APP_VID\n8n\n8n_WAN22enhanced_safeMode_3+SB_MAIN.json` (Использовать как основной источник логики).
 
+
+## 📅 План на следующий рабочий день
+1. **Глубокое тестирование Qwen Edit**: Проверить сложные кейсы изменения (замена одежды, фона, прически) и отладить промпты.
+2. **Тюнинг VLM в n8n**: Улучшить распознавание инструкций пользователя для более точной генерации параметров ComfyUI.
+3. **Кнопка "Cancel"**: Реализовать функционал остановки очереди в ComfyUI при отмене на фронтенде.
+4. **Negative Prompts**: Вернуть и протестировать работу негативных промптов после обновления логики в n8n.
+5. **Оптимизация бандла**: Vite ругается на размер чанка (>500kb), стоит настроить `manualChunks`.
 
 ---
 *Обновлено агентом Antigravity (Google Deepmind).*
