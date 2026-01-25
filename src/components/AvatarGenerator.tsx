@@ -845,10 +845,10 @@ const AvatarGenerator: React.FC = () => {
                 </div>
 
                 {/* Center COLUMN: Canvas / Preview (Span 6) */}
-                <div className="order-1 xl:order-2 w-full xl:col-span-6 space-y-6 relative z-10">
+                <div className="order-1 xl:order-2 w-full xl:col-span-6 space-y-6 relative z-20">
 
                     {/* NEW: Compact Identity Toolbar (Above Canvas) */}
-                    <div className="bg-[#121212]/90 backdrop-blur-md border border-[#d2ac47]/20 rounded-xl px-2 py-1 flex flex-col md:flex-row gap-2 items-center justify-between shadow-lg relative z-[60]">
+                    <div className="bg-[#121212]/90 backdrop-blur-md border border-[#d2ac47]/20 rounded-xl px-2 py-1 flex flex-col md:flex-row gap-2 items-center justify-between shadow-lg relative z-[70]">
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-1.5 w-full">
                             <CustomSelect
                                 label="Gender"

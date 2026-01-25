@@ -81,7 +81,7 @@ function AppContent() {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-grow flex items-center relative z-10">
+      <main className="flex-grow flex items-center relative z-20">
         <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className={activeTab === 'video' ? 'block' : 'hidden'}>
             <VideoGenerator />
