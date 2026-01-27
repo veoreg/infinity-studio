@@ -319,7 +319,6 @@ const AvatarGenerator: React.FC = () => {
     // AI Edit State
     const [showQuickEdit, setShowQuickEdit] = useState(false);
     const [editPrompt, setEditPrompt] = useState('');
-    const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null); // Store original for comparison
 
     const fetchHistory = async () => {
         try {
@@ -565,7 +564,6 @@ const AvatarGenerator: React.FC = () => {
         setError(null);
         setIsEditMode(false); // This is a new generation, not an edit
         setOriginalImageForCompare(null); // Clear any previous comparison
-        setOriginalImageUrl(faceImageUrl); // Capture "Before" state
         generationStartTime.current = Date.now(); // рџ•’ TIME MARKER for Deep Scan
 
         try {
@@ -690,7 +688,7 @@ const AvatarGenerator: React.FC = () => {
         try {
             // 1. Lock in the "Before" state for comparison
             if (generatedImage) {
-                setOriginalImageUrl(generatedImage);
+                // setOriginalImageUrl(generatedImage); // REMOVED (Legacy)
             }
 
             // NOTE: We do NOT create a row here manually like in handleGenerate.
@@ -1055,7 +1053,6 @@ const AvatarGenerator: React.FC = () => {
                                                 e.stopPropagation();
                                                 if (window.confirm("Clear active workspace?")) {
                                                     setGeneratedImage(null);
-                                                    setOriginalImageUrl(null);
                                                     setIsEditMode(false);
                                                     setOriginalImageForCompare(null);
                                                 }
