@@ -49,22 +49,22 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="bg-[#0a0a0a] border border-[#d2ac47]/30 rounded-3xl w-full max-w-md p-8 relative shadow-[0_0_50px_rgba(210,172,71,0.1)]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[var(--bg-primary)]/80 backdrop-blur-sm p-4 animate-fade-in">
+            <div className="bg-[var(--bg-input)] border border-[var(--border-color)] rounded-3xl w-full max-w-md p-8 relative shadow-[0_0_50px_rgba(210,172,71,0.1)]">
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-[#d2ac47]/50 hover:text-[#d2ac47] transition-colors"
+                    className="absolute top-4 right-4 text-[var(--text-secondary)]/50 hover:text-[var(--text-secondary)] transition-colors"
                 >
                     <X size={20} />
                 </button>
 
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <h2 className="text-2xl font-serif text-[#F9F1D8] italic mb-2">
+                    <h2 className="text-2xl font-serif text-[var(--text-primary)] italic mb-2">
                         {isLogin ? 'Welcome Back' : 'Join the Elite'}
                     </h2>
-                    <p className="text-[#d2ac47]/60 text-xs uppercase tracking-widest">
+                    <p className="text-[var(--text-secondary)]/60 text-xs uppercase tracking-widest">
                         {isLogin ? 'Access your private collection' : 'Begin your legacy'}
                     </p>
                 </div>
@@ -85,24 +85,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
                     <div className="space-y-2">
                         <div className="relative group">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#d2ac47]/40 group-focus-within:text-[#d2ac47] transition-colors" size={16} />
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]/40 group-focus-within:text-[var(--text-secondary)] transition-colors" size={16} />
                             <input
                                 type="email"
                                 placeholder="Email Address"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-[#050505] border border-[#d2ac47]/20 rounded-xl py-3 pl-10 pr-4 text-[#F9F1D8] placeholder-[#d2ac47]/20 focus:outline-none focus:border-[#d2ac47]/60 transition-colors text-sm"
+                                className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl py-3 pl-10 pr-4 text-[var(--text-primary)] placeholder-[#d2ac47]/20 focus:outline-none focus:border-[#d2ac47]/60 transition-colors text-sm"
                                 required
                             />
                         </div>
                         <div className="relative group">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#d2ac47]/40 group-focus-within:text-[#d2ac47] transition-colors" size={16} />
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]/40 group-focus-within:text-[var(--text-secondary)] transition-colors" size={16} />
                             <input
                                 type="password"
                                 placeholder="Password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full bg-[#050505] border border-[#d2ac47]/20 rounded-xl py-3 pl-10 pr-4 text-[#F9F1D8] placeholder-[#d2ac47]/20 focus:outline-none focus:border-[#d2ac47]/60 transition-colors text-sm"
+                                className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl py-3 pl-10 pr-4 text-[var(--text-primary)] placeholder-[#d2ac47]/20 focus:outline-none focus:border-[#d2ac47]/60 transition-colors text-sm"
                                 required
                                 minLength={6}
                             />
@@ -120,7 +120,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     {/* Divider */}
                     <div className="flex items-center gap-3 my-4 opacity-50">
                         <div className="h-[1px] flex-1 bg-[#d2ac47]/30"></div>
-                        <span className="text-[#d2ac47] text-[10px] uppercase tracking-widest">OR</span>
+                        <span className="text-[var(--text-secondary)] text-[10px] uppercase tracking-widest">OR</span>
                         <div className="h-[1px] flex-1 bg-[#d2ac47]/30"></div>
                     </div>
 
@@ -156,7 +156,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 <div className="mt-6 text-center">
                     <button
                         onClick={() => setIsLogin(!isLogin)}
-                        className="text-[#d2ac47]/60 hover:text-[#d2ac47] text-xs underline decoration-dotted underline-offset-4 transition-colors"
+                        className="text-[var(--text-secondary)]/60 hover:text-[var(--text-secondary)] text-xs underline decoration-dotted underline-offset-4 transition-colors"
                     >
                         {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
                     </button>

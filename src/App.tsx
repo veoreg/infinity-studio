@@ -6,7 +6,7 @@ import HolidayPromo from './components/HolidayPromo'
 import AuthModal from './components/AuthModal'
 import CompactHeaderInfo from './components/CompactHeaderInfo'
 import { PWAInstallPrompt } from './components/PWAInstallPrompt'
-import { Video, Sparkles, User, LogOut } from 'lucide-react'
+import { Video, Sparkles, User, LogOut, Sun, Moon } from 'lucide-react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 
 
@@ -14,6 +14,25 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState<'video' | 'avatar'>('video');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { user, signOut } = useAuth();
+
+  // Theme State
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    return localStorage.getItem('theme') as 'dark' | 'light' || 'dark';
+  });
+
+  // Sync Theme
+  useState(() => {
+    const root = document.documentElement;
+    root.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  });
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
 
   // Listen for tab switch events from children
   useState(() => {
@@ -28,35 +47,35 @@ function AppContent() {
   });
 
   return (
-    <div className="min-h-screen flex flex-col text-[#F9F1D8] selection:bg-[#d2ac47] selection:text-black relative bg-pattern-deco overflow-x-hidden">
+    <div className="min-h-screen flex flex-col text-[var(--text-primary)] selection:bg-[var(--text-secondary)] selection:text-black relative bg-pattern-deco overflow-x-hidden transition-colors duration-300">
       <PWAInstallPrompt />
       <GoldenDust />
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
 
-      {/* Texture Overlay for that 'Velvet' feel */}
-      <div className="fixed inset-0 bg-black/80 pointer-events-none z-0"></div>
+      {/* Texture Overlay for that 'Velvet' feel - Only in Dark Mode */}
+      <div className={`fixed inset-0 pointer-events-none z-0 ${theme === 'dark' ? 'bg-black/80' : 'bg-white/40'}`}></div>
 
       {/* Navigation - Strict Deco Style */}
-      <nav className="w-full bg-[#080808]/90 backdrop-blur-md border-b border-[#d2ac47]/30 sticky top-0 z-40 transition-all duration-500 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+      <nav className="w-full bg-[var(--glass-bg)] backdrop-blur-md border-b border-[var(--border-color)] sticky top-0 z-40 transition-all duration-500 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
         <div className="max-w-[1800px] mx-auto px-6 lg:px-12">
           <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-24 py-2 md:py-0 gap-3 md:gap-0">
             {/* Logo Section */}
             <div className="flex items-center gap-2 md:gap-3 group cursor-pointer mb-2 md:mb-0">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-[#d2ac47] rounded-sm rotate-45 flex items-center justify-center shadow-[0_0_15px_rgba(210,172,71,0.2)] group-hover:shadow-[0_0_25px_rgba(210,172,71,0.4)] transition-all duration-500 animate-pulse">
-                <Video className="text-[#d2ac47] -rotate-45 group-hover:scale-110 transition-transform duration-500" size={18} />
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[var(--bg-tertiary)] to-[var(--bg-primary)] border border-[var(--text-secondary)] rounded-sm rotate-45 flex items-center justify-center shadow-[0_0_15px_rgba(210,172,71,0.2)] group-hover:shadow-[0_0_25px_rgba(210,172,71,0.4)] transition-all duration-500 animate-pulse">
+                <Video className="text-[var(--text-secondary)] -rotate-45 group-hover:scale-110 transition-transform duration-500" size={18} />
               </div>
               <div className="ml-3 md:ml-4 flex flex-col">
-                <span className="font-serif text-xl md:text-2xl tracking-[0.2em] text-[#F9F1D8] uppercase font-bold drop-shadow-lg">AI Girls <span className="text-gold-luxury text-2xl md:text-3xl">Studio</span></span>
+                <span className="font-serif text-xl md:text-2xl tracking-[0.2em] text-[var(--text-primary)] uppercase font-bold drop-shadow-lg">AI Girls <span className="text-gold-luxury text-2xl md:text-3xl">Studio</span></span>
                 <div className="flex items-center gap-2 mt-1">
-                  <div className="h-[1px] w-8 bg-[#d2ac47]"></div>
-                  <span className="text-[0.6rem] tracking-[0.4em] text-[#d2ac47] uppercase font-bold">Infinity Avatars</span>
-                  <div className="h-[1px] w-8 bg-[#d2ac47]"></div>
+                  <div className="h-[1px] w-8 bg-[var(--text-secondary)]"></div>
+                  <span className="text-[0.6rem] tracking-[0.4em] text-[var(--text-secondary)] uppercase font-bold">Infinity Avatars</span>
+                  <div className="h-[1px] w-8 bg-[var(--text-secondary)]"></div>
                 </div>
               </div>
             </div>
 
             {/* TAB SWITCHER - Art Deco Pill */}
-            <div className="flex items-center p-1 bg-[#0f0f0f] border border-[#d2ac47]/30 rounded-full shadow-inner relative w-full md:w-auto justify-center mx-4 md:mx-0 order-3 md:order-2">
+            <div className="flex items-center p-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-full shadow-inner relative w-full md:w-auto justify-center mx-4 md:mx-0 order-3 md:order-2">
               <button
                 onClick={() => setActiveTab('video')}
                 className={`px-6 md:px-8 py-3 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all duration-300 ${activeTab === 'video' ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)]' : 'text-[#d2ac47]/50 hover:text-[#d2ac47]'}`}
@@ -73,6 +92,15 @@ function AppContent() {
 
             {/* Auth / Profile Section */}
             <div className="flex items-center gap-4 order-2 md:order-3">
+              {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-full border border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--border-color)] transition-all"
+                title="Toggle Theme"
+              >
+                {theme === 'dark' ? <Moon size={14} /> : <Sun size={14} />}
+              </button>
+
               <CompactHeaderInfo />
               {user ? (
                 <div className="flex items-center gap-4">

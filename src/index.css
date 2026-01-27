@@ -1,17 +1,65 @@
 @import "tailwindcss";
 
 @theme {
-  --color-gold-light: #fbeea4;
-  --color-gold-med: #d2ac47;
-  /* Sharper Antique Gold */
-  --color-gold-dark: #8c6a25;
-  --color-velvet-black: #080808;
-  --color-velvet-depth: #0f0f0f;
-  /* Slightly lighter for panels */
-
   --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-fade-in: fadeIn 1s ease-out forwards;
   --animate-fade-in-up: fadeInUp 1s ease-out forwards;
+}
+
+:root {
+  /* --- PALETTE: LUXURY DARK (Default) --- */
+  --bg-primary: #080808;
+  /* Velvet Black */
+  --bg-secondary: #0f0f0f;
+  /* Velvet Depth */
+  --bg-tertiary: #1a1a1a;
+  /* Lighter Dark */
+  --bg-input: #0a0a0a;
+  /* Input Background */
+
+  --text-primary: #F9F1D8;
+  /* Champagne */
+  --text-secondary: #d2ac47;
+  /* Gold */
+  --text-muted: rgba(210, 172, 71, 0.5);
+
+  --border-color: rgba(210, 172, 71, 0.2);
+  --border-hover: rgba(210, 172, 71, 0.5);
+
+  --overlay-bg: rgba(0, 0, 0, 0.8);
+  --glass-bg: rgba(18, 18, 18, 0.9);
+
+  --gold-gradient-start: #d2ac47;
+  --gold-gradient-mid: #fbeea4;
+  --gold-gradient-end: #8c6a25;
+}
+
+html[data-theme="light"] {
+  /* --- PALETTE: LUXURY LIGHT (Cream/Ivory) --- */
+  --bg-primary: #F9F9F5;
+  /* Ivory Cream */
+  --bg-secondary: #FFFFFF;
+  /* Pure White */
+  --bg-tertiary: #F0F0E8;
+  /* Darker Cream (Cards/Hover) */
+  --bg-input: #FFFFFF;
+
+  --text-primary: #1a1a1a;
+  /* Charcoal Black */
+  --text-secondary: #8c6a25;
+  /* Dark Antique Gold (Contrast) */
+  --text-muted: rgba(140, 106, 37, 0.5);
+
+  --border-color: rgba(140, 106, 37, 0.2);
+  --border-hover: rgba(140, 106, 37, 0.5);
+
+  --overlay-bg: rgba(249, 249, 245, 0.9);
+  --glass-bg: rgba(255, 255, 255, 0.9);
+
+  /* Gold adjustments for light background */
+  --gold-gradient-start: #cc9933;
+  --gold-gradient-mid: #eebb44;
+  --gold-gradient-end: #8c6a25;
 }
 
 
@@ -32,32 +80,34 @@
   }
 
   body {
-    background-color: var(--color-velvet-black);
-    color: #F9F1D8;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     /* Champagne text */
     font-family: "Outfit", sans-serif;
     -webkit-overflow-scrolling: touch;
     /* Momentum scrolling for iOS */
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
 @layer components {
 
   /* Gatsby/Art Deco Gold Gradient */
+  /* Gatsby/Art Deco Gold Gradient */
   .text-gold-luxury {
-    background: linear-gradient(180deg, #fbeea4 0%, #d2ac47 45%, #8c6a25 55%, #d2ac47 100%);
+    background: linear-gradient(180deg, var(--gold-gradient-mid) 0%, var(--gold-gradient-start) 45%, var(--gold-gradient-end) 55%, var(--gold-gradient-start) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     color: transparent;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     letter-spacing: 0.05em;
   }
 
   /* Sharp Art Deco Geometrics */
   .border-art-deco {
     border: 1px solid transparent;
-    border-image: linear-gradient(135deg, #d2ac47 0%, #fbeea4 50%, #8c6a25 100%) 1;
+    border-image: linear-gradient(135deg, var(--gold-gradient-start) 0%, var(--gold-gradient-mid) 50%, var(--gold-gradient-end) 100%) 1;
     position: relative;
   }
 

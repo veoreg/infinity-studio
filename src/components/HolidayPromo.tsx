@@ -81,7 +81,7 @@ const HolidayPromo: React.FC = () => {
 
                     {/* The Large Golden Ticket - Ultra Luxury Strict Design */}
                     <div
-                        className="w-64 h-36 bg-[#050505]/90 backdrop-blur-md border-2 border-[#d2ac47] flex flex-col items-center justify-center relative shadow-[0_30px_60px_rgba(0,0,0,0.5)] transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden z-10"
+                        className="w-64 h-36 bg-[var(--bg-primary)]/90 backdrop-blur-md border-2 border-[#d2ac47] flex flex-col items-center justify-center relative shadow-[0_30px_60px_rgba(0,0,0,0.5)] transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden z-10"
                         style={{
                             animation: isHovered ? 'vibrate-subtle 0.3s linear infinite' : 'sway-tag 6s ease-in-out infinite alternate',
                             boxShadow: isHovered ? '0 0 80px rgba(210,172,71,0.4), inset 0 0 30px rgba(210,172,71,0.1)'
@@ -110,10 +110,10 @@ const HolidayPromo: React.FC = () => {
                         <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#d2ac47]"></div>
 
                         {/* Content using drop-shadows for readability over texture */}
-                        <span className="text-[#d2ac47] text-[9px] font-bold uppercase tracking-[0.4em] mb-2 opacity-100 drop-shadow-[0_2px_2px_rgba(0,0,0,1)] z-10 relative">Exclusive Access</span>
+                        <span className="text-[var(--text-secondary)] text-[9px] font-bold uppercase tracking-[0.4em] mb-2 opacity-100 drop-shadow-[0_2px_2px_rgba(0,0,0,1)] z-10 relative">Exclusive Access</span>
 
                         <div className="flex items-baseline gap-1 z-10 relative drop-shadow-[0_4px_4px_rgba(0,0,0,1)]">
-                            <span className="text-[#F9F1D8] text-6xl font-serif font-bold leading-none bg-clip-text text-transparent bg-gradient-to-t from-[#8a6e28] via-[#fbeea4] to-[#fff]">-50%</span>
+                            <span className="text-[var(--text-primary)] text-6xl font-serif font-bold leading-none bg-clip-text text-transparent bg-gradient-to-t from-[#8a6e28] via-[#fbeea4] to-[#fff]">-50%</span>
                         </div>
 
                         <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47] to-transparent my-2 opacity-80 z-10 relative shadow-[0_0_5px_black]"></div>

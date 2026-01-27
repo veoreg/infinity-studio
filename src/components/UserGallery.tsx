@@ -108,7 +108,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                 {item.thumb !== '/placeholder-luxury.png' ? (
                     <img src={item.thumb} alt={item.label} className="w-full h-full object-cover opacity-60 blur-3xl scale-150 saturate-150" />
                 ) : (
-                    <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1a1a1a] via-[#0a0a0a] to-[#000000] opacity-50"></div>
+                    <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[var(--bg-tertiary)] via-[var(--bg-input)] to-[var(--bg-primary)] opacity-50"></div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20"></div>
             </div>
@@ -150,36 +150,36 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                     <div className="absolute inset-0 z-20 pointer-events-none opacity-0 group-hover/item:opacity-100 transition-all duration-500">
                         {/* Type Indicator - Top Right (Below Delete) */}
                         <div className="absolute top-16 right-3 flex flex-col gap-2">
-                            <div className="p-2 bg-black/40 backdrop-blur-md border border-[#d2ac47]/20 rounded-lg text-[#d2ac47]/60 shadow-lg animate-in zoom-in duration-300">
+                            <div className="p-2 bg-black/40 backdrop-blur-md border border-[var(--border-color)] rounded-lg text-[var(--text-secondary)]/60 shadow-lg animate-in zoom-in duration-300">
                                 {isVideoFile ? <VideoIcon size={14} /> : <ImageIcon size={14} />}
                             </div>
                         </div>
 
                         {/* Top Icons - Apple Glassmorphism + Soft Glow + Golden Border */}
                         <div className="absolute top-3 left-3 flex gap-2 pointer-events-auto">
-                            <button className="group/btn relative p-2.5 bg-black/30 backdrop-blur-xl border border-[#d2ac47]/30 rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] hover:border-red-500/50">
-                                <Heart size={18} className="text-[#d2ac47]/60 group-hover/btn:text-red-500 transition-colors" />
+                            <button className="group/btn relative p-2.5 bg-black/30 backdrop-blur-xl border border-[var(--border-color)] rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] hover:border-red-500/50">
+                                <Heart size={18} className="text-[var(--text-secondary)]/60 group-hover/btn:text-red-500 transition-colors" />
                             </button>
-                            <button className="group/btn relative p-2.5 bg-black/30 backdrop-blur-xl border border-[#d2ac47]/30 rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg hover:shadow-[0_0_20px_rgba(96,165,250,0.4)] hover:border-blue-400/50">
-                                <Share2 size={18} className="text-[#d2ac47]/60 group-hover/btn:text-blue-400 transition-colors" />
+                            <button className="group/btn relative p-2.5 bg-black/30 backdrop-blur-xl border border-[var(--border-color)] rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg hover:shadow-[0_0_20px_rgba(96,165,250,0.4)] hover:border-blue-400/50">
+                                <Share2 size={18} className="text-[var(--text-secondary)]/60 group-hover/btn:text-blue-400 transition-colors" />
                             </button>
                         </div>
 
                         {/* Bottom Control Bar - Only for Videos */}
                         {isVideoFile && (
                             <div
-                                className="absolute bottom-16 left-4 right-4 h-12 bg-black/40 backdrop-blur-2xl border border-[#d2ac47]/10 rounded-2xl overflow-hidden flex items-center px-4 gap-3 group-hover/item:border-[#d2ac47]/30 transition-all pointer-events-auto shadow-2xl animate-in fade-in duration-1000"
+                                className="absolute bottom-16 left-4 right-4 h-12 bg-black/40 backdrop-blur-2xl border border-[var(--border-color)] rounded-2xl overflow-hidden flex items-center px-4 gap-3 group-hover/item:border-[var(--border-color)] transition-all pointer-events-auto shadow-2xl animate-in fade-in duration-1000"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 {/* Play Button */}
                                 <button
-                                    className="w-8 h-8 shrink-0 rounded-full bg-[#d2ac47]/10 flex items-center justify-center hover:bg-[#d2ac47] group/play transition-colors"
+                                    className="w-8 h-8 shrink-0 rounded-full bg-[var(--text-secondary)]/10 flex items-center justify-center hover:bg-[var(--text-secondary)] group/play transition-colors"
                                     onClick={togglePlay}
                                 >
                                     {isPlaying ? (
-                                        <div className="w-2.5 h-2.5 bg-[#d2ac47] group-hover/play:bg-black rounded-sm shadow-[0_0_10px_rgba(210,172,71,0.5)]" />
+                                        <div className="w-2.5 h-2.5 bg-[#d2ac47] group-hover/play:bg-black rounded-sm shadow-[0_0_10px_var(--border-color)]" />
                                     ) : (
-                                        <Play size={12} className="text-[#d2ac47] fill-[#d2ac47] group-hover/play:text-black group-hover/play:fill-black shadow-[0_0_10px_rgba(210,172,71,0.5)]" />
+                                        <Play size={12} className="text-[var(--text-secondary)] fill-[var(--text-secondary)] group-hover/play:text-black group-hover/play:fill-black shadow-[0_0_10px_var(--border-color)]" />
                                     )}
                                 </button>
 
@@ -187,7 +187,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                                 <div className="flex-1 h-full flex items-center justify-center cursor-pointer group/scrub" onClick={handleSeek}>
                                     <div className="w-full h-1.5 bg-white/10 rounded-full relative overflow-visible">
                                         <div
-                                            className="absolute inset-y-0 left-0 bg-gold-gradient rounded-full shadow-[0_0_15px_rgba(210,172,71,0.6)] transition-all duration-100 ease-linear"
+                                            className="absolute inset-y-0 left-0 bg-gold-gradient rounded-full shadow-[0_0_15px_var(--border-color)] transition-all duration-100 ease-linear"
                                             style={{ width: `${progress}%` }}
                                         ></div>
                                         <div
@@ -198,7 +198,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                                 </div>
 
                                 {/* Meta Info */}
-                                <div className="flex items-center gap-2 text-[8px] text-[#d2ac47]/60 font-mono uppercase tracking-tighter shrink-0 pointer-events-auto">
+                                <div className="flex items-center gap-2 text-[8px] text-[var(--text-secondary)]/60 font-mono uppercase tracking-tighter shrink-0 pointer-events-auto">
                                     <Maximize2 size={12} className="opacity-50 hover:text-white cursor-pointer transition-colors" />
                                 </div>
                             </div>
@@ -208,7 +208,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                         {!isVideoFile && (
                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                 <button
-                                    className="px-6 py-2.5 bg-[#d2ac47]/80 backdrop-blur-xl text-black text-[10px] font-bold uppercase tracking-[0.2em] rounded-full shadow-[0_0_20px_rgba(210,172,71,0.4)] pointer-events-auto hover:bg-[#d2ac47] hover:scale-110 active:scale-95 transition-all"
+                                    className="px-6 py-2.5 bg-[var(--text-secondary)]/80 backdrop-blur-xl text-black text-[10px] font-bold uppercase tracking-[0.2em] rounded-full shadow-[0_0_20px_var(--border-color)] pointer-events-auto hover:bg-[var(--text-secondary)] hover:scale-110 active:scale-95 transition-all"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         if (onSelect) onSelect(item);
@@ -238,14 +238,14 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
 
             {/* Footer Info */}
             <div className="relative px-4 pb-4 pt-1 text-center shrink-0">
-                <p className="text-[#F9F1D8] text-[11px] font-serif italic mb-0.5 truncate">{item.label}</p>
-                <div className="flex items-center justify-center gap-2 text-[7px] uppercase tracking-widest text-[#d2ac47]/40 font-bold">
+                <p className="text-[var(--text-primary)] text-[11px] font-serif italic mb-0.5 truncate">{item.label}</p>
+                <div className="flex items-center justify-center gap-2 text-[7px] uppercase tracking-widest text-[var(--text-secondary)]/40 font-bold">
                     <span>{item.date || 'Just now'}</span>
-                    <div className="w-1 h-1 rounded-full bg-[#d2ac47]/10"></div>
+                    <div className="w-1 h-1 rounded-full bg-[var(--text-secondary)]/10"></div>
                     {item.privacy === 'public' ? <Globe size={8} /> : <Lock size={8} />}
-                    <div className="w-1 h-1 rounded-full bg-[#d2ac47]/10"></div>
+                    <div className="w-1 h-1 rounded-full bg-[var(--text-secondary)]/10"></div>
                     <button
-                        className="hover:text-[#d2ac47] transition-colors uppercase"
+                        className="hover:text-[var(--text-secondary)] transition-colors uppercase"
                         onClick={(e) => {
                             e.stopPropagation();
                             if (onSelect) onSelect(item);
@@ -316,9 +316,9 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSe
     };
 
     return (
-        <div className="w-full relative group mt-4 flex-1 flex flex-col min-h-0 bg-[#050505] rounded-2xl overflow-hidden border border-[#d2ac47]/10">
+        <div className="w-full relative group mt-4 flex-1 flex flex-col min-h-0 bg-[var(--bg-primary)] rounded-2xl overflow-hidden border border-[var(--border-color)]">
             {/* Header / Tabs */}
-            <div className="flex items-center justify-between px-4 py-3 bg-[#0a0a0a] border-b border-[#d2ac47]/10 sticky top-0 z-40">
+            <div className="flex items-center justify-between px-4 py-3 bg-[var(--bg-input)] border-b border-[var(--border-color)] sticky top-0 z-40">
                 <div className="flex gap-4">
                     <button
                         onClick={() => {
@@ -326,7 +326,7 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSe
                             setCurrentIndex(0);
                             if (onRefresh) onRefresh();
                         }}
-                        className={`text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'my' ? 'text-[#d2ac47]' : 'text-[#d2ac47]/30 hover:text-[#d2ac47]/60'}`}
+                        className={`text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'my' ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]/30 hover:text-[var(--text-secondary)]/60'}`}
                     >
                         My Library
                     </button>
@@ -335,7 +335,7 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSe
                             setActiveTab('community');
                             setCurrentIndex(0);
                         }}
-                        className={`text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'community' ? 'text-[#d2ac47]' : 'text-[#d2ac47]/30 hover:text-[#d2ac47]/60'}`}
+                        className={`text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'community' ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]/30 hover:text-[var(--text-secondary)]/60'}`}
                     >
                         Trending
                     </button>
@@ -343,8 +343,8 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSe
 
                 {/* Navigation Arrows */}
                 <div className="flex gap-1.5">
-                    <button onClick={prevSlide} className="p-1 hover:text-[#d2ac47] transition-colors border border-[#d2ac47]/10 rounded-lg bg-black/40"><ChevronLeft size={12} /></button>
-                    <button onClick={nextSlide} className="p-1 hover:text-[#d2ac47] transition-colors border border-[#d2ac47]/10 rounded-lg bg-black/40"><ChevronRight size={12} /></button>
+                    <button onClick={prevSlide} className="p-1 hover:text-[var(--text-secondary)] transition-colors border border-[var(--border-color)] rounded-lg bg-black/40"><ChevronLeft size={12} /></button>
+                    <button onClick={nextSlide} className="p-1 hover:text-[var(--text-secondary)] transition-colors border border-[var(--border-color)] rounded-lg bg-black/40"><ChevronRight size={12} /></button>
                 </div>
             </div>
 
@@ -373,8 +373,8 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSe
                 </div>
 
                 {/* Counter Tag - Unified Premium Position (Now Lower) */}
-                <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md border border-[#d2ac47]/20 px-3 py-1 rounded-full z-30 shadow-lg">
-                    <span className="text-[#d2ac47] text-[8px] font-bold tracking-widest">{currentIndex + 1} / {items.length}</span>
+                <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md border border-[var(--border-color)] px-3 py-1 rounded-full z-30 shadow-lg">
+                    <span className="text-[var(--text-secondary)] text-[8px] font-bold tracking-widest">{currentIndex + 1} / {items.length}</span>
                 </div>
             </div>
         </div>
