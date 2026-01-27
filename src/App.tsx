@@ -5,6 +5,7 @@ import GoldenDust from './components/GoldenDust'
 import HolidayPromo from './components/HolidayPromo'
 import AuthModal from './components/AuthModal'
 import CompactHeaderInfo from './components/CompactHeaderInfo'
+import { PWAInstallPrompt } from './components/PWAInstallPrompt'
 import { Video, Sparkles, User, LogOut } from 'lucide-react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 
@@ -14,8 +15,21 @@ function AppContent() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { user, signOut } = useAuth();
 
+  // Listen for tab switch events from children
+  useState(() => {
+    const handleTabSwitch = (e: CustomEvent) => {
+      if (e.detail && (e.detail === 'video' || e.detail === 'avatar')) {
+        setActiveTab(e.detail);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+    window.addEventListener('switch-tab', handleTabSwitch as EventListener);
+    return () => window.removeEventListener('switch-tab', handleTabSwitch as EventListener);
+  });
+
   return (
     <div className="min-h-screen flex flex-col text-[#F9F1D8] selection:bg-[#d2ac47] selection:text-black relative bg-pattern-deco overflow-x-hidden">
+      <PWAInstallPrompt />
       <GoldenDust />
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
 
@@ -25,14 +39,14 @@ function AppContent() {
       {/* Navigation - Strict Deco Style */}
       <nav className="w-full bg-[#080808]/90 backdrop-blur-md border-b border-[#d2ac47]/30 sticky top-0 z-40 transition-all duration-500 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         <div className="max-w-[1800px] mx-auto px-6 lg:px-12">
-          <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-24 py-4 md:py-0 gap-4 md:gap-0">
+          <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-24 py-2 md:py-0 gap-3 md:gap-0">
             {/* Logo Section */}
-            <div className="flex items-center gap-3 group cursor-pointer mb-2 md:mb-0">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-[#d2ac47] rounded-sm rotate-45 flex items-center justify-center shadow-[0_0_15px_rgba(210,172,71,0.2)] group-hover:shadow-[0_0_25px_rgba(210,172,71,0.4)] transition-all duration-500 animate-pulse">
-                <Video className="text-[#d2ac47] -rotate-45 group-hover:scale-110 transition-transform duration-500" size={20} />
+            <div className="flex items-center gap-2 md:gap-3 group cursor-pointer mb-2 md:mb-0">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-[#d2ac47] rounded-sm rotate-45 flex items-center justify-center shadow-[0_0_15px_rgba(210,172,71,0.2)] group-hover:shadow-[0_0_25px_rgba(210,172,71,0.4)] transition-all duration-500 animate-pulse">
+                <Video className="text-[#d2ac47] -rotate-45 group-hover:scale-110 transition-transform duration-500" size={18} />
               </div>
-              <div className="ml-4 flex flex-col">
-                <span className="font-serif text-2xl tracking-[0.2em] text-[#F9F1D8] uppercase font-bold drop-shadow-lg">AI Girls <span className="text-gold-luxury text-3xl">Studio</span></span>
+              <div className="ml-3 md:ml-4 flex flex-col">
+                <span className="font-serif text-xl md:text-2xl tracking-[0.2em] text-[#F9F1D8] uppercase font-bold drop-shadow-lg">AI Girls <span className="text-gold-luxury text-2xl md:text-3xl">Studio</span></span>
                 <div className="flex items-center gap-2 mt-1">
                   <div className="h-[1px] w-8 bg-[#d2ac47]"></div>
                   <span className="text-[0.6rem] tracking-[0.4em] text-[#d2ac47] uppercase font-bold">Infinity Avatars</span>

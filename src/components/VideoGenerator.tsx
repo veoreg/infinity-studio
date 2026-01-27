@@ -204,6 +204,45 @@ const VideoGenerator: React.FC = () => {
         }
         return () => clearInterval(timer);
     }, [loading, startTime]);
+
+    // Handle incoming images from Avatar Generator
+    React.useEffect(() => {
+        const checkPending = () => {
+            const pending = localStorage.getItem('pendingVideoSource');
+            if (pending) {
+                // 1. Set as Active Source
+                setImageUrl(pending);
+
+                // 2. Add to Gallery (First Item)
+                setGalleryItems(prev => {
+                    // Avoid duplicates if possible
+                    if (prev.some(p => p.url === pending || p.result_url === pending)) return prev;
+
+                    return [{
+                        id: `imported_${Date.now()}`,
+                        type: 'image',
+                        url: pending,
+                        result_url: pending,
+                        label: 'Imported Avatar',
+                        status: 'completed',
+                        created_at: new Date().toISOString() // Ensure it sorts to top
+                    }, ...prev];
+                });
+
+                localStorage.removeItem('pendingVideoSource');
+            }
+        };
+
+        checkPending(); // Check on mount
+
+        const handleTabSwitch = (e: CustomEvent) => {
+            if (e.detail === 'video') {
+                setTimeout(checkPending, 100);
+            }
+        };
+        window.addEventListener('switch-tab', handleTabSwitch as EventListener);
+        return () => window.removeEventListener('switch-tab', handleTabSwitch as EventListener);
+    }, []);
     const abortControllerRef = React.useRef<AbortController | null>(null);
     const intervalRef = React.useRef<any | null>(null);
     const channelRef = React.useRef<any | null>(null);
@@ -585,8 +624,8 @@ const VideoGenerator: React.FC = () => {
             {/* Switched to Flexbox for Mobile Stability, Grid for Desktop */}
             <div className="flex flex-col xl:grid xl:grid-cols-12 gap-8 items-stretch min-h-[450px]">
 
-                {/* Left Panel: Visual References (Mixed Gallery) */}
-                <div className="order-2 xl:order-none xl:col-span-4 xl:h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar pr-2">
+                {/* Left Panel: Visual References (Mixed Gallery) - Mobile: Bottom (Order 3) */}
+                <div className="order-3 xl:order-none xl:col-span-4 xl:h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar pr-2 min-h-[500px] lg:min-h-0">
                     <div className="flex items-center justify-between mb-6 sticky top-0 bg-[#050505] z-[30] py-2 shadow-lg">
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-2 text-[#d2ac47]">
@@ -1294,17 +1333,64 @@ const VideoGenerator: React.FC = () => {
                         )}
                     </div>
 
+                    {/* Infinity Actions Panel - Moved Below Output */}
+                    <div className="mt-4 border border-[#d2ac47]/30 bg-[#050505] p-5 relative overflow-hidden group rounded-3xl shadow-2xl mx-2 md:mx-0">
+                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47]/50 to-transparent"></div>
+                        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47]/50 to-transparent"></div>
+
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="h-[1px] flex-1 bg-[#d2ac47]/20"></div>
+                            <span className="text-[#d2ac47] text-[9px] font-bold uppercase tracking-[0.3em]">Infinity Studio</span>
+                            <div className="h-[1px] flex-1 bg-[#d2ac47]/20"></div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            {/* Extend Button */}
+                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/10 hover:border-[#d2ac47]/60 bg-[#0a0a0a] transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl">
+                                <div className="p-2 rounded-xl border border-[#d2ac47]/20 text-[#d2ac47] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
+                                    <Layers size={16} />
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-[#F9F1D8] text-[9px] font-bold uppercase tracking-widest leading-tight mb-1">Extend Video</div>
+                                    <div className="text-[#d2ac47]/50 text-[7px] uppercase tracking-wider leading-none">+5 Sec</div>
+                                </div>
+                            </button>
+
+                            {/* Upscale Button */}
+                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/10 hover:border-[#d2ac47]/60 bg-[#0a0a0a] transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl">
+                                <div className="p-2 rounded-xl border border-[#d2ac47]/20 text-[#d2ac47] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
+                                    <Wand2 size={16} />
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-[#F9F1D8] text-[9px] font-bold uppercase tracking-widest leading-tight mb-1">Upscale 4K</div>
+                                    <div className="text-[#d2ac47]/50 text-[7px] uppercase tracking-wider leading-none">Enhance</div>
+                                </div>
+                            </button>
+
+                            {/* Download Button */}
+                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/10 hover:border-[#d2ac47]/60 bg-[#0a0a0a] transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl">
+                                <div className="p-2 rounded-xl border border-[#d2ac47]/20 text-[#d2ac47] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
+                                    <Download size={16} />
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-[#F9F1D8] text-[9px] font-bold uppercase tracking-widest leading-tight mb-1">Save</div>
+                                    <div className="text-[#d2ac47]/50 text-[7px] uppercase tracking-wider leading-none">Original</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
 
                 </div>
 
 
-                {/* Right Col: Output & Stats & Coins */}
-                <div className="order-3 xl:order-none w-full xl:w-auto xl:col-span-3 flex flex-col gap-4 xl:h-[calc(100vh-120px)]">
+                {/* Right Col: Output & Stats & Coins - Mobile: Middle (Order 2) */}
+                <div className="order-2 xl:order-none w-full xl:w-auto xl:col-span-3 flex flex-col gap-4 xl:h-[calc(100vh-120px)]">
 
 
 
                     {/* 3. History / Gallery - Taller on Mobile, Elastic & Stable on PC */}
-                    <div className="bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden flex-1 min-h-0 overflow-y-auto custom-scrollbar mx-2 md:mx-0">
+                    <div className="bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden flex-1 min-h-[500px] lg:min-h-0 overflow-y-auto custom-scrollbar mx-2 md:mx-0">
                         <div className="flex items-center justify-between h-10 px-0">
                             <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em] pl-4">History</span>
                         </div>
@@ -1330,52 +1416,7 @@ const VideoGenerator: React.FC = () => {
                         />
                     </div>
 
-                    {/* Infinity Actions Panel - REPOSITIONED TO SIDEBAR */}
-                    <div className="mt-2 border border-[#d2ac47]/30 bg-[#050505] p-5 relative overflow-hidden group rounded-3xl shadow-2xl">
-                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47]/50 to-transparent"></div>
-                        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47]/50 to-transparent"></div>
 
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="h-[1px] flex-1 bg-[#d2ac47]/20"></div>
-                            <span className="text-[#d2ac47] text-[9px] font-bold uppercase tracking-[0.3em]">Infinity Studio</span>
-                            <div className="h-[1px] flex-1 bg-[#d2ac47]/20"></div>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-3">
-                            {/* Extend Button */}
-                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/10 hover:border-[#d2ac47]/60 bg-[#0a0a0a] transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl">
-                                <div className="p-2 rounded-xl border border-[#d2ac47]/20 text-[#d2ac47] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
-                                    <Layers size={16} />
-                                </div>
-                                <div className="text-left">
-                                    <div className="text-[#F9F1D8] text-[9px] font-bold uppercase tracking-widest leading-tight mb-1">Extend Video</div>
-                                    <div className="text-[#d2ac47]/50 text-[7px] uppercase tracking-wider leading-none">+5 Seconds</div>
-                                </div>
-                            </button>
-
-                            {/* Upscale Button */}
-                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/10 hover:border-[#d2ac47]/60 bg-[#0a0a0a] transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl">
-                                <div className="p-2 rounded-xl border border-[#d2ac47]/20 text-[#d2ac47] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
-                                    <Wand2 size={16} />
-                                </div>
-                                <div className="text-left">
-                                    <div className="text-[#F9F1D8] text-[9px] font-bold uppercase tracking-widest leading-tight mb-1">Upscale 4K</div>
-                                    <div className="text-[#d2ac47]/50 text-[7px] uppercase tracking-wider leading-none">Enhance & Save</div>
-                                </div>
-                            </button>
-
-                            {/* Download Button */}
-                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/10 hover:border-[#d2ac47]/60 bg-[#0a0a0a] transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl">
-                                <div className="p-2 rounded-xl border border-[#d2ac47]/20 text-[#d2ac47] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
-                                    <Download size={16} />
-                                </div>
-                                <div className="text-left">
-                                    <div className="text-[#F9F1D8] text-[9px] font-bold uppercase tracking-widest leading-tight mb-1">Save to Drive</div>
-                                    <div className="text-[#d2ac47]/50 text-[7px] uppercase tracking-wider leading-none">Original Quality</div>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
 

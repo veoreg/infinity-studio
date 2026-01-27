@@ -7,13 +7,12 @@
 - **Логирование**: Обновлять лог изменений (walkthrough) сразу после внедрения фич.
 - **ВНИМАНИЕ (Strict Rule)**: Запрещено вносить любые изменения в N8n и ComfyUI воркфлоу без явного разрешения пользователя. Совсем.
 
-
-
 ## 🛠 Стек технологий
 - **Frontend**: React + Vite + TypeScript + Tailwind CSS.
 - **Backend/DB**: Supabase (Database, Auth, Realtime, Storage).
 - **Automation**: N8n (обработка видео, деплой на кастомном сервере).
 - **UI Style**: Art Deco / Luxury (золото, черный бархат).
+- **PWA**: Manifest, Service Worker, Custom Install Prompt.
 
 ## 🏗 Архитектура деплоя (JAMstack)
 
@@ -24,7 +23,6 @@ Git Push → Vercel/Netlify → Auto Build → CDN → Production URL
 - **Vercel**: https://infinity-studio-ai.vercel.app/
 - **Netlify**: https://tourmaline-axolotl-048b75.netlify.app/
 - **Как работает**: Автодеплой при `git push` в main ветку (CI/CD)
-- **Build minutes**: Vercel/Netlify предоставляют бесплатный tier
 
 ### Бэкенд (N8N Webhooks — Serverless)
 ```
@@ -32,7 +30,6 @@ Frontend API Call → N8N Webhook → ComfyUI → Supabase Storage
 ```
 - **Нет традиционного сервера** — прямые вызовы webhook
 - **N8N** хостится на собственном сервере (n8n.develotex.io)
-- Это **serverless** подход без прокладок
 
 ### База данных (Supabase)
 - **Realtime**: Подписки на изменения для мониторинга статуса генерации
@@ -40,55 +37,43 @@ Frontend API Call → N8N Webhook → ComfyUI → Supabase Storage
 - **Storage**: Хранение сгенерированных картинок и видео
 - **Auth**: Система аутентификации
 
-### Краткое объяснение для коллег
-> "Фронтенд на Vercel с автодеплоем по git push. Бэкенд — serverless на N8N webhooks, база — Supabase. Нет традиционных серверов — современный JAMstack подход."
-
 ## 🚀 Текущий функционал
 - **Video Generator**: Генерация видео из картинок (через N8n и Wan2.1).
-- **Negative Prompt**: Поддержка исключений (временно отключена на фронтенде до обновления N8n).
 - **Avatar Creator**: Раздел для создания аватаров.
 - **User Gallery**: Полноценная лента-кинолента с историей генераций из Supabase.
-- **Gamification**: Система баллов/монет и достижений (интерфейс).
+- **PWA Ready**: Приложение устанавливается как нативная программа (Manifest + SW).
 
 ### 4. AI Image Refiner (Editor)
 - **UI**: Interactive "Before/After" slider with side-by-side layout on desktop.
-- **Workflow**: Uses a dedicated branch in n8n (via `job_type: edit` switch).
-- **History Logic**: Edits create NEW records in Supabase `generations` table with a reference to the `parent_id` in metadata.
-- **VLM Guidance**: Quen VLM interprets user's natural language instructions to generate specific ComfyUI parameters.
-- [x] **UI Overhaul (22 Jan 2026)**:
-    - **Apple Glass Aesthetic**: Semi-transparent, blurred backdrops (bg-black/40) for controls.
-    - **Golden Icons**: Matte glass buttons with neon glow on hover + golden borders in inactive state.
-    - **Golden Scrubber**: Smooth fade-in animation and premium golden progress bar.
-    - **Consolidated Galleries**: Both main gallery and "Recent Masterpieces" now share the same premium component structure.
-- **Snapshot**: **100% Safe Backup** located at `src/snapshots/2026-01-23_FINAL`.
-- **Deployment**: Vercel/Netlify auto-deploy active. Инструкция по ручному деплою: `DEPLOYMENT_GUIDE.md`.
+- **Workflow**: Dedicated branch in N8n (`job_type: edit`). Supports 1, 2, or 3 reference images (Multi-Input).
+- **History**: Creates new records in Supabase with `parent_id`.
 
-## 📝 Задачи на будущее
-- [ ] Настроить автоматическое пополнение баланса/кредитов.
-- [ ] Добавить функцию "продления" видео (+5 секунд).
-- [ ] Улучшить систему фильтров в ленте (Trending/New).
-- [x] **КРИТИЧНО**: Реализовать остановку очереди в ComfyUI при нажатии кнопки "Cancel" на фронтенде.
+## 📝 Задачи (Current & Future)
+
+### ✅ Completed (Recent)
+- [x] **PWA Implementation**: Manifest, SW, Install Prompt UI.
+- [x] **Traffic Generator Foundation**: Python watermark script, Gemini Prompt, N8n JSON Structure.
+
+### 📅 План на следующую сессию (Next Session)
+1. **Workflow 3: Admin Telegram Bot**:
+   - Команда `/stats`: Отчет по регистрациям и оплатам (24ч).
+   - Команда `/restart`: Перезагрузка Docker-контейнера ComfyUI (SSH).
+2. **Workflow 4: Biometric Authenticator (Self-Hosted)**:
+   - **Stack**: Python FastAPI + InsightFace (Buffalo_L) + Docker GPU.
+   - **Logic**: Face Embedding > Vector Search (pgvector) > Cosine Similarity.
+   - **Liveness**: Motion Challenge (blink/smile) to prevent spoofing.
+3. **Workflow 1: Traffic Generator (Finalize)**:
+   - Импорт JSON и настройка путей в N8n.
+4. **Workflow 2: Smart Payment**:
+   - Вебхук оплаты -> Обновление баланса в Supabase.
 
 ## ⚠️ Известные проблемы
-- **Видео отображение**: Иногда показывается старое тестовое видео вместо сгенерированного. Добавлено логирование для отладки (21 января 2026).
+- **Видео отображение**: Иногда показывается старое тестовое видео (мониторинг продолжается).
 
 ## 🔗 Важные ссылки
 - **Repository**: `https://github.com/veoreg/infinity-studio`
-- **Webhook**: `https://n8n.develotex.io/webhook/wan_context_safeMode_3_SB`
-- **Supabase**: Используется проект `dems-projects`.
-- **Main Workflow (100% Work)**: `e:\AI_girl_flux_dev\APP_VID\n8n\n8n_WAN22enhanced_safeMode_3+SB_MAIN.json` (Использовать как основной источник логики).
-
-
-## 📅 План на следующий рабочий день
-1. **FIX: Отладка Qwen Edit**:
-   - Разобраться, почему вместо Qwen запускается Flux-ветка (пользователь видит `base` в названии, что характерно для Flux).
-   - Исправить проблему "двойной генерации" (почему вызываются 2 процесса подряд).
-   - Проверить логику `Switch` в n8n — вероятно, условие `job_type: edit` срабатывает некорректно или пропускает запрос в обе ветки.
-2. **Тюнинг VLM в n8n**: Улучшить распознавание инструкций пользователя для более точной генерации параметров ComfyUI.
-3. **Кнопка "Cancel"**: Реализовать функционал остановки очереди в ComfyUI при отмене на фронтенде.
-4. **Negative Prompts**: Вернуть и протестировать работу негативных промптов после обновления логики в n8n.
-5. **Интеграция Vercel MCP**: Подключить MCP для управления деплоями напрямую из чата.
-6. **Оптимизация бандла**: Настроить `manualChunks` в Vite для уменьшения размера основного чанка.
+- **N8n Webhook**: `https://n8n.develotex.io/webhook/wan_context_safeMode_3_SB`
+- **Main Workflow**: `e:\AI_girl_flux_dev\APP_VID\n8n\n8n_WAN22enhanced_safeMode_3+SB_MAIN.json`
 
 ---
 *Обновлено агентом Antigravity (Google Deepmind).*
