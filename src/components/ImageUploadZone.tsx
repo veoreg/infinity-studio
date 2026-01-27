@@ -1,6 +1,8 @@
+
 import React, { useState, useCallback } from 'react';
 import { Upload, Loader2, X } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
+import { useTranslation } from 'react-i18next';
 
 interface ImageUploadZoneProps {
     onImageUpload: (data: { url: string; fileName: string }) => void;
@@ -9,7 +11,8 @@ interface ImageUploadZoneProps {
     className?: string;
 }
 
-const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, currentUrl, placeholder = "Drag & drop or click to upload", className = "" }) => {
+const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, currentUrl, placeholder, className = "" }) => {
+    const { t } = useTranslation();
     const [isDragging, setIsDragging] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [preview, setPreview] = useState<string | null>(currentUrl || null);
@@ -21,7 +24,7 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
 
     const handleFile = async (file: File) => {
         if (!file.type.startsWith('image/')) {
-            alert('Please upload an image file');
+            alert(t('error_file_type'));
             return;
         }
 
@@ -48,7 +51,7 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
             setPreview(publicUrl);
         } catch (error) {
             console.error('Upload failed:', error);
-            alert('Upload failed. Please try again.');
+            alert(t('error_upload_failed'));
             setPreview(null);
         } finally {
             setUploading(false);
@@ -85,6 +88,8 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
         onImageUpload({ url: '', fileName: '' });
     };
 
+    const displayPlaceholder = placeholder || t('drag_n_drop');
+
     return (
         <div
             className={`relative group w-full transition-all duration-300 rounded-xl overflow-hidden border-2 border-dashed 
@@ -107,7 +112,7 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
             {uploading && (
                 <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
                     <Loader2 className="animate-spin text-[#d2ac47] mb-2" size={24} />
-                    <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-widest">Uploading...</span>
+                    <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-widest">{t('uploading')}</span>
                 </div>
             )}
 
@@ -115,7 +120,7 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
                 <div className="relative w-full h-full bg-black flex items-center justify-center group/preview overflow-hidden rounded-xl">
                     <img src={preview} alt="Upload Preview" className="w-full h-full object-contain" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover/preview:opacity-100 transition-all flex flex-col justify-end p-4">
-                        <span className="text-[#d2ac47] text-xs font-bold uppercase tracking-widest">Image Uploaded</span>
+                        <span className="text-[#d2ac47] text-xs font-bold uppercase tracking-widest">{t('image_uploaded')}</span>
                     </div>
                     <button
                         onClick={handleClear}
@@ -131,10 +136,10 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
                     </div>
                     <div>
                         <p className="text-[var(--text-primary)] text-[13px] font-black uppercase tracking-widest mb-1.5">
-                            {isDragging ? "Drop to Upload" : placeholder}
+                            {isDragging ? t('drop_to_upload') : displayPlaceholder}
                         </p>
                         <p className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-wider opacity-60">
-                            Supports JPG, PNG, WEBP
+                            {t('supports_formats')}
                         </p>
                     </div>
                 </div>

@@ -82,7 +82,7 @@ function AppContent() {
                 onClick={() => setActiveTab('video')}
                 className={`px-6 md:px-8 py-3 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all duration-300 ${activeTab === 'video' ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)]' : 'text-[#d2ac47]/50 hover:text-[#d2ac47]'}`}
               >
-                <Sparkles size={14} /> Cinematic Video
+                <Sparkles size={14} /> {t('nav_cinematic')}
               </button>
               <button
                 onClick={() => setActiveTab('avatar')}

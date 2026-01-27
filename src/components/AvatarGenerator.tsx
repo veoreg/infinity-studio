@@ -254,7 +254,7 @@ const ImageComparisonSlider = ({ before, after }: { before: string; after: strin
 // EditPhotoModal Component Removed (Inline Editing Implemented)
 
 const AvatarGenerator: React.FC = () => {
-    const { t, i18n } = useTranslation(); // i18n hook
+    const { t } = useTranslation(); // i18n hook
     const [loading, setLoading] = useState(false);
     const [currentStatus, setCurrentStatus] = useState<string>('pending');
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
@@ -1309,7 +1309,7 @@ const AvatarGenerator: React.FC = () => {
                                             <User size={16} />
                                         </div>
                                         <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--text-secondary)]">
-                                            Face Reference
+                                            {t('label_face_ref')}
                                         </span>
                                     </div>
                                     {/* Drag & Drop Zone */}
@@ -1320,14 +1320,14 @@ const AvatarGenerator: React.FC = () => {
                                                 setError(null);
                                             }}
                                             currentUrl={faceImageUrl}
-                                            placeholder="Face Photo"
+                                            placeholder={t('ph_face_photo')}
                                             className="h-full w-full"
                                         />
                                     </div>
                                     {/* Likeness Slider - Centered vertically for better balance */}
                                     <div className="h-16 shrink-0 flex flex-col justify-center">
                                         <div className="flex justify-between text-[var(--text-secondary)] text-[9px] font-bold tracking-[0.2em] uppercase mb-1">
-                                            <span>Likeness Strength</span>
+                                            <span>{t('label_likeness')}</span>
                                             <span>{instantIdWeight}</span>
                                         </div>
                                         <input type="range" min="0" max="1" step="0.05" value={instantIdWeight} onChange={(e) => setInstantIdWeight(Number(e.target.value))}
@@ -1350,13 +1350,13 @@ const AvatarGenerator: React.FC = () => {
                                                     <XCircle size={20} strokeWidth={2} />
                                                 </button>
                                                 <div className="flex flex-col justify-center leading-none animate-in slide-in-from-left-8 fade-in duration-700">
-                                                    <span className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-0.5 ${!bodyRefUrl ? 'text-red-500' : 'text-[var(--text-secondary)]'}`}>Body Reference</span>
-                                                    <span className={`text-[8px] uppercase tracking-wider ${!bodyRefUrl ? 'text-red-500/40' : 'text-[var(--text-secondary)]/40'}`}>(CLOSE IF UNUSED)</span>
+                                                    <span className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-0.5 ${!bodyRefUrl ? 'text-red-500' : 'text-[var(--text-secondary)]'}`}>{t('label_body_ref')}</span>
+                                                    <span className={`text-[8px] uppercase tracking-wider ${!bodyRefUrl ? 'text-red-500/40' : 'text-[var(--text-secondary)]/40'}`}>{t('ph_close_unused')}</span>
                                                 </div>
                                             </>
                                         ) : (
                                             <div className="w-full text-center">
-                                                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--text-secondary)]/70">BODY REFERENCE</span>
+                                                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--text-secondary)]/70">{t('label_body_ref')}</span>
                                             </div>
                                         )}
                                     </div>
@@ -1371,7 +1371,7 @@ const AvatarGenerator: React.FC = () => {
                                                         setError(null);
                                                     }}
                                                     currentUrl={bodyRefUrl}
-                                                    placeholder="Body Reference Image"
+                                                    placeholder={t('ph_body_ref_image')}
                                                     className="h-full w-full"
                                                 />
                                             </div>
@@ -1383,7 +1383,7 @@ const AvatarGenerator: React.FC = () => {
                                                         <path d="M17 5 C17 8 15 11 13.5 12 C12 13 16 18 17 19" />
                                                     </svg>
                                                 </div>
-                                                <span className="text-[12px] font-bold tracking-[0.2em] uppercase text-[var(--text-secondary)] text-center px-4">Click to Upload Body Reference</span>
+                                                <span className="text-[12px] font-bold tracking-[0.2em] uppercase text-[var(--text-secondary)] text-center px-4">{t('ph_click_body')}</span>
                                             </div>
                                         )}
                                     </div>
@@ -1398,17 +1398,17 @@ const AvatarGenerator: React.FC = () => {
                                     {/* Dropdown Controls - Centered vertically */}
                                     <div className="h-16 flex flex-col justify-center shrink-0">
                                         <CustomSelect
-                                            label="Body Structure"
+                                            label={t('label_body_structure')}
                                             value={bodyType}
                                             onChange={(val) => setBodyType(val)}
                                             disabled={grabBody}
                                             centerLabel={true}
                                             options={[
-                                                { label: 'AI Decide / Empty', value: '' },
-                                                { label: 'Fitness Model', value: 'fitness model' },
-                                                { label: 'Thin / Model', value: 'thin' },
-                                                { label: 'Athletic', value: 'athletic' },
-                                                { label: 'Curvy', value: 'curvy' },
+                                                { label: t('body_ai'), value: '' },
+                                                { label: t('body_fitness'), value: 'fitness model' },
+                                                { label: t('body_thin'), value: 'thin' },
+                                                { label: t('body_athletic'), value: 'athletic' },
+                                                { label: t('body_curvy'), value: 'curvy' },
                                                 { label: 'Thick', value: 'thick' },
                                                 { label: 'Chubby', value: 'chubby' },
                                                 { label: 'Obese / BBW', value: 'obese' },
@@ -1433,13 +1433,13 @@ const AvatarGenerator: React.FC = () => {
                                                     <XCircle size={20} strokeWidth={2} />
                                                 </button>
                                                 <div className="flex flex-col leading-none animate-in slide-in-from-left-8 fade-in duration-700">
-                                                    <span className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-0.5 ${!compositionUrl ? 'text-red-500' : 'text-[var(--text-secondary)]'}`}>Background Reference</span>
-                                                    <span className={`text-[8px] uppercase tracking-wider ${!compositionUrl ? 'text-red-500/40' : 'text-[var(--text-secondary)]/40'}`}>(CLOSE IF UNUSED)</span>
+                                                    <span className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-0.5 ${!compositionUrl ? 'text-red-500' : 'text-[var(--text-secondary)]'}`}>{t('label_bg_reference')}</span>
+                                                    <span className={`text-[8px] uppercase tracking-wider ${!compositionUrl ? 'text-red-500/40' : 'text-[var(--text-secondary)]/40'}`}>{t('ph_close_unused')}</span>
                                                 </div>
                                             </>
                                         ) : (
                                             <div className="w-full text-center">
-                                                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--text-secondary)]/70">BACKGROUND REFERENCE</span>
+                                                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--text-secondary)]/70">{t('label_bg_reference')}</span>
                                             </div>
                                         )}
                                     </div>
@@ -1453,7 +1453,7 @@ const AvatarGenerator: React.FC = () => {
                                                         setError(null);
                                                     }}
                                                     currentUrl={compositionUrl}
-                                                    placeholder="Background Reference Image"
+                                                    placeholder={t('ph_bg_ref_image')}
                                                     className="h-full w-full"
                                                 />
                                             </div>
@@ -1466,7 +1466,7 @@ const AvatarGenerator: React.FC = () => {
                                                         <circle cx="8.5" cy="8.5" r="1.5" />
                                                     </svg>
                                                 </div>
-                                                <span className="text-[12px] font-bold tracking-[0.2em] uppercase text-[var(--text-secondary)] text-center px-4">Click to Upload Background Reference</span>
+                                                <span className="text-[12px] font-bold tracking-[0.2em] uppercase text-[var(--text-secondary)] text-center px-4">{t('ph_click_bg')}</span>
                                             </div>
                                         )}
                                     </div>
@@ -1511,37 +1511,37 @@ const AvatarGenerator: React.FC = () => {
                     {/* 2. Fine Tuning Block (Moved Here - Compacted) */}
                     <div className="order-1 xl:order-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl p-5 relative z-[100] shadow-2xl transition-all hover:border-[#d2ac47]/40 shrink-0">
                         <div className="absolute top-0 left-0 px-4 py-1.5 bg-[#d2ac47] text-black text-[9px] font-bold tracking-[0.2em] uppercase rounded-tl-3xl rounded-br-2xl shadow-lg">
-                            Fine Tuning
+                            {t('section_fine_tuning')}
                         </div>
 
                         <div className="mt-4 space-y-4">
                             {/* Art Style */}
                             <CustomSelect
-                                label="Art Style"
+                                label={t('label_art_style')}
                                 value={artStyle}
                                 onChange={(val) => setArtStyle(val)}
                                 options={[
-                                    { label: 'AI Decide / Empty', value: '' },
-                                    { label: 'Realistic RAW', value: 'Realistic RAW' },
-                                    { label: 'Vintage Pin-Up', value: 'Vintage Pin-Up' },
-                                    { label: 'Private Polaroid', value: 'Private Polaroid' },
-                                    { label: 'Analogue Film', value: 'Analogue Film' },
-                                    { label: 'Anime / Manga', value: 'Anime / Manga' },
-                                    { label: 'Hentai / NSFW', value: 'Hentai / NSFW' },
-                                    { label: 'Fashion Editorial', value: 'Fashion Editorial' },
-                                    { label: 'Gothic Noir', value: 'Gothic Noir' }
+                                    { label: t('style_ai'), value: '' },
+                                    { label: t('style_realism'), value: 'Realistic RAW' },
+                                    { label: t('style_vintage'), value: 'Vintage Pin-Up' },
+                                    { label: t('style_polaroid'), value: 'Private Polaroid' },
+                                    { label: t('style_analogue'), value: 'Analogue Film' },
+                                    { label: t('style_anime'), value: 'Anime / Manga' },
+                                    { label: t('style_hentai'), value: 'Hentai / NSFW' },
+                                    { label: t('style_fashion'), value: 'Fashion Editorial' },
+                                    { label: t('style_gothic'), value: 'Gothic Noir' }
                                 ]}
                             />
 
                             <div>
-                                <label className="text-[var(--text-secondary)] text-[9px] font-bold tracking-[0.2em] uppercase mb-1 block">Prompt Details</label>
+                                <label className="text-[var(--text-secondary)] text-[9px] font-bold tracking-[0.2em] uppercase mb-1 block">{t('label_prompt')}</label>
                                 <textarea value={userPrompt} onChange={(e) => setUserPrompt(e.target.value)}
                                     className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-[var(--text-primary)] p-3 text-xs h-20 focus:outline-none focus:border-[#d2ac47] rounded-xl shadow-inner resize-none"
-                                    placeholder="Describe specific details..." />
+                                    placeholder={t('ph_prompt')} />
 
                                 <div className="flex flex-col gap-2 mt-2">
                                     <div className="w-full flex items-center gap-2 bg-[var(--bg-input)] border border-[var(--border-color)] p-2 rounded-xl">
-                                        <span className="text-[var(--text-secondary)] text-[9px] uppercase tracking-wider whitespace-nowrap">Seed:</span>
+                                        <span className="text-[var(--text-secondary)] text-[9px] uppercase tracking-wider whitespace-nowrap">{t('label_seed')}</span>
                                         <input
                                             type="number"
                                             value={seed === -1 ? '' : seed}
@@ -1564,14 +1564,14 @@ const AvatarGenerator: React.FC = () => {
                                             className={`flex-1 flex items-center justify-center gap-1 py-2 border transition-all rounded-xl ${rawPromptMode ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[var(--border-color)] text-[var(--text-secondary)]/60 hover:text-[var(--text-secondary)] hover:border-[#d2ac47]'}`}
                                         >
                                             <div className={`w-1.5 h-1.5 rounded-full ${rawPromptMode ? 'bg-black' : 'bg-[#d2ac47]/50'}`}></div>
-                                            <span className="text-[8px] uppercase tracking-widest font-bold">Raw</span>
+                                            <span className="text-[8px] uppercase tracking-widest font-bold">{t('label_raw')}</span>
                                         </button>
                                         <button
                                             onClick={() => setUpscale(!upscale)}
                                             className={`flex-1 flex items-center justify-center gap-1 py-2 border transition-all rounded-xl ${upscale ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[var(--border-color)] text-[var(--text-secondary)]/60 hover:text-[var(--text-secondary)] hover:border-[#d2ac47]'}`}
                                         >
                                             <Sparkles size={12} className={upscale ? 'text-black' : ''} />
-                                            <span className="text-[8px] uppercase tracking-widest font-bold">Upscale</span>
+                                            <span className="text-[8px] uppercase tracking-widest font-bold">{t('label_upscale')}</span>
                                         </button>
                                     </div>
                                 </div>
