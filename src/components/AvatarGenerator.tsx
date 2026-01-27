@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Wand2, Download, RefreshCw, Sparkles, XCircle, Camera, User, X, Maximize2, Upload } from 'lucide-react';
+import { Wand2, Download, RefreshCw, Sparkles, XCircle, Camera, User, X, Maximize2, Upload, Trash2, Plus } from 'lucide-react';
 
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
@@ -147,38 +147,89 @@ const AvatarLogger = ({ status, error }: { status: string; error: string | null 
 // -----------------------------------------------------------------------------------------
 const ImageComparisonSlider = ({ before, after }: { before: string; after: string }) => {
     const [sliderPos, setSliderPos] = useState(50);
+    const [isDragging, setIsDragging] = useState(false);
     const containerRef = React.useRef<HTMLDivElement>(null);
 
-    const handleMove = (e: React.MouseEvent | React.TouchEvent) => {
+    const handleMove = React.useCallback((clientX: number) => {
         if (!containerRef.current) return;
         const rect = containerRef.current.getBoundingClientRect();
-        const x = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        const position = ((x - rect.left) / rect.width) * 100;
+        const position = ((clientX - rect.left) / rect.width) * 100;
         setSliderPos(Math.max(0, Math.min(100, position)));
+    }, []);
+
+    const onMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
+        // Prevent default browser drag behavior
+        if (!('touches' in e)) {
+            e.preventDefault();
+        }
+        setIsDragging(true);
+        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+        handleMove(clientX);
     };
+
+    const onMouseUp = React.useCallback(() => {
+        setIsDragging(false);
+    }, []);
+
+    const onMouseMove = React.useCallback((e: MouseEvent | TouchEvent) => {
+        if (!isDragging) return;
+        const clientX = 'touches' in e ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX;
+        handleMove(clientX);
+    }, [isDragging, handleMove]);
+
+    React.useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('touchmove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+            window.addEventListener('touchend', onMouseUp);
+        } else {
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('touchmove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+            window.removeEventListener('touchend', onMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('touchmove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+            window.removeEventListener('touchend', onMouseUp);
+        };
+    }, [isDragging, onMouseMove, onMouseUp]);
 
     return (
         <div
             ref={containerRef}
-            className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden cursor-ew-resize select-none border border-[#d2ac47]/20 group/slider shadow-2xl"
-            onMouseMove={(e) => e.buttons === 1 && handleMove(e)}
-            onTouchMove={handleMove}
-            onMouseDown={handleMove}
+            className="relative w-full h-[60vh] rounded-2xl overflow-hidden cursor-ew-resize select-none border border-[#d2ac47]/20 group/slider shadow-2xl bg-[#0a0a0a]"
+            onMouseDown={onMouseDown}
+            onTouchStart={onMouseDown}
         >
             {/* After Image (Background) */}
-            <img src={after} alt="After" className="absolute inset-0 w-full h-full object-cover bg-[#0a0a0a]" />
+            <img
+                src={after}
+                alt="After"
+                className="absolute inset-0 w-full h-full object-contain bg-[#0a0a0a]"
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
+            />
 
             {/* Before Image (Foreground with Clip) */}
             <div
                 className="absolute inset-0 w-full h-full overflow-hidden z-10"
                 style={{ clipPath: `inset(0 ${100 - sliderPos}% 0 0)` }}
             >
-                <img src={before} alt="Before" className="absolute inset-0 w-full h-full object-cover bg-[#0a0a0a]" />
+                <img
+                    src={before}
+                    alt="Before"
+                    className="absolute inset-0 w-full h-full object-contain bg-[#0a0a0a]"
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
+                />
             </div>
 
             {/* Slider Line */}
             <div
-                className="absolute top-0 bottom-0 w-0.5 bg-[#d2ac47]/80 shadow-[0_0_15px_rgba(210,172,71,0.5)] z-20 pointer-events-none"
+                className="absolute top-0 bottom-0 w-0.5 bg-[#d2ac47]/80 shadow-[0_0_15px_rgba(210,172,71,0.5)] z-50 pointer-events-none"
                 style={{ left: `${sliderPos}%` }}
             >
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-black/80 backdrop-blur-md border border-[#d2ac47]/50 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.5)]">
@@ -190,11 +241,11 @@ const ImageComparisonSlider = ({ before, after }: { before: string; after: strin
             </div>
 
             {/* Labels */}
-            <div className="absolute top-4 left-4 px-3 py-1 bg-black/60 rounded-full text-[8px] text-[#F9F1D8] uppercase tracking-[0.2em] backdrop-blur-md border border-[#d2ac47]/20 z-30 font-bold opacity-0 group-hover/slider:opacity-100 transition-opacity">Original</div>
-            <div className="absolute top-4 right-4 px-3 py-1 bg-[#d2ac47]/80 rounded-full text-[8px] text-black font-bold uppercase tracking-[0.2em] backdrop-blur-md border border-[#F9F1D8]/20 z-30 opacity-0 group-hover/slider:opacity-100 transition-opacity">AI Edit</div>
+            <div className="absolute top-5 left-5 px-3 py-1 bg-black/60 rounded-full text-[8px] text-[#F9F1D8] uppercase tracking-[0.2em] backdrop-blur-md border border-[#d2ac47]/20 z-30 font-bold opacity-0 group-hover/slider:opacity-100 transition-opacity pointer-events-none select-none">Original</div>
+            <div className="absolute top-5 right-5 px-3 py-1 bg-[#d2ac47]/80 rounded-full text-[8px] text-black font-bold uppercase tracking-[0.2em] backdrop-blur-md border border-[#F9F1D8]/20 z-30 opacity-0 group-hover/slider:opacity-100 transition-opacity pointer-events-none select-none">AI Edit</div>
 
-            {/* Watermark/Instruction */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-black/40 backdrop-blur-sm rounded-full text-[7px] text-[#d2ac47]/60 uppercase tracking-[0.3em] z-30 font-medium whitespace-nowrap opacity-0 group-hover/slider:opacity-100 transition-opacity">Slide to compare transformation</div>
+            {/* Watermark/Instruction - Added z-index fix */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-black/40 backdrop-blur-sm rounded-full text-[7px] text-[#d2ac47]/60 uppercase tracking-[0.3em] z-30 font-medium whitespace-nowrap opacity-0 group-hover/slider:opacity-100 transition-opacity pointer-events-none select-none">Slide to compare transformation</div>
         </div>
     );
 };
@@ -202,7 +253,7 @@ const ImageComparisonSlider = ({ before, after }: { before: string; after: strin
 // Helper Component: EditPhotoModal
 // Elegant popup for text-based photo editing requests
 // -----------------------------------------------------------------------------------------
-const EditPhotoModal = ({ isOpen, onClose, onSubmit, prompt, setPrompt, loading, originalImage, onUpload }: {
+const EditPhotoModal = ({ isOpen, onClose, onSubmit, prompt, setPrompt, loading, originalImage, comparisonImage, onUpload, referenceImages, setReferenceImages, onUploadRef }: {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: () => void;
@@ -210,8 +261,35 @@ const EditPhotoModal = ({ isOpen, onClose, onSubmit, prompt, setPrompt, loading,
     setPrompt: (v: string) => void;
     loading: boolean;
     originalImage: string | null;
-    onUpload?: (url: string) => void;
+    comparisonImage?: string | null;
+    onUpload?: (file: File) => void;
+    referenceImages: string[];
+    setReferenceImages: (imgs: string[]) => void;
+    onUploadRef: (file: File, index: number) => void;
 }) => {
+    const [factIndex, setFactIndex] = useState(0);
+    const facts = [
+        "Analyzing 500,000,000 parameters...",
+        "Mapping 3D facial geometry...",
+        "Calculating subsurface light scattering...",
+        "Refining skin texture gradients...",
+        "Synthesizing new wardrobe fabrics...",
+        "Adjusting global illumination...",
+        "Optimizing neural latent space...",
+        "Composing final pixel matrix..."
+    ];
+
+    useEffect(() => {
+        if (loading) {
+            const interval = setInterval(() => {
+                setFactIndex((prev) => (prev + 1) % facts.length);
+            }, 3000); // Change fact every 3 seconds
+            return () => clearInterval(interval);
+        } else {
+            setFactIndex(0);
+        }
+    }, [loading]);
+
     if (!isOpen) return null;
 
     return (
@@ -260,8 +338,8 @@ const EditPhotoModal = ({ isOpen, onClose, onSubmit, prompt, setPrompt, loading,
                                                 input.onchange = (e) => {
                                                     const file = (e.target as HTMLInputElement).files?.[0];
                                                     if (file && onUpload) {
-                                                        const url = URL.createObjectURL(file);
-                                                        onUpload(url);
+                                                        // const url = URL.createObjectURL(file);
+                                                        onUpload(file);
                                                     }
                                                 };
                                                 input.click();
@@ -279,7 +357,7 @@ const EditPhotoModal = ({ isOpen, onClose, onSubmit, prompt, setPrompt, loading,
                                         <div className="h-full flex flex-col">
                                             <div className="flex-1 min-h-0">
                                                 <ImageComparisonSlider
-                                                    before={originalImage}
+                                                    before={comparisonImage || originalImage}
                                                     after={originalImage}
                                                 />
                                             </div>
@@ -291,8 +369,8 @@ const EditPhotoModal = ({ isOpen, onClose, onSubmit, prompt, setPrompt, loading,
                                                     input.onchange = (e) => {
                                                         const file = (e.target as HTMLInputElement).files?.[0];
                                                         if (file && onUpload) {
-                                                            const url = URL.createObjectURL(file);
-                                                            onUpload(url);
+                                                            // const url = URL.createObjectURL(file);
+                                                            onUpload(file);
                                                         }
                                                     };
                                                     input.click();
@@ -313,6 +391,51 @@ const EditPhotoModal = ({ isOpen, onClose, onSubmit, prompt, setPrompt, loading,
                                     <label className="text-[#d2ac47] text-[10px] font-black tracking-[0.3em] uppercase mb-4 flex items-center gap-2">
                                         <Sparkles size={12} /> Neural Directives
                                     </label>
+
+                                    {/* Reference Images Slots (1, 2) */}
+                                    <div className="flex gap-3 mb-4">
+                                        {[0, 1].map((idx) => (
+                                            <div
+                                                key={idx}
+                                                className={`w-16 h-16 rounded-xl border flex items-center justify-center cursor-pointer transition-all relative overflow-hidden group/slot
+                                                    ${referenceImages[idx] ? 'border-[#d2ac47]' : 'border-[#d2ac47]/20 hover:border-[#d2ac47]/50 bg-black/20'}
+                                                `}
+                                                onClick={() => {
+                                                    const input = document.createElement('input');
+                                                    input.type = 'file';
+                                                    input.accept = 'image/*';
+                                                    input.onchange = (e) => {
+                                                        const file = (e.target as HTMLInputElement).files?.[0];
+                                                        if (file && onUploadRef) {
+                                                            onUploadRef(file, idx);
+                                                        }
+                                                    };
+                                                    input.click();
+                                                }}
+                                                title={`Upload Reference ${idx + 1}`}
+                                            >
+                                                {referenceImages[idx] ? (
+                                                    <>
+                                                        <img src={referenceImages[idx]!} className="w-full h-full object-cover opacity-80 group-hover/slot:opacity-100 transition-opacity" />
+                                                        <div
+                                                            className="absolute top-0.5 right-0.5 bg-black/50 rounded-full p-0.5 opacity-0 group-hover/slot:opacity-100 transition-opacity z-10 hover:bg-red-900"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                const newRefs = [...referenceImages];
+                                                                newRefs[idx] = '';
+                                                                setReferenceImages(newRefs);
+                                                            }}
+                                                        >
+                                                            <X size={10} className="text-white" />
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <Plus className="text-[#d2ac47]/30 group-hover/slot:text-[#d2ac47] transition-colors" size={20} />
+                                                )}
+                                                <div className="absolute bottom-0.5 right-1 text-[8px] font-mono text-[#d2ac47]/40 pointer-events-none">{idx + 1}</div>
+                                            </div>
+                                        ))}
+                                    </div>
                                     <div className="relative flex-1 group">
                                         <textarea
                                             value={prompt}
@@ -346,12 +469,22 @@ const EditPhotoModal = ({ isOpen, onClose, onSubmit, prompt, setPrompt, loading,
                                             </>
                                         ) : (
                                             <>
-                                                <Sparkles size={16} />
+                                                <Sparkles size={16} className="animate-pulse" />
                                                 <span>Execute Change</span>
                                             </>
                                         )}
                                     </button>
                                 </div>
+                                {/* Status Note */}
+                                {loading && (
+                                    <div className="absolute inset-x-0 bottom-24 text-center">
+                                        <div className="inline-block relative">
+                                            <span className="text-[9px] text-[#d2ac47]/60 uppercase tracking-widest font-bold bg-black/60 px-4 py-1 rounded-full border border-[#d2ac47]/20 min-w-[200px] inline-flex justify-center transition-all duration-500 animate-pulse">
+                                                {facts[factIndex]}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                         </div>
@@ -368,6 +501,7 @@ const AvatarGenerator: React.FC = () => {
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [activeGenerationId, setActiveGenerationId] = useState<string | null>(null);
+    const [editRefImages, setEditRefImages] = useState<string[]>(['', '']);
 
     // Identity Specs
     const [gender, setGender] = useState('female');
@@ -414,6 +548,7 @@ const AvatarGenerator: React.FC = () => {
     const pollingInterval = React.useRef<any>(null);
     const realtimeChannel = React.useRef<any>(null);
     const lastTrackingId = React.useRef<string | null>(null);
+    const generationStartTime = React.useRef<number>(0);
 
     // Initial fetch
     useEffect(() => {
@@ -421,23 +556,11 @@ const AvatarGenerator: React.FC = () => {
         return () => cleanupMonitoring();
     }, []);
 
-    // Fail-safe: If the item appears in the gallery (history), resolve loading
-    useEffect(() => {
-        if (loading && lastTrackingId.current) {
-            const found = galleryItems.find(item => item.id === lastTrackingId.current);
-            const foundUrl = found?.result_url || found?.image_url || found?.url;
-            if (found && foundUrl) {
-                console.log("🛡️ [FAIL-SAFE] Found matching item in gallery. Resolving loading.");
-                setGeneratedImage(foundUrl);
-                cleanupMonitoring();
-                setLoading(false);
-            }
-        }
-    }, [galleryItems, loading]);
-
     // AI Edit State
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [showQuickEdit, setShowQuickEdit] = useState(false);
     const [editPrompt, setEditPrompt] = useState('');
+    const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null); // Store original for comparison
 
     const fetchHistory = async () => {
         try {
@@ -474,8 +597,8 @@ const AvatarGenerator: React.FC = () => {
         setCurrentStatus('processing');
         lastTrackingId.current = generationId;
 
-        // 1. Polling Fallback (Every 10 seconds)
-        pollingInterval.current = setInterval(() => checkStatus(generationId), 10000);
+        // 1. Polling Fallback (Every 2 seconds - Aggressive)
+        pollingInterval.current = setInterval(() => checkStatus(generationId), 2000);
 
         // 2. Realtime Listener
         realtimeChannel.current = supabase
@@ -501,6 +624,10 @@ const AvatarGenerator: React.FC = () => {
 
                     if (isFinished && finalUrl) {
                         console.log("🎯 [REALTIME] SUCCESS! Resolving with URL:", finalUrl);
+
+                        // If we have an original image (Edit Mode), this effectively completes the "Before vs After" state
+                        // The 'originalImageUrl' state should already be set when the edit started.
+
                         setGeneratedImage(finalUrl);
                         cleanupMonitoring();
                         setLoading(false);
@@ -535,7 +662,8 @@ const AvatarGenerator: React.FC = () => {
                 if (data.status) setCurrentStatus(data.status);
 
                 const finalUrl = (data as any).result_url || data.image_url || data.url || (data.metadata?.result_url);
-                const isFinished = data.status === 'completed' || data.status === 'success' || data.status === 'Success';
+                // Lenient check: If we have a URL, it's done. Or if distinct status.
+                const isFinished = (finalUrl && finalUrl.length > 10) || data.status === 'completed' || data.status === 'success' || data.status === 'Success';
 
                 if (isFinished && finalUrl) {
                     console.log("🚀 [POLLING] SUCCESS! Final URL found:", finalUrl);
@@ -543,13 +671,52 @@ const AvatarGenerator: React.FC = () => {
                     cleanupMonitoring();
                     setLoading(false);
                     fetchHistory();
+                    return; // Done
                 } else if (data.status === 'failed' || data.status === 'error') {
                     console.error("❌ [POLLING] FAILURE:", data.error_message);
                     setError(data.error_message || "Generation failed.");
                     cleanupMonitoring();
                     setLoading(false);
+                    return; // Done
                 }
             }
+
+            // --- DEEP SCAN / HISTORY POLL ---
+            // N8N might have created a NEW row. We fetch the latest item for this user.
+            const { data: latestData } = await supabase
+                .from('generations')
+                .select('*')
+                // .eq('metadata->>guest_id', guestId) // REMOVED Strict Filter to match Gallery logic (User Request)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            if (latestData) {
+                const latestUrl = (latestData as any).result_url || latestData.image_url || latestData.url || (latestData.metadata?.result_url);
+                const latestFinished = (latestUrl && latestUrl.length > 10) || latestData.status === 'completed' || latestData.status === 'success' || latestData.status === 'Success';
+
+                // TIMESTAMP CHECK: Allow 30s clock skew.
+                // If recordTime > startTime - 30000, we consider it "potentially ours".
+                const recordTime = new Date(latestData.created_at).getTime();
+                // Use a safe margin because server clock might be slightly behind or ahead.
+                // We want to differentiate "Old History" vs "Just Created".
+                // If we just clicked generate, startTime is NOW. New image should be NOW or slightly later.
+                // But if server is behind, it might appear "older". 
+                // Let's assume skew is rarely > 1 minute.
+                const isRecent = recordTime > (generationStartTime.current - 5000);
+
+                if (latestFinished && latestUrl && isRecent) {
+                    // We found a new completed image!
+                    // Even if ID mismatches, we trust this is the result the user wants.
+                    console.log("🕵️ [DEEP SCAN] Found NEWER completed row:", latestData.id);
+                    setGeneratedImage(latestUrl);
+                    cleanupMonitoring();
+                    setLoading(false);
+                    fetchHistory(); // Refresh the list UI
+                    return;
+                }
+            }
+
         } catch (err) {
             console.error("Status check failed:", err);
         }
@@ -569,17 +736,21 @@ const AvatarGenerator: React.FC = () => {
             console.log("🛑 [CANCEL] Attempting to stop generation ID:", genId);
             axios.post('/api/cancel-generation', { generation_id: genId })
                 .then(res => console.log("✅ [CANCEL] Webhook Response:", res.status))
-                .catch(err => console.error("⚠️ [CANCEL] Webhook error:", err.message));
+                .catch(err => console.error("⚠️ [CANCEL] Webhook error (harmless):", err.message));
         } else {
             console.warn("⚠️ [CANCEL] No active generation ID found to cancel.");
         }
 
-        // 3. Cleanup
+        // 3. Cleanup & FORCE RESET
         cleanupMonitoring();
         setLoading(false);
+        setCurrentStatus('canceled'); // Explicitly show canceled status
         setActiveGenerationId(null);
+        if (pollingInterval.current) clearInterval(pollingInterval.current);
+
+        // Ensure no error is left handling
+        setError(null);
         localStorage.removeItem('active_avatar_id');
-        setError('Generation stopped by user.');
     };
 
     const handleDownload = async () => {
@@ -633,6 +804,8 @@ const AvatarGenerator: React.FC = () => {
 
         setLoading(true);
         setError(null);
+        setOriginalImageUrl(faceImageUrl); // Capture "Before" state
+        generationStartTime.current = Date.now(); // 🕒 TIME MARKER for Deep Scan
 
         try {
             // 1. Create a unique Generation ID (UUID)
@@ -717,6 +890,7 @@ const AvatarGenerator: React.FC = () => {
             if (axios.isCancel(err) || err.name === 'CanceledError') {
                 console.log('Generation canceled by user');
                 setError('Generation stopped by user.');
+                setLoading(false); // Force loading to false
                 return;
             }
 
@@ -739,6 +913,77 @@ const AvatarGenerator: React.FC = () => {
         }
     };
 
+    const handleEditSubmit = async () => {
+        console.log("🖱️ [QUICK EDIT] Submit triggered. Prompt:", editPrompt);
+        if (!editPrompt.trim()) {
+            alert("Please enter a description for the edit.");
+            return;
+        }
+
+        generationStartTime.current = Date.now(); // 🕒 TIME MARKER for Deep Scan
+        setLoading(true);
+        setShowQuickEdit(false); // Hide bar while processing
+
+        try {
+            // 1. Lock in the "Before" state for comparison
+            if (generatedImage) {
+                setOriginalImageUrl(generatedImage);
+            }
+
+            // 2. Create NEW Generation ID for this Edit Job (Preserve history)
+            const newId = uuidv4();
+
+            // 3. Insert specific record for tracking
+            const { error: dbError } = await supabase
+                .from('generations')
+                .insert([{
+                    id: newId,
+                    type: 'avatar',
+                    prompt: editPrompt,
+                    status: 'processing',
+                    image_url: null,
+                    metadata: {
+                        guest_id: guestId,
+                        original_source: generatedImage,
+                        edit_mode: true
+                    }
+                }]);
+
+            if (dbError) throw dbError;
+
+            const payload = {
+                job_type: "edit",
+                gender: gender,
+                clothing: "edit",
+                face_image_url: generatedImage,
+                user_prompt: editPrompt,
+                instantid_weight: 0.85,
+                style_token: "realistic",
+                generation_id: newId // Update the NEW row
+            };
+
+            const response = await fetch('https://n8n.develotex.io/webhook/Flux_Image_Generator_Advanced_Upscl_3+SB', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) throw new Error('Failed to start edit workflow via Main Hook');
+
+            // 4. Start Monitoring the NEW ID
+            console.log("🔄 [EDIT] Started new edit job:", newId);
+            setActiveGenerationId(newId);
+            localStorage.setItem('active_avatar_id', newId);
+            startMonitoring(newId);
+
+        } catch (error) {
+            console.error("Edit Error:", error);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            alert(`Edit Failed Details: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`);
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="w-full relative animate-fade-in pb-20">
 
@@ -750,7 +995,7 @@ const AvatarGenerator: React.FC = () => {
 
                 {/* Left Banner - Restored High-Res & Art Deco Corners to match Video Generator exactly */}
                 {/* Left Panel: Showcase Gallery (Vertical List) */}
-                <div className="order-2 xl:order-1 xl:col-span-3 xl:h-[1100px] overflow-y-auto custom-scrollbar pr-2">
+                <div className="order-2 xl:order-1 xl:col-span-3 xl:h-[1300px] overflow-y-auto custom-scrollbar pr-2">
                     <div className="flex items-center justify-between mb-6 px-2">
                         <div className="flex items-center gap-2 text-[#d2ac47]">
                             <Sparkles size={16} />
@@ -815,33 +1060,57 @@ const AvatarGenerator: React.FC = () => {
                                         className="w-full h-full object-cover transition-all duration-700 group-hover/item:scale-110"
                                     />
 
-                                    {/* Hover Overlay - Premium "Inject Frame" Button */}
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2 block">
-                                        <div className="w-full py-2 bg-[#d2ac47] text-black text-[8px] font-black uppercase tracking-[0.2em] text-center rounded-lg transform translate-y-4 group-hover/item:translate-y-0 transition-transform duration-300 flex items-center justify-center gap-1 shadow-[0_5px_15px_rgba(0,0,0,0.5)]">
-                                            <span>Inject Frame</span>
-                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
-                                                <path d="M5 12h14" />
-                                                <path d="M12 5l7 7-7 7" />
-                                            </svg>
+                                    {/* Hover Overlay - Bottom Actions Toolbar */}
+                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 flex flex-col justify-end items-center p-3 gap-3">
+
+                                        {/* Floating Action Buttons (Download & Delete) */}
+                                        <div className="flex gap-4 transform translate-y-4 group-hover/item:translate-y-0 transition-transform duration-300">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    window.open(item.result_url || item.image_url || item.url, '_blank');
+                                                }}
+                                                className="w-9 h-9 rounded-full bg-[#1a1a1a]/80 backdrop-blur-md border border-[#d2ac47]/30 text-[#d2ac47] flex items-center justify-center hover:bg-[#d2ac47] hover:text-black hover:scale-110 transition-all shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
+                                                title="Open Full Size"
+                                            >
+                                                <Maximize2 size={14} />
+                                            </button>
+
+                                            <button
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    if (!window.confirm('Delete this image?')) return;
+                                                    const { error } = await supabase.from('generations').delete().eq('id', item.id);
+                                                    if (!error) {
+                                                        setGalleryItems(prev => prev.filter(i => i.id !== item.id));
+                                                    }
+                                                }}
+                                                className="w-9 h-9 rounded-full bg-[#1a1a1a]/80 backdrop-blur-md border border-red-500/30 text-red-500/80 flex items-center justify-center hover:bg-red-500 hover:text-white hover:scale-110 transition-all shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
+                                                title="Delete"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+
+                                        {/* "Use As Source" Button */}
+                                        <div className="w-full py-2.5 bg-black/80 backdrop-blur-md border border-[#d2ac47]/30 text-[#d2ac47] text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-xl cursor-pointer hover:bg-[#d2ac47] hover:text-black hover:border-[#d2ac47] transition-all transform translate-y-4 group-hover/item:translate-y-0 transition-transform duration-300 delay-75 shadow-lg">
+                                            Use As Source
                                         </div>
                                     </div>
-
-                                    {/* Selection Indicator */}
-                                    {generatedImage === (item.result_url || item.image_url || item.url) && (
-                                        <div className="absolute inset-0 border-2 border-[#d2ac47] rounded-xl pointer-events-none box-border shadow-[inset_0_0_20px_rgba(210,172,71,0.5)]"></div>
-                                    )}
                                 </div>
                             ))}
                     </div>
 
-                    {galleryItems.filter(item => {
-                        const url = item.result_url || item.video_url || item.url || '';
-                        return !url.toLowerCase().endsWith('.mp4') && item.type !== 'video';
-                    }).length === 0 && (
+                    {
+                        galleryItems.filter(item => {
+                            const url = item.result_url || item.video_url || item.url || '';
+                            return !url.toLowerCase().endsWith('.mp4') && item.type !== 'video';
+                        }).length === 0 && (
                             <div className="text-[#d2ac47]/30 text-xs text-center py-10 font-mono text-[10px] uppercase tracking-widest border border-dashed border-[#d2ac47]/10 rounded-xl mt-4">
                                 NO SOURCE IMAGES
                             </div>
-                        )}
+                        )
+                    }
                 </div>
 
                 {/* Center COLUMN: Canvas / Preview (Span 6) */}
@@ -924,51 +1193,199 @@ const AvatarGenerator: React.FC = () => {
                         {/* Content Overlay */}
                         {generatedImage ? (
                             <>
-                                <img id="generated-avatar-image" src={generatedImage} alt="Generated Avatar" className="absolute inset-0 z-10 w-full h-full object-contain drop-shadow-2xl shadow-black" />
-
-                                {/* Top Actions */}
-                                <div className="absolute top-4 right-4 z-50 flex gap-2">
-                                    <button
-                                        onClick={() => {
-                                            const img = document.getElementById('generated-avatar-image');
-                                            if (img) {
-                                                if (!document.fullscreenElement) {
-                                                    img.requestFullscreen().catch(err => console.error(err));
-                                                } else {
-                                                    document.exitFullscreen();
+                                {/* Image Wrapper with Overlay */}
+                                <div className="absolute inset-0 z-10 group cursor-pointer">
+                                    {/* Top Right Controls */}
+                                    <div className="absolute top-4 right-4 z-50 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                const elem = document.getElementById('generated-avatar-image');
+                                                if (elem) {
+                                                    if (document.fullscreenElement) {
+                                                        document.exitFullscreen();
+                                                    } else {
+                                                        elem.requestFullscreen().catch(err => {
+                                                            console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                                                        });
+                                                    }
                                                 }
-                                            }
-                                        }}
-                                        className="p-2 bg-black/40 backdrop-blur-md border border-[#d2ac47]/30 text-[#d2ac47]/70 rounded-full hover:bg-[#d2ac47] hover:text-black hover:border-[#d2ac47] transition-all duration-300 group"
-                                        title="Full Screen"
-                                    >
-                                        <Maximize2 size={18} />
-                                    </button>
-                                    <button
-                                        onClick={() => setGeneratedImage(null)}
-                                        className="p-2 bg-black/40 backdrop-blur-md border border-red-500/30 text-red-500/70 rounded-full hover:bg-red-500 hover:text-white hover:border-red-500 transition-all duration-300 group"
-                                        title="Clear Image"
-                                    >
-                                        <X size={18} />
-                                    </button>
+                                            }}
+                                            className="p-2 bg-black/40 backdrop-blur-md border border-[#d2ac47]/30 text-[#d2ac47] rounded-full hover:bg-[#d2ac47] hover:text-black transition-all hover:scale-110 shadow-lg"
+                                            title="Full Screen"
+                                        >
+                                            <Maximize2 size={16} />
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (window.confirm("Clear active workspace?")) {
+                                                    setGeneratedImage(null);
+                                                    setOriginalImageUrl(null);
+                                                }
+                                            }}
+                                            className="p-2 bg-black/40 backdrop-blur-md border border-[#d2ac47]/30 text-[#d2ac47] rounded-full hover:bg-red-500 hover:text-white hover:border-red-500 transition-all hover:scale-110 shadow-lg"
+                                            title="Clear Workspace"
+                                        >
+                                            <XCircle size={16} />
+                                        </button>
+                                    </div>
+                                    {/* Central Content: Comparison Slider or Single Image */}
+                                    <div className="w-full h-full relative">
+                                        <img
+                                            id="generated-avatar-image"
+                                            src={generatedImage}
+                                            alt="Generated Avatar"
+                                            className="w-full h-full object-contain drop-shadow-2xl shadow-black"
+                                        />
+
+                                        {/* Quick Edit Overlay */}
+                                        {showQuickEdit && (
+                                            <div className="absolute inset-x-4 bottom-20 z-50 animate-in slide-in-from-bottom-5 duration-300 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+                                                <div className="bg-[#0a0a0a]/95 backdrop-blur-xl border border-[#d2ac47]/40 rounded-2xl p-4 shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col gap-3 max-w-2xl mx-auto ring-1 ring-[#d2ac47]/20">
+
+                                                    {/* Reference Slots (Quick Edit) */}
+                                                    <div className="flex gap-2">
+                                                        {[0, 1].map((idx) => (
+                                                            <div
+                                                                key={idx}
+                                                                className={`w-12 h-12 rounded-lg border flex items-center justify-center cursor-pointer transition-all relative overflow-hidden group/slot
+                                                                    ${editRefImages[idx] ? 'border-[#d2ac47]' : 'border-[#d2ac47]/20 hover:border-[#d2ac47]/50 bg-black/40'}
+                                                                `}
+                                                                onClick={() => {
+                                                                    const input = document.createElement('input');
+                                                                    input.type = 'file';
+                                                                    input.accept = 'image/*';
+                                                                    input.onchange = async (e) => {
+                                                                        const file = (e.target as HTMLInputElement).files?.[0];
+                                                                        if (file) {
+                                                                            // Inline upload logic for Quick Edit
+                                                                            const fileExt = file.name.split('.').pop();
+                                                                            const uniqueName = `ref_${idx}_${Date.now()}.${fileExt}`;
+                                                                            try {
+                                                                                const { error: upErr } = await supabase.storage.from('generations').upload(uniqueName, file);
+                                                                                if (upErr) throw upErr;
+                                                                                const { data: { publicUrl } } = supabase.storage.from('generations').getPublicUrl(uniqueName);
+                                                                                setEditRefImages(prev => {
+                                                                                    const next = [...prev];
+                                                                                    next[idx] = publicUrl;
+                                                                                    return next;
+                                                                                });
+                                                                            } catch (err) {
+                                                                                console.error("Quick Ref Upload Failed", err);
+                                                                            }
+                                                                        }
+                                                                    };
+                                                                    input.click();
+                                                                }}
+                                                                title={`Upload Ref ${idx + 1}`}
+                                                            >
+                                                                {editRefImages[idx] ? (
+                                                                    <>
+                                                                        <img src={editRefImages[idx]!} className="w-full h-full object-cover opacity-80 group-hover/slot:opacity-100 transition-opacity" />
+                                                                        <div
+                                                                            className="absolute top-0.5 right-0.5 bg-black/50 rounded-full p-0.5 opacity-0 group-hover/slot:opacity-100 transition-opacity z-10 hover:bg-red-900"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setEditRefImages(prev => {
+                                                                                    const next = [...prev];
+                                                                                    next[idx] = '';
+                                                                                    return next;
+                                                                                });
+                                                                            }}
+                                                                        >
+                                                                            <X size={8} className="text-white" />
+                                                                        </div>
+                                                                    </>
+                                                                ) : (
+                                                                    <Plus className="text-[#d2ac47]/30 group-hover/slot:text-[#d2ac47] transition-colors" size={16} />
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+
+                                                    <div className="flex gap-4 items-center w-full">
+                                                        <div className="p-3 bg-gold-gradient/10 rounded-xl border border-[#d2ac47]/20 shrink-0 hidden md:block">
+                                                            <Wand2 size={20} className="text-[#d2ac47] animate-pulse" />
+                                                        </div>
+                                                        <input
+                                                            type="text"
+                                                            value={editPrompt}
+                                                            onChange={(e) => setEditPrompt(e.target.value)}
+                                                            placeholder="Describe changes... e.g. 'Make hair red', 'Add neon background'..."
+                                                            className="flex-1 bg-transparent text-[#F9F1D8] text-sm font-medium placeholder-[#F9F1D8]/20 focus:outline-none"
+                                                            autoFocus
+                                                            onKeyDown={(e) => e.key === 'Enter' && handleEditSubmit()}
+                                                        />
+                                                        <div className="h-8 w-[1px] bg-[#d2ac47]/20 mx-2"></div>
+                                                        <button
+                                                            onClick={handleEditSubmit}
+                                                            disabled={loading || !editPrompt.trim()}
+                                                            className="px-6 py-2 bg-gold-gradient text-black font-black uppercase tracking-widest text-[10px] rounded-xl hover:shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale flex items-center gap-2"
+                                                        >
+                                                            {loading ? <RefreshCw className="animate-spin" size={14} /> : <Sparkles size={14} />}
+                                                            <span>{loading ? 'Forging...' : 'Refine'}</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setShowQuickEdit(false)}
+                                                            className="p-2 text-[#d2ac47]/50 hover:text-red-500 transition-colors"
+                                                        >
+                                                            <XCircle size={20} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Overlay Layer - Removed blur & central button */}
+                                    <div className="absolute inset-0 z-20 pointer-events-none group-hover:bg-transparent transition-all duration-300">
+                                        <div className="absolute bottom-14 right-4 pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0 flex flex-col gap-2 items-end">
+                                            {/* Animate Button */}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    alert("Image marked for Video Generation. Check Source Frames.");
+                                                }}
+                                                className="px-4 py-2 bg-black/40 backdrop-blur-md border border-[#d2ac47]/30 text-[#d2ac47] rounded-xl hover:bg-[#d2ac47] hover:text-black transition-all flex items-center gap-2 shadow-lg hover:scale-105 group/btn"
+                                            >
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover/btn:animate-pulse">
+                                                    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                                                    <line x1="7" y1="2" x2="7" y2="22"></line>
+                                                    <line x1="17" y1="2" x2="17" y2="22"></line>
+                                                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                                                    <line x1="2" y1="7" x2="7" y2="7"></line>
+                                                    <line x1="2" y1="17" x2="7" y2="17"></line>
+                                                    <line x1="17" y1="17" x2="22" y2="17"></line>
+                                                    <line x1="17" y1="7" x2="22" y2="7"></line>
+                                                </svg>
+                                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">to Video</span>
+                                            </button>
+
+                                            {/* Edit Button - Toggles Quick Edit Bar */}
+                                            <button
+                                                onClick={() => {
+                                                    if (!generatedImage) return;
+                                                    setShowQuickEdit(!showQuickEdit);
+                                                    setIsEditModalOpen(false); // Ensure old modal is closed
+                                                }}
+                                                className={`px-4 py-2 backdrop-blur-md border rounded-xl transition-all flex items-center gap-2 shadow-lg hover:scale-105 group/btn ${showQuickEdit ? 'bg-[#d2ac47] text-black border-[#d2ac47]' : 'bg-black/40 border-[#d2ac47]/30 text-[#d2ac47] hover:bg-[#d2ac47] hover:text-black'}`}
+                                            >
+                                                <Sparkles size={14} className="group-hover/btn:animate-spin" />
+                                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{showQuickEdit ? 'Close Edit' : 'Quick Edit'}</span>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                {/* Bottom Actions - Premium Redesign (Airy & Compact) */}
-                                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex gap-3 w-auto whitespace-nowrap">
-                                    <button
-                                        onClick={() => setIsEditModalOpen(true)}
-                                        className="px-5 py-2.5 bg-black/40 backdrop-blur-md border border-[#d2ac47]/30 rounded-lg hover:bg-[#d2ac47]/10 hover:border-[#d2ac47] hover:text-[#d2ac47] text-[#d2ac47]/80 transition-all flex items-center gap-2 group shadow-[0_0_10px_rgba(0,0,0,0.3)]"
-                                    >
-                                        <Wand2 size={14} className="group-hover:rotate-12 transition-transform" />
-                                        <span className="text-[10px] font-bold uppercase tracking-widest">Edit / Variations</span>
-                                    </button>
-
+                                {/* Bottom Actions - Download Only */}
+                                <div className="absolute bottom-4 right-4 z-40">
                                     <button
                                         onClick={handleDownload}
-                                        className="px-5 py-2.5 bg-[#d2ac47]/90 hover:bg-[#d2ac47] text-black rounded-lg hover:scale-105 transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(210,172,71,0.2)] hover:shadow-[0_0_25px_rgba(210,172,71,0.4)] backdrop-blur-sm"
+                                        className="px-3 py-1.5 bg-black/40 backdrop-blur-md border border-[#d2ac47]/30 text-[#d2ac47] rounded-lg hover:bg-[#d2ac47] hover:text-black transition-all flex items-center gap-2 shadow-lg hover:scale-105"
                                     >
-                                        <Download size={14} />
-                                        <span className="text-[10px] font-bold uppercase tracking-widest">Download</span>
+                                        <Download size={12} />
+                                        <span className="text-[9px] font-bold uppercase tracking-widest opacity-80">Download</span>
                                     </button>
                                 </div>
                             </>
@@ -989,17 +1406,22 @@ const AvatarGenerator: React.FC = () => {
                                     </p>
                                 </div>
 
-                                {/* Active Workspace Indicator - Larger & Centered */}
-                                <div className="flex flex-col items-center opacity-60 mt-4">
-                                    <Camera size={42} className="text-[#d2ac47]/30 mb-4 animate-pulse" />
-                                    <span className="text-[#d2ac47]/40 text-[10px] font-bold uppercase tracking-[0.3em] text-center">Active Workspace</span>
+                                {/* Active Workspace Indicator - Larger & Centered & Clickable */}
+                                <div
+                                    className="flex flex-col items-center opacity-60 mt-4 cursor-pointer hover:opacity-100 hover:scale-110 transition-all active:scale-95 pointer-events-auto"
+                                    onClick={() => document.getElementById('sidebar-upload-trigger')?.click()}
+                                    title="Upload Image to Edit"
+                                >
+                                    <Camera size={42} className="text-[#d2ac47]/30 mb-4 animate-pulse group-hover:text-[#d2ac47] transition-colors" />
+                                    <span className="text-[#d2ac47]/40 text-[10px] font-bold uppercase tracking-[0.3em] text-center group-hover:text-[#d2ac47] transition-colors">Click to Upload</span>
                                 </div>
                             </div>
                         )}
 
-                        {loading && (
-                            <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
+                        {(loading || error) && (
+                            <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center cursor-pointer" onClick={() => setError(null)}>
                                 <AvatarLogger status={currentStatus} error={error} />
+                                {error && <div className="absolute bottom-10 text-[#d2ac47]/50 text-[10px] uppercase tracking-widest animate-pulse">Click to Dismiss</div>}
                             </div>
                         )}
                     </div>
@@ -1322,18 +1744,48 @@ const AvatarGenerator: React.FC = () => {
                 onSubmit={async () => {
                     if (!editPrompt.trim()) return;
 
-                    setIsEditModalOpen(false);
+                    // Keep modal open so user can see the transition/result directly in the slider!
+                    // setIsEditModalOpen(false); 
                     setLoading(true);
 
                     try {
+                        // 1. Lock in the "Before" state for comparison
+                        if (generatedImage) {
+                            setOriginalImageUrl(generatedImage);
+                        }
+
+                        // 2. Create NEW Generation ID for this Edit Job (Preserve history)
+                        const newId = uuidv4();
+
+                        // 3. Insert specific record for tracking
+                        const { error: dbError } = await supabase
+                            .from('generations')
+                            .insert([{
+                                id: newId,
+                                type: 'avatar', // 'photo_edit' likely invalid enum
+                                prompt: editPrompt,
+                                status: 'processing',
+                                image_url: null, // Result will go here
+                                metadata: {
+                                    guest_id: guestId,
+                                    original_source: generatedImage,
+                                    edit_mode: true
+                                }
+                            }]);
+
+                        if (dbError) throw dbError;
+
                         const payload = {
-                            gender: "female", // Default for now
-                            clothing: "edit", // This triggers your Switch in n8n
-                            face_image_url: generatedImage, // The image we are editing
+                            job_type: "edit",
+                            gender: gender,
+                            clothing: "edit",
+                            face_image_url: generatedImage,
                             user_prompt: editPrompt,
                             instantid_weight: 0.85,
                             style_token: "realistic",
-                            parent_gen_id: null // We'll need to fetch the real ID if it's a gallery image
+                            generation_id: newId, // Update the NEW row
+                            ref_images: editRefImages.filter(img => img),
+                            ref_count: editRefImages.filter(img => img).length
                         };
 
                         const response = await fetch('https://n8n.develotex.io/webhook/Flux_Image_Generator_Advanced_Upscl_3+SB', {
@@ -1344,12 +1796,17 @@ const AvatarGenerator: React.FC = () => {
 
                         if (!response.ok) throw new Error('Failed to start edit workflow via Main Hook');
 
-                        // Note: n8n will update the DB, and our Supabase subscription in App.tsx 
-                        // will automatically detect the new image and update the UI.
+                        // 4. Start Monitoring the NEW ID
+                        console.log("🔄 [EDIT] Started new edit job:", newId);
+                        setActiveGenerationId(newId);
+                        localStorage.setItem('active_avatar_id', newId);
+                        startMonitoring(newId);
 
                     } catch (error) {
                         console.error("Edit Error:", error);
-                    } finally {
+                        // Alert details using stringify to see object
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        alert(`Edit Failed Details: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`);
                         setLoading(false);
                     }
                 }}
@@ -1357,7 +1814,39 @@ const AvatarGenerator: React.FC = () => {
                 setPrompt={setEditPrompt}
                 loading={loading}
                 originalImage={generatedImage}
-                onUpload={(url) => setGeneratedImage(url)}
+                comparisonImage={originalImageUrl}
+                referenceImages={editRefImages}
+                setReferenceImages={setEditRefImages}
+                onUploadRef={async (file, index) => {
+                    const fileExt = file.name.split('.').pop();
+                    const uniqueName = `ref_${index}_${Date.now()}.${fileExt}`;
+                    try {
+                        const { error: upErr } = await supabase.storage.from('generations').upload(uniqueName, file);
+                        if (upErr) throw upErr;
+                        const { data: { publicUrl } } = supabase.storage.from('generations').getPublicUrl(uniqueName);
+                        setEditRefImages(prev => {
+                            const next = [...prev];
+                            next[index] = publicUrl;
+                            return next;
+                        });
+                    } catch (err) {
+                        console.error("Ref Upload Failed", err);
+                    }
+                }}
+                onUpload={async (file) => {
+                    // Upload "Switch Source" file to Supabase immediately to get a valid URL for N8N
+                    const fileExt = file.name.split('.').pop();
+                    const uniqueName = `edit_source_switch_${Date.now()}.${fileExt}`;
+                    try {
+                        const { error: upErr } = await supabase.storage.from('generations').upload(uniqueName, file);
+                        if (upErr) throw upErr;
+                        const { data: { publicUrl } } = supabase.storage.from('generations').getPublicUrl(uniqueName);
+                        setGeneratedImage(publicUrl);
+                    } catch (err) {
+                        console.error("Upload failed in Modal", err);
+                        alert("Failed to upload source image. Please try again.");
+                    }
+                }}
             />
 
             < style > {`
@@ -1393,4 +1882,3 @@ const AvatarGenerator: React.FC = () => {
 };
 
 export default AvatarGenerator;
-

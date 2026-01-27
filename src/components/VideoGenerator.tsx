@@ -1,17 +1,48 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
-import { Wand2, Download, Sparkles, XCircle, ShieldCheck, Flame, Loader2, Play, Film, Image as ImageIcon, Archive, Layers, Video as VideoIcon, Maximize2, Trash2 } from 'lucide-react';
+import { Wand2, Download, Sparkles, XCircle, ShieldCheck, Flame, Loader2, Play, Film, Image as ImageIcon, Archive, Layers, Video as VideoIcon, Maximize2, Trash2, Upload, RefreshCw, Eye } from 'lucide-react';
 
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
 import { supabase } from '../lib/supabaseClient';
 
 // Simulated Progress Logger for UX
-const GenerationLogger = ({ status, error }: { status: string; error: string | null }) => {
+const GenerationLogger = ({ status, error, startTime }: { status: string; error: string | null; startTime?: number }) => {
+    const [initialPlayout, setInitialPlayout] = React.useState(false);
     const [logs, setLogs] = React.useState<string[]>(["Initializing Neural Network..."]);
 
+    // Calculate elapsed time for animation sync
+    const elapsed = startTime ? Date.now() - startTime : 0;
+    const animationDelay = -elapsed;
+
+    // Fast-forward logs based on elapsed time
+    React.useLayoutEffect(() => {
+        if (startTime && !initialPlayout) {
+            const now = Date.now();
+            const elapsedMs = now - startTime;
+
+            const steps = [
+                { msg: "Studio: Receiving creative assets...", delay: 800 },
+                { msg: "Analysis: Deciphering visual context...", delay: 5000 },
+                { msg: "Director: Crafting cinematic screenplay...", delay: 15000 },
+                { msg: "Lighting: Configuring atmosphere & mood...", delay: 30000 },
+                { msg: "Engine: Calibrating render pipeline (This takes time)...", delay: 60000 },
+                { msg: "Core: Loading high-fidelity models...", delay: 90000 },
+                { msg: "Animation: Simulating physics and movement...", delay: 150000 },
+                { msg: "Rendering: Enhancing texture and detail...", delay: 240000 },
+                { msg: "Assembly: Compiling final video sequence...", delay: 300000 },
+                { msg: "Delivery: Finalizing masterpiece...", delay: 340000 }
+            ];
+
+            const pastSteps = steps.filter(s => s.delay < elapsedMs).map(s => s.msg);
+            if (pastSteps.length > 0) {
+                setLogs(prev => [...prev.slice(0, 1), ...pastSteps].slice(-5)); // Keep last 5
+            }
+            setInitialPlayout(true);
+        }
+    }, [startTime]);
+
     React.useEffect(() => {
-        // Base logs for different statuses
         if (status === 'queued') {
             setLogs(["Server received request...", "Searching for available GPU slot...", "You are in the creative queue..."]);
             return;
@@ -32,15 +63,23 @@ const GenerationLogger = ({ status, error }: { status: string; error: string | n
             ];
 
             let timeouts: any[] = [];
+            const startOrigin = startTime || Date.now();
+
             steps.forEach(({ msg, delay }) => {
-                const timeout = setTimeout(() => {
-                    setLogs(prev => [...prev.slice(-4), msg]);
-                }, delay);
-                timeouts.push(timeout);
+                // Only schedule future steps
+                const timeAlreadyPassed = Date.now() - startOrigin;
+                const remainingDelay = delay - timeAlreadyPassed;
+
+                if (remainingDelay > 0) {
+                    const timeout = setTimeout(() => {
+                        setLogs(prev => [...prev.slice(-4), msg]);
+                    }, remainingDelay);
+                    timeouts.push(timeout);
+                }
             });
             return () => timeouts.forEach(clearTimeout);
         }
-    }, [status]);
+    }, [status, startTime]);
 
     return (
         <div className="absolute inset-0 bg-black/95 flex flex-col items-start justify-start p-8 font-mono text-xs z-50">
@@ -49,7 +88,12 @@ const GenerationLogger = ({ status, error }: { status: string; error: string | n
                 <div className="h-2 w-full bg-[#d2ac47]/10 rounded-full overflow-hidden relative">
                     <div
                         className={`absolute top-0 left-0 h-full transition-all duration-1000 ${status === 'queued' ? 'bg-amber-600 animate-pulse' : 'bg-[#d2ac47]'}`}
-                        style={{ width: status === 'queued' ? '15%' : '0%', animation: status !== 'queued' ? 'growWidth 360s linear forwards' : 'none' }}
+                        style={{
+                            width: status === 'queued' ? '15%' : '0%',
+                            // Using negative delay to fast-forward animation
+                            animation: status !== 'queued' ? `growWidth 360s linear forwards` : 'none',
+                            animationDelay: status !== 'queued' ? `${animationDelay}ms` : '0ms'
+                        }}
                     ></div>
                 </div>
                 <div className="flex justify-between text-[9px] text-[#d2ac47]/40 uppercase tracking-widest">
@@ -76,6 +120,7 @@ const GenerationLogger = ({ status, error }: { status: string; error: string | n
                     <div className="mt-8 pt-4 border-t border-[#d2ac47]/10 text-[10px] text-[#d2ac47]/30 italic h-10">
                         {status === 'queued' && "Server is currently handling other requests. Please stay on this page."}
                         {status === 'processing' && "GPU is rendering your frames. This usually takes 5-7 minutes."}
+                        {elapsed > 360000 && !error && status !== 'completed' && "Taking longer than usual... Finalizing render."}
                     </div>
                 </div>
             </div>
@@ -120,14 +165,7 @@ const VideoGenerator: React.FC = () => {
         // Metadata loaded, video ready
     };
 
-    const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (videoRef.current) {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const percentage = x / rect.width;
-            videoRef.current.currentTime = percentage * videoRef.current.duration;
-        }
-    };
+
 
     const toggleFullscreen = () => {
         if (videoRef.current) {
@@ -147,8 +185,25 @@ const VideoGenerator: React.FC = () => {
     const [activeItem, setActiveItem] = useState<any | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [galleryItems, setGalleryItems] = useState<any[]>([]);
+    const [startTime, setStartTime] = useState<number | undefined>(undefined);
+    const [longWait, setLongWait] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
 
-    // Refs for cleanup
+    // Check for long wait times to prompt user
+    React.useEffect(() => {
+        let timer: any;
+        if (loading && startTime) {
+            // Check every 30s if we've crossed the threshold
+            timer = setInterval(() => {
+                if (Date.now() - startTime > 180000) { // 3 minutes threshold for "feeling long"
+                    setLongWait(true);
+                }
+            }, 5000);
+        } else {
+            setLongWait(false);
+        }
+        return () => clearInterval(timer);
+    }, [loading, startTime]);
     const abortControllerRef = React.useRef<AbortController | null>(null);
     const intervalRef = React.useRef<any | null>(null);
     const channelRef = React.useRef<any | null>(null);
@@ -167,9 +222,9 @@ const VideoGenerator: React.FC = () => {
         let query = supabase
             .from('generations')
             .select('*')
-            .eq('status', 'completed')
+            .in('status', ['completed', 'processing', 'pending'])
             .order('created_at', { ascending: false })
-            .limit(20);
+            .limit(100);
 
         if (user) {
             // If logged in, fetch MY data associated with my account
@@ -179,15 +234,76 @@ const VideoGenerator: React.FC = () => {
             query = query.contains('metadata', { guest_id: guestId });
         }
 
+        // Default Assets Definition
+        const DEFAULT_ASSETS = [
+            // 9 Photos requested by User (Preserved at top)
+            { id: 'def_p_1234', type: 'image', url: '/1234_dop.png', result_url: '/1234_dop.png', label: 'Studio Light', status: 'completed' },
+            { id: 'def_p_semi1', type: 'image', url: '/base_2026-01-13T15-34-37 SEMI_00001_.png', result_url: '/base_2026-01-13T15-34-37 SEMI_00001_.png', label: 'Evening Silk', status: 'completed' },
+            { id: 'def_p_nsfw1', type: 'image', url: '/base_2026-01-13T15-37-59 NSFW_00001_.png', result_url: '/base_2026-01-13T15-37-59 NSFW_00001_.png', label: 'Midnight Mood', status: 'completed' },
+            { id: 'def_p_nsfw2', type: 'image', url: '/base_2026-01-19T02-05-34 NSFW_00001_.png', result_url: '/base_2026-01-19T02-05-34 NSFW_00001_.png', label: 'Lace Noir', status: 'completed' },
+            { id: 'def_p_semi2', type: 'image', url: '/base_2026-01-19T06-04-24 SEMI_00001_.png', result_url: '/base_2026-01-19T06-04-24 SEMI_00001_.png', label: 'Morning Glow', status: 'completed' },
+            { id: 'def_p_nsfw3', type: 'image', url: '/base_2026-01-23T03-19-48 NSFW_00001_.png', result_url: '/base_2026-01-23T03-19-48 NSFW_00001_.png', label: 'Sheer Elegance', status: 'completed' },
+            { id: 'def_p_dress1', type: 'image', url: '/base_2026-01-24T01-10-32 DRESS_00001_.png', result_url: '/base_2026-01-24T01-10-32 DRESS_00001_.png', label: 'Urban Chic', status: 'completed' },
+            { id: 'def_p_nsfw4', type: 'image', url: '/base_2026-01-24T18-27-14 NSFW_00001_.png', result_url: '/base_2026-01-24T18-27-14 NSFW_00001_.png', label: 'Velvet Touch', status: 'completed' },
+            { id: 'def_p_wan', type: 'image', url: '/wan22_2026-01-23T11_40_52 FALSE_00001.png', result_url: '/wan22_2026-01-23T11_40_52 FALSE_00001.png', label: 'Beach Day', status: 'completed' },
+
+            // New Video Defaults (Interleaved to separate specific files)
+            // Target 1: infinity_video_1769367318527 (Placed early)
+            { id: 'def_v_inf1', type: 'video', video_url: '/videos/infinity_video_1769367318527.mp4', result_url: '/videos/infinity_video_1769367318527.mp4', label: 'Cinematic Void', status: 'completed' },
+
+            // Filler Videos
+            { id: 'def_v_wan1', type: 'video', video_url: '/videos/wan22_2026-01-25T17_06_14 NSFW_00001.mp4', result_url: '/videos/wan22_2026-01-25T17_06_14 NSFW_00001.mp4', label: 'Red Velvet', status: 'completed' },
+            { id: 'def_v_inf2', type: 'video', video_url: '/videos/infinity_video_1769366317342.mp4', result_url: '/videos/infinity_video_1769366317342.mp4', label: 'Timeless', status: 'completed' },
+            { id: 'def_v_wan2', type: 'video', video_url: '/videos/wan22_2026-01-25T17_42_28 FALSE_00001.mp4', result_url: '/videos/wan22_2026-01-25T17_42_28 FALSE_00001.mp4', label: 'Ethereal', status: 'completed' },
+            { id: 'def_v_inf3', type: 'video', video_url: '/videos/infinity_video_1769364473440.mp4', result_url: '/videos/infinity_video_1769364473440.mp4', label: 'Dreamscape', status: 'completed' },
+            { id: 'def_v_wan3', type: 'video', video_url: '/videos/wan22_2026-01-25T17_33_42 FALSE_00001.mp4', result_url: '/videos/wan22_2026-01-25T17_33_42 FALSE_00001.mp4', label: 'Soft Focus', status: 'completed' },
+            { id: 'def_v_inf4', type: 'video', video_url: '/videos/infinity_video_1769366467855.mp4', result_url: '/videos/infinity_video_1769366467855.mp4', label: 'Noir Motion', status: 'completed' },
+            { id: 'def_v_wan5', type: 'video', video_url: '/videos/wan22_2026-01-25T17-24-22 FALSE_00001 (1).mp4', result_url: '/videos/wan22_2026-01-25T17-24-22 FALSE_00001 (1).mp4', label: 'Golden Era', status: 'completed' },
+
+            // Target 2: wan22_2026-01-25T18_39_40 NSFW_00001 (Placed late, far from Target 1)
+            { id: 'def_v_wan4', type: 'video', video_url: '/videos/wan22_2026-01-25T18_39_40 NSFW_00001.mp4', result_url: '/videos/wan22_2026-01-25T18_39_40 NSFW_00001.mp4', label: 'Deep Desire', status: 'completed' },
+
+            // Existing Premium Defaults (Kept for variety)
+            { id: 'def_v1', type: 'video', video_url: '/videos/wan22_2026-01-22T15_36_40 FALSE_00001.mp4', result_url: '/videos/wan22_2026-01-22T15_36_40 FALSE_00001.mp4', label: 'Elegance Redefined', status: 'completed' },
+            { id: 'def_v2', type: 'video', video_url: '/videos/infinity_video_1769098200041.mp4', result_url: '/videos/infinity_video_1769098200041.mp4', label: 'Shadow Bloom', status: 'completed' },
+            { id: 'def_v3', type: 'video', video_url: '/videos/infinity_video_1769099816091.mp4', result_url: '/videos/infinity_video_1769099816091.mp4', label: 'Dark Angel', status: 'completed' },
+        ];
+
         const { data } = await query;
-        if (data) {
-            setGalleryItems(data);
-        }
+        let finalItems = data || [];
+
+        // Filter out locally deleted defaults
+        const deletedDefaults = JSON.parse(localStorage.getItem('deleted_defaults') || '[]');
+        const visibleDefaults = DEFAULT_ASSETS.filter(item => !deletedDefaults.includes(item.id));
+
+        // Merge defaults if user items are few, OR always merge if that's the desired "gift" behavior.
+        // The user asked for them to "remain there forever even when new ones load".
+        // So we append them to the end, or beginning? 
+        // "put these ... where the empty cells are". implies filling up space.
+        // We will append them to the list. 
+
+        // Avoid duplicates if somehow IDs clash (though they shouldn't)
+        const existingIds = new Set(finalItems.map((i: any) => i.id));
+        const defaultsToAdd = visibleDefaults.filter(d => !existingIds.has(d.id));
+
+        // Update state with combined list
+        setGalleryItems([...finalItems, ...defaultsToAdd]);
     };
 
     const handleDeleteItem = async (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
         if (!window.confirm('Delete this from library?')) return;
+
+        if (id.startsWith('def_')) {
+            // Handle local deletion for default assets
+            const deletedDefaults = JSON.parse(localStorage.getItem('deleted_defaults') || '[]');
+            if (!deletedDefaults.includes(id)) {
+                deletedDefaults.push(id);
+                localStorage.setItem('deleted_defaults', JSON.stringify(deletedDefaults));
+            }
+            setGalleryItems(prev => prev.filter(item => item.id !== id));
+            return;
+        }
 
         try {
             const { error } = await supabase.from('generations').delete().eq('id', id);
@@ -216,6 +332,7 @@ const VideoGenerator: React.FC = () => {
                 console.log("Restoring session:", data);
                 setImageUrl(data.imageUrl || '');
                 setTextPrompt(data.prompt || '');
+                if (data.startTime) setStartTime(data.startTime);
                 setLoading(true);
                 // Resume monitoring
                 startMonitoring(data.id);
@@ -262,6 +379,7 @@ const VideoGenerator: React.FC = () => {
 
         cleanupMonitoring();
         localStorage.removeItem('active_generation');
+        setStartTime(undefined);
         setLoading(false);
         setError('Generation cancelled by user.');
     };
@@ -310,6 +428,7 @@ const VideoGenerator: React.FC = () => {
             if (error || !data) {
                 if (!data || (error as any)?.code === 'PGRST116') {
                     console.warn("Generation record missing, clearing local state.");
+                    setError("Monitoring stopped: Generation record not found.");
                     setLoading(false);
                     cleanupMonitoring();
                     localStorage.removeItem('active_generation');
@@ -324,14 +443,20 @@ const VideoGenerator: React.FC = () => {
             const isFinished = (data?.status === 'completed' || data?.status === 'Success' || data?.status === 'success');
             const finalUrl = (data as any)?.result_url || data?.video_url;
 
-            if (isFinished && finalUrl) {
-                console.log('✅ [POLLING] Masterpiece ready:', finalUrl);
-                setVideoUrl(finalUrl);
-                setLoading(false);
-                cleanupMonitoring();
-                localStorage.removeItem('active_generation');
-                fetchHistory();
-                return true;
+            if (isFinished) {
+                if (finalUrl) {
+                    console.log('✅ [POLLING] Masterpiece ready:', finalUrl);
+                    setVideoUrl(finalUrl);
+                    setLoading(false);
+                    cleanupMonitoring();
+                    localStorage.removeItem('active_generation');
+                    setStartTime(undefined);
+                    fetchHistory();
+                    return true;
+                } else {
+                    console.warn("⚠️ [POLLING] Status is completed but URL is missing. Waiting explicitly...");
+                    // We don't return true here, we keep polling hoping the URL appears
+                }
             }
 
             if (data?.status === 'failed' || data?.status === 'error') {
@@ -339,10 +464,11 @@ const VideoGenerator: React.FC = () => {
                 setLoading(false);
                 cleanupMonitoring();
                 localStorage.removeItem('active_generation');
+                setStartTime(undefined);
                 return true;
             }
 
-            const timeoutId = setTimeout(checkStatus, 5000);
+            const timeoutId = setTimeout(checkStatus, 3000); // Check faster (3s)
             intervalRef.current = timeoutId;
             return false;
         };
@@ -360,18 +486,23 @@ const VideoGenerator: React.FC = () => {
                         setCurrentStatus(newRecord.status);
                     }
 
-                    if (newRecord.status === 'completed' && newRecord.video_url) {
-                        console.log('✅ [REALTIME] Видео готово! URL:', newRecord.video_url);
-                        setVideoUrl(newRecord.video_url);
+                    const isFinished = (newRecord.status === 'completed' || newRecord.status === 'Success' || newRecord.status === 'success');
+                    const finalUrl = newRecord.result_url || newRecord.video_url;
+
+                    if (isFinished && finalUrl) {
+                        console.log('✅ [REALTIME] Видео готово! URL:', finalUrl);
+                        setVideoUrl(finalUrl);
                         setLoading(false);
                         cleanupMonitoring();
                         localStorage.removeItem('active_generation');
+                        setStartTime(undefined);
                         fetchHistory();
                     } else if (newRecord.status === 'failed') {
                         setError('Generation failed on server.');
                         setLoading(false);
                         cleanupMonitoring();
                         localStorage.removeItem('active_generation');
+                        setStartTime(undefined);
                     }
                 }
             )
@@ -379,12 +510,13 @@ const VideoGenerator: React.FC = () => {
 
         channelRef.current = channel;
 
-        const id = setTimeout(checkStatus, 5000);
+        const id = setTimeout(checkStatus, 1000);
         intervalRef.current = id;
 
         setTimeout(() => {
             cleanupMonitoring();
-        }, 600000);
+            if (loading) setError('Timeout: Video took too long. Check "My Library" later.');
+        }, 1200000); // 20 minutes timeout
     };
 
     const handleGenerate = async () => {
@@ -422,6 +554,8 @@ const VideoGenerator: React.FC = () => {
                 prompt: textPrompt,
                 startTime: Date.now()
             }));
+
+            setStartTime(Date.now());
 
             axios.post(WEBHOOK_URL, {
                 generation_id: generation.id,
@@ -536,7 +670,7 @@ const VideoGenerator: React.FC = () => {
                                                 {isVideo ? (
                                                     <video
                                                         src={url}
-                                                        className="w-full h-full object-cover transition-opacity duration-300"
+                                                        className="w-full h-full object-cover transition-opacity duration-300 pointer-events-none"
                                                         muted
                                                         playsInline
                                                         loop
@@ -551,33 +685,109 @@ const VideoGenerator: React.FC = () => {
 
                                                 {/* Type Badge - Top Right */}
                                                 <div className="absolute top-2 right-2 z-20">
-                                                    <div className="w-6 h-6 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center border border-[#d2ac47]/30">
-                                                        {isVideo ? <Film size={12} className="text-[#d2ac47]" /> : <ImageIcon size={12} className="text-[#d2ac47]" />}
-                                                    </div>
+                                                    {isVideo ? (
+                                                        <div className="w-6 h-6 bg-[#d2ac47]/15 backdrop-blur-md rounded-md flex items-center justify-center border border-[#d2ac47]/40 shadow-[0_0_10px_rgba(210,172,71,0.1)]">
+                                                            <Film size={11} className="text-[#d2ac47]" />
+                                                        </div>
+                                                    ) : (
+                                                        <div className="w-6 h-6 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center border border-[#d2ac47]/20">
+                                                            <ImageIcon size={11} className="text-[#d2ac47]/70" />
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {/* Hover Overlay - Action Text */}
-                                                <div className="absolute inset-0 opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2 px-3 pb-3">
-                                                    <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent pointer-none"></div>
+                                                <div className={`absolute inset-0 transition-opacity duration-300 flex flex-col justify-end p-2 px-3 pb-3 ${item.status === 'processing' || item.status === 'pending' ? 'opacity-100 bg-black/60' : 'opacity-0 group-hover/item:opacity-100'}`}>
 
-                                                    <button
-                                                        onClick={(e) => handleDeleteItem(e, item.id)}
-                                                        className="absolute bottom-14 right-2 p-2 bg-red-950/40 backdrop-blur-xl text-red-400 rounded-full hover:bg-red-600 hover:text-white transition-all border border-red-500/10 shadow-lg pointer-events-auto z-40"
-                                                        title="Delete"
-                                                    >
-                                                        <Trash2 size={12} />
-                                                    </button>
 
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setVideoUrl(url);
-                                                            window.scrollTo({ top: 300, behavior: 'smooth' });
-                                                        }}
-                                                        className="relative w-full py-2.5 bg-[#d2ac47] text-black text-[9px] font-black uppercase tracking-[0.2em] text-center rounded-lg flex items-center justify-center gap-1 shadow-xl transform translate-y-4 group-hover/item:translate-y-0 transition-all hover:scale-[1.02] active:scale-95 pointer-events-auto z-40"
-                                                    >
-                                                        {isVideo ? 'Use as Source' : 'Use Reference'}
-                                                    </button>
+                                                    <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/90 to-transparent pointer-none"></div>
+
+                                                    {(item.status === 'processing' || item.status === 'pending') ? (
+                                                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none">
+                                                            <Loader2 size={24} className="text-[#d2ac47] animate-spin" />
+                                                            <span className="text-[#d2ac47] text-[9px] font-bold tracking-widest uppercase animate-pulse">Forging...</span>
+                                                        </div>
+                                                    ) : (
+                                                        <button
+                                                            onClick={async (e) => {
+                                                                e.stopPropagation();
+                                                                try {
+                                                                    const response = await fetch(url);
+                                                                    const blob = await response.blob();
+                                                                    const blobUrl = window.URL.createObjectURL(blob);
+                                                                    const link = document.createElement('a');
+                                                                    link.href = blobUrl;
+                                                                    link.download = `infinity_${isVideo ? 'video' : 'photo'}_${Date.now()}.${isVideo ? 'mp4' : 'png'}`;
+                                                                    document.body.appendChild(link);
+                                                                    link.click();
+                                                                    document.body.removeChild(link);
+                                                                    window.URL.revokeObjectURL(blobUrl);
+                                                                } catch (err) {
+                                                                    console.error("Download failed", err);
+                                                                    window.open(url, '_blank');
+                                                                }
+                                                            }}
+                                                            className="absolute bottom-14 right-12 p-2 bg-[#d2ac47]/10 backdrop-blur-xl text-[#d2ac47] rounded-full hover:bg-[#d2ac47] hover:text-black transition-all border border-[#d2ac47]/20 shadow-lg pointer-events-auto z-40 cursor-pointer"
+                                                            title="Download"
+                                                        >
+                                                            <Download size={12} />
+                                                        </button>
+                                                    )}
+
+                                                    {!(item.status === 'processing' || item.status === 'pending') && (
+                                                        <button
+                                                            onClick={(e) => handleDeleteItem(e, item.id)}
+                                                            className="absolute bottom-14 right-2 p-2 bg-red-950/40 backdrop-blur-xl text-red-400 rounded-full hover:bg-red-600 hover:text-white transition-all border border-red-500/10 shadow-lg pointer-events-auto z-40 cursor-pointer"
+                                                            title="Delete"
+                                                        >
+                                                            <Trash2 size={12} />
+                                                        </button>
+                                                    )}
+
+                                                    {(item.status === 'processing' || item.status === 'pending') ? (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setLoading(true);
+                                                                setVideoUrl(null);
+                                                                setImageUrl(item.image_url || item.url);
+                                                                setTextPrompt(item.prompt || '');
+
+                                                                // Use actual creation time if available to resume timer accurately
+                                                                let realStartTime = Date.now();
+                                                                if (item.created_at) {
+                                                                    const parsedTime = new Date(item.created_at).getTime();
+                                                                    if (!isNaN(parsedTime)) {
+                                                                        realStartTime = parsedTime;
+                                                                    }
+                                                                }
+                                                                setStartTime(realStartTime);
+
+                                                                const genState = {
+                                                                    id: item.id,
+                                                                    imageUrl: item.image_url || item.url,
+                                                                    prompt: item.prompt || '',
+                                                                    startTime: realStartTime
+                                                                };
+                                                                localStorage.setItem('active_generation', JSON.stringify(genState));
+                                                                startMonitoring(item.id);
+                                                            }}
+                                                            className="relative w-full py-3 bg-[#d2ac47] text-black text-[9px] font-black uppercase tracking-[0.25em] text-center rounded-lg flex items-center justify-center gap-1 shadow-xl transform transition-all hover:scale-[1.02] active:scale-95 pointer-events-auto z-40 cursor-pointer animate-pulse"
+                                                        >
+                                                            <Eye size={14} className="mr-1" /> WATCH
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setVideoUrl(url);
+                                                                window.scrollTo({ top: 300, behavior: 'smooth' });
+                                                            }}
+                                                            className="relative w-fit mx-auto px-3 py-1.5 bg-black/40 backdrop-blur-md border border-[#d2ac47]/20 text-[#d2ac47]/80 hover:text-black text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-lg flex items-center justify-center gap-1 shadow-lg transform translate-y-4 group-hover/item:translate-y-0 transition-all hover:bg-[#d2ac47] hover:scale-[1.02] active:scale-95 pointer-events-auto z-40 cursor-pointer"
+                                                        >
+                                                            {isVideo ? 'Use as Source' : 'Use Reference'}
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         );
@@ -595,12 +805,12 @@ const VideoGenerator: React.FC = () => {
                                             <div className="absolute w-16 h-16 bg-[#d2ac47]/5 rounded-full blur-2xl group-hover/empty:bg-[#d2ac47]/15 transition-colors"></div>
 
                                             <div className="relative w-12 h-12 rounded-full border border-[#d2ac47]/20 flex items-center justify-center text-[#d2ac47]/30 transition-all duration-500 group-hover/empty:border-[#d2ac47]/60 group-hover/empty:text-[#d2ac47]/80 group-hover/empty:scale-110 shadow-[0_0_20px_rgba(210,172,71,0.05)] group-hover/empty:shadow-[0_0_30px_rgba(210,172,71,0.2)] bg-black/40">
-                                                <Sparkles size={22} strokeWidth={1.5} />
+                                                <Upload size={22} strokeWidth={1.5} />
                                             </div>
 
                                             <div className="relative flex flex-col items-center gap-2">
                                                 <div className="text-[10px] text-[#d2ac47]/25 uppercase tracking-[0.4em] font-black group-hover/empty:text-[#d2ac47]/70 transition-colors">
-                                                    Reserved
+                                                    Upload Ref
                                                 </div>
                                                 <div className="w-6 h-[1px] bg-[#d2ac47]/10 group-hover/empty:w-12 group-hover/empty:bg-[#d2ac47]/30 transition-all duration-500"></div>
                                             </div>
@@ -608,6 +818,65 @@ const VideoGenerator: React.FC = () => {
                                             {/* Prominent Art Deco Corners */}
                                             <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-[#d2ac47]/10 rounded-tl-sm transition-all duration-500 group-hover/empty:border-[#d2ac47]/40 group-hover/empty:scale-110"></div>
                                             <div className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-[#d2ac47]/10 rounded-br-sm transition-all duration-500 group-hover/empty:border-[#d2ac47]/40 group-hover/empty:scale-110"></div>
+
+                                            {/* File Input Overlay for 'Upload Ref' in empty slots */}
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50"
+                                                title="Upload Reference Image"
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) return;
+
+                                                    // Basic validation
+                                                    if (!file.type.startsWith('image/')) {
+                                                        alert('Please upload an image file');
+                                                        return;
+                                                    }
+
+                                                    // Use the existing handleGenerate-like logic or direct upload
+                                                    // We'll duplicate the upload logic from ImageUploadZone for quick access
+                                                    try {
+                                                        const fileExt = file.name.split('.').pop();
+                                                        const uniqueName = `${Date.now()}_quick_${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+                                                        // Optimistic UI: Show loading state in this specific card? 
+                                                        // Ideally we just global load or seamless insert. 
+                                                        // For now, simpler: Upload -> Add to Gallery -> Set Active
+
+                                                        const { error: uploadError } = await supabase.storage
+                                                            .from('generations')
+                                                            .upload(uniqueName, file);
+
+                                                        if (uploadError) throw uploadError;
+
+                                                        const { data: { publicUrl } } = supabase.storage
+                                                            .from('generations')
+                                                            .getPublicUrl(uniqueName);
+
+                                                        // 1. Set as Active Source
+                                                        setImageUrl(publicUrl);
+                                                        setFileName(file.name);
+
+                                                        // 2. Add to Local Gallery (Optimistic)
+                                                        const newItem = {
+                                                            id: `temp-${Date.now()}`,
+                                                            url: publicUrl,
+                                                            type: 'image',
+                                                            status: 'uploaded',
+                                                            label: 'Uploaded Ref',
+                                                            created_at: new Date().toISOString()
+                                                        };
+
+                                                        setGalleryItems(prev => [newItem, ...prev]);
+
+                                                    } catch (err) {
+                                                        console.error("Quick upload failed", err);
+                                                        setError("Failed to upload reference image.");
+                                                    }
+                                                }}
+                                            />
                                         </div>
                                     ))}
                                 </>
@@ -629,7 +898,7 @@ const VideoGenerator: React.FC = () => {
                     {/* Moved Hero Section - Integrated into Workspace */}
 
 
-                    <div className="bg-velvet-depth border border-[#d2ac47]/20 rounded-3xl p-4 md:p-5 relative overflow-hidden flex-1 flex flex-col justify-center shadow-2xl transition-all hover:border-[#d2ac47]/40 mx-2 md:mx-0">
+                    <div className="bg-velvet-depth border border-[#d2ac47]/20 rounded-3xl p-4 md:p-5 relative z-50 flex-none flex flex-col justify-start shadow-2xl transition-all hover:border-[#d2ac47]/40 mx-2 md:mx-0">
 
                         {/* Decorative Background Elements */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47]/50 to-transparent"></div>
@@ -720,20 +989,79 @@ const VideoGenerator: React.FC = () => {
                                 <ShieldCheck size={16} strokeWidth={2.5} /> SAFE
                             </div>
                             <div className="w-[1px] h-full bg-[#d2ac47]/30"></div>
-                            <div className={`flex-1 md:flex-none px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 ${!safeMode ? 'bg-gradient-to-r from-red-600 to-red-900 text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-red-900/30 hover:text-red-500'} `}>
+                            <div className={`relative flex-1 md:flex-none px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 ${!safeMode ? 'bg-gradient-to-r from-red-600 to-red-900 text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]' : 'text-[#d2ac47]/40 bg-black hover:bg-red-900/30 hover:text-red-500'} `}>
                                 <Flame size={16} strokeWidth={2.5} /> SPICY
+                                <span className="absolute bottom-[1px] right-2 text-[8px] opacity-80 tracking-wider font-mono">BETA</span>
                             </div>
                         </div>
 
                         {/* Action Buttons */}
                         <div className="flex flex-col md:flex-row gap-3 w-full">
                             {loading && (
-                                <button
-                                    onClick={handleCancel}
-                                    className="w-full md:w-auto min-h-[48px] px-6 py-3 border border-[#d2ac47] bg-[#1a1a1a] text-[#d2ac47] hover:bg-red-950/40 hover:text-red-400 hover:border-red-500 transition-all text-xs font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2 group/cancel rounded-xl shadow-[0_0_10px_rgba(210,172,71,0.1)]"
-                                >
-                                    <XCircle size={16} className="group-hover/cancel:rotate-90 transition-transform duration-300" /> CANCEL
-                                </button>
+                                <>
+                                    <button
+                                        onClick={handleCancel}
+                                        className="w-full md:w-auto min-h-[48px] px-6 py-3 border border-[#d2ac47] bg-[#1a1a1a] text-[#d2ac47] hover:bg-red-950/40 hover:text-red-400 hover:border-red-500 transition-all text-xs font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2 group/cancel rounded-xl shadow-[0_0_10px_rgba(210,172,71,0.1)]"
+                                    >
+                                        <XCircle size={16} className="group-hover/cancel:rotate-90 transition-transform duration-300" /> CANCEL
+                                    </button>
+                                    <button
+                                        disabled={isSyncing}
+                                        onClick={async () => {
+                                            setIsSyncing(true);
+                                            setLongWait(false); // Ack the warning
+
+                                            // Artificial delay for UX perception if check is too fast
+                                            const minTime = new Promise(r => setTimeout(r, 600));
+
+                                            const savedGen = localStorage.getItem('active_generation');
+                                            let genId = null;
+                                            if (savedGen) {
+                                                try {
+                                                    const parsed = JSON.parse(savedGen);
+                                                    genId = parsed.id || parsed.generation_id;
+                                                } catch (e) {
+                                                    console.error("Failed to parse generation ID", e);
+                                                }
+                                            }
+
+                                            if (genId) {
+                                                const { data } = await supabase.from('generations').select('status, video_url').eq('id', genId).single();
+                                                if (data) {
+                                                    if (data.status === 'completed' && data.video_url) {
+                                                        setVideoUrl(data.video_url);
+                                                        setLoading(false);
+                                                        setCurrentStatus('completed');
+                                                        cleanupMonitoring();
+                                                        localStorage.removeItem('active_generation');
+                                                        setStartTime(undefined);
+                                                        fetchHistory();
+                                                    } else if (data.status === 'failed') {
+                                                        setError('Generation failed via Manual Check');
+                                                        setLoading(false);
+                                                        cleanupMonitoring();
+                                                        setStartTime(undefined);
+                                                    } else {
+                                                        setCurrentStatus(data.status);
+                                                    }
+                                                }
+                                            }
+
+                                            await minTime;
+                                            setIsSyncing(false);
+                                        }}
+                                        className={`group w-12 md:w-14 min-h-[48px] border ml-2 ${longWait ? 'border-red-500 bg-red-950/20 text-red-500 animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.4)]' : 'border-[#d2ac47] bg-[#1a1a1a] text-[#d2ac47] hover:bg-[#d2ac47] hover:text-black shadow-[0_0_10px_rgba(210,172,71,0.1)]'} transition-all flex items-center justify-center rounded-xl relative z-40 hover:scale-105 active:scale-95 cursor-pointer hover:shadow-[0_0_15px_rgba(210,172,71,0.3)] ${isSyncing ? 'opacity-50 cursor-wait' : ''}`}
+                                        title="Force Check Status"
+                                    >
+                                        <RefreshCw size={20} className={`active:animate-spin ${longWait || isSyncing ? 'animate-spin' : ''}`} />
+
+                                        {longWait && !isSyncing && (
+                                            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 bg-red-600/90 backdrop-blur-md text-white text-[9px] font-bold px-3 py-1.5 rounded-lg whitespace-nowrap animate-bounce shadow-lg z-50 after:content-[''] after:absolute after:right-full after:top-1/2 after:-translate-y-1/2 after:border-4 after:border-transparent after:border-r-red-600/90 cursor-pointer group-hover:scale-110 transition-transform origin-left">
+                                                Stuck? Sync
+                                            </div>
+                                        )}
+                                    </button>
+                                </>
                             )}
 
                             <button
@@ -766,7 +1094,7 @@ const VideoGenerator: React.FC = () => {
 
                             {loading ? (
                                 // Logger is now full-size overlay in the output box, ensuring visibility
-                                <GenerationLogger status={currentStatus} error={error} />
+                                <GenerationLogger status={currentStatus} error={error} startTime={startTime} />
                             ) : videoUrl ? (
                                 <div className="relative w-full h-full flex items-center justify-center group">
                                     {/* Use object-contain to preserve natural aspect ratio dynamically */}
@@ -829,8 +1157,34 @@ const VideoGenerator: React.FC = () => {
                                             </button>
 
                                             {/* Scrubber - Unified Golden Glow */}
-                                            <div className="flex-1 h-full flex items-center justify-center cursor-pointer group/scrub" onClick={handleSeek}>
-                                                <div className="w-full h-1.5 bg-white/10 rounded-full relative overflow-visible">
+                                            <div
+                                                className="flex-1 h-full flex items-center justify-center cursor-ew-resize group/scrub touch-none"
+                                                onClick={(e) => {
+                                                    if (videoRef.current) {
+                                                        const rect = e.currentTarget.getBoundingClientRect();
+                                                        const x = e.clientX - rect.left;
+                                                        const percentage = Math.max(0, Math.min(1, x / rect.width));
+                                                        videoRef.current.currentTime = percentage * videoRef.current.duration;
+                                                    }
+                                                }}
+                                                onMouseMove={(e) => {
+                                                    if (e.buttons === 1 && videoRef.current) {
+                                                        const rect = e.currentTarget.getBoundingClientRect();
+                                                        const x = e.clientX - rect.left;
+                                                        const percentage = Math.max(0, Math.min(1, x / rect.width));
+                                                        videoRef.current.currentTime = percentage * videoRef.current.duration;
+                                                    }
+                                                }}
+                                                onTouchMove={(e) => {
+                                                    if (videoRef.current) {
+                                                        const rect = e.currentTarget.getBoundingClientRect();
+                                                        const x = e.touches[0].clientX - rect.left;
+                                                        const percentage = Math.max(0, Math.min(1, x / rect.width));
+                                                        videoRef.current.currentTime = percentage * videoRef.current.duration;
+                                                    }
+                                                }}
+                                            >
+                                                <div className="w-full h-1.5 bg-white/10 rounded-full relative overflow-visible pointer-events-none">
                                                     <div
                                                         className="absolute inset-y-0 left-0 bg-gold-gradient rounded-full shadow-[0_0_15px_rgba(210,172,71,0.6)] transition-all duration-100 ease-linear"
                                                         style={{ width: `${videoProgress}%` }}
@@ -945,12 +1299,12 @@ const VideoGenerator: React.FC = () => {
 
 
                 {/* Right Col: Output & Stats & Coins */}
-                <div className="order-3 xl:order-none w-full xl:w-auto xl:col-span-3 flex flex-col gap-4">
+                <div className="order-3 xl:order-none w-full xl:w-auto xl:col-span-3 flex flex-col gap-4 xl:h-[calc(100vh-120px)]">
 
 
 
                     {/* 3. History / Gallery - Taller on Mobile, Elastic & Stable on PC */}
-                    <div className="bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden h-[810px] overflow-y-auto custom-scrollbar mx-2 md:mx-0">
+                    <div className="bg-[#0a0a0a] border border-[#d2ac47]/20 rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden flex-1 min-h-0 overflow-y-auto custom-scrollbar mx-2 md:mx-0">
                         <div className="flex items-center justify-between h-10 px-0">
                             <span className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-[0.2em] pl-4">History</span>
                         </div>
