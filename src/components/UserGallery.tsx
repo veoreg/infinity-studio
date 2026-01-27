@@ -45,6 +45,8 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
     const videoRef = React.useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState(0);
+    const [showUI, setShowUI] = useState(true);
+    const uiTimeoutRef = React.useRef<any>(null);
 
     const mediaUrl = item.result_url || item.video_url || item.url;
     const isVideoFile = mediaUrl?.toLowerCase().endsWith('.mp4') || item.type === 'video';
@@ -78,14 +80,36 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
     const togglePlay = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (!videoRef.current) return;
+
         if (isPlaying) {
-            videoRef.current.pause();
-            setIsPlaying(false);
+            if (!showUI) {
+                // If playing and UI is hidden, show UI first
+                setShowUI(true);
+            } else {
+                // If playing and UI is visible, pause
+                videoRef.current.pause();
+                setIsPlaying(false);
+            }
         } else {
+            // If paused, start playing and hide UI
             videoRef.current.play();
             setIsPlaying(true);
+            setShowUI(false);
         }
     };
+
+    // Auto-hide UI when playing
+    useEffect(() => {
+        if (isPlaying && showUI) {
+            if (uiTimeoutRef.current) clearTimeout(uiTimeoutRef.current);
+            uiTimeoutRef.current = setTimeout(() => {
+                setShowUI(false);
+            }, 3000); // 3 seconds
+        }
+        return () => {
+            if (uiTimeoutRef.current) clearTimeout(uiTimeoutRef.current);
+        };
+    }, [isPlaying, showUI]);
 
     const handleSeek = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -104,21 +128,22 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
     return (
         <div className="relative min-w-full h-full flex flex-col">
             {/* Background Blur Fill */}
-            <div className="absolute inset-0 bg-black overflow-hidden pointer-events-none">
+            <div className="absolute inset-0 bg-[var(--bg-input)] overflow-hidden pointer-events-none transition-colors duration-500">
                 {item.thumb !== '/placeholder-luxury.png' ? (
                     <img src={item.thumb} alt={item.label} className="w-full h-full object-cover opacity-60 blur-3xl scale-150 saturate-150" />
                 ) : (
-                    <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[var(--bg-tertiary)] via-[var(--bg-input)] to-[var(--bg-primary)] opacity-50"></div>
+                    <div className="w-full h-full opacity-50"></div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20"></div>
+                {/* Gradient Overlay - Dark in dark mode, light/transparent in light mode */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 dark:from-black/80 dark:to-black/20 opacity-20 dark:opacity-100 transition-opacity duration-500"></div>
             </div>
 
             {/* Main Content Area - Blur Fill Layout */}
-            <div className="relative flex-1 flex items-center justify-center p-0 overflow-hidden bg-black">
+            <div className="relative flex-1 flex items-center justify-center p-0 overflow-hidden bg-[var(--bg-input)] transition-colors duration-500">
                 {/* 1. Blur Fill Layer */}
                 <div className="absolute inset-0 pointer-events-none">
                     <img src={item.thumb} alt="" className="w-full h-full object-cover opacity-30 blur-2xl scale-125 saturate-150" />
-                    <div className="absolute inset-0 bg-black/40"></div>
+                    <div className="absolute inset-0 bg-[var(--bg-input)]/40"></div>
                 </div>
 
                 <div
@@ -146,8 +171,11 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                         />
                     )}
 
-                    {/* Interactive Overlay - Visible only on hover (PC) or tap (Mobile) */}
-                    <div className="absolute inset-0 z-20 pointer-events-none opacity-0 group-hover/item:opacity-100 transition-all duration-500">
+                    {/* Interactive Overlay - Visible only on hover (PC) or tap/playing (Mobile) */}
+                    <div
+                        data-visible={showUI}
+                        className="absolute inset-0 z-20 pointer-events-none opacity-0 [@media(hover:hover)]:group-hover/item:opacity-100 [@media(hover:none)]:data-[visible=true]:opacity-100 transition-all duration-300"
+                    >
                         {/* Type Indicator - Top Right (Below Delete) */}
                         <div className="absolute top-16 right-3 flex flex-col gap-2">
                             <div className="p-2 bg-black/40 backdrop-blur-md border border-[var(--border-color)] rounded-lg text-[var(--text-secondary)]/60 shadow-lg animate-in zoom-in duration-300">
@@ -168,7 +196,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                         {/* Bottom Control Bar - Only for Videos */}
                         {isVideoFile && (
                             <div
-                                className="absolute bottom-16 left-4 right-4 h-12 bg-black/40 backdrop-blur-2xl border border-[var(--border-color)] rounded-2xl overflow-hidden flex items-center px-4 gap-3 group-hover/item:border-[var(--border-color)] transition-all pointer-events-auto shadow-2xl animate-in fade-in duration-1000"
+                                className="absolute bottom-10 left-4 right-4 h-12 bg-black/40 backdrop-blur-2xl border border-[var(--border-color)] rounded-2xl overflow-hidden flex items-center px-4 gap-3 group-hover/item:border-[var(--border-color)] transition-all pointer-events-auto shadow-2xl animate-in fade-in duration-500"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 {/* Play Button */}
@@ -208,13 +236,13 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                         {!isVideoFile && (
                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                 <button
-                                    className="px-6 py-2.5 bg-[var(--text-secondary)]/80 backdrop-blur-xl text-black text-[10px] font-bold uppercase tracking-[0.2em] rounded-full shadow-[0_0_20px_var(--border-color)] pointer-events-auto hover:bg-[var(--text-secondary)] hover:scale-110 active:scale-95 transition-all"
+                                    className="px-5 py-2 bg-white/5 backdrop-blur-[2px] border border-white/10 text-white/90 text-[9px] font-bold uppercase tracking-[0.3em] rounded-full shadow-sm pointer-events-auto hover:bg-black/40 hover:border-white/30 hover:text-white transition-all hover:scale-105"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         if (onSelect) onSelect(item);
                                     }}
                                 >
-                                    View Full
+                                    USE REF
                                 </button>
                             </div>
                         )}
@@ -373,7 +401,7 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSe
                 </div>
 
                 {/* Counter Tag - Unified Premium Position (Now Lower) */}
-                <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md border border-[var(--border-color)] px-3 py-1 rounded-full z-30 shadow-lg">
+                <div className="absolute bottom-4 right-4 bg-[var(--bg-input)]/80 dark:bg-black/60 backdrop-blur-md border border-[var(--border-color)] px-3 py-1 rounded-full z-30 shadow-lg">
                     <span className="text-[var(--text-secondary)] text-[8px] font-bold tracking-widest">{currentIndex + 1} / {items.length}</span>
                 </div>
             </div>

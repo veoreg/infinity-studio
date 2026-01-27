@@ -46,8 +46,8 @@ html[data-theme="light"] {
 
   --text-primary: #1a1a1a;
   /* Charcoal Black */
-  --text-secondary: #8c6a25;
-  /* Dark Antique Gold (Contrast) */
+  --text-secondary: #5c420b;
+  /* Dark Antique Gold (High Contrast) */
   --text-muted: rgba(140, 106, 37, 0.5);
 
   --border-color: rgba(140, 106, 37, 0.2);
@@ -56,10 +56,10 @@ html[data-theme="light"] {
   --overlay-bg: rgba(249, 249, 245, 0.9);
   --glass-bg: rgba(255, 255, 255, 0.9);
 
-  /* Gold adjustments for light background */
-  --gold-gradient-start: #cc9933;
-  --gold-gradient-mid: #eebb44;
-  --gold-gradient-end: #8c6a25;
+  /* Gold adjustments for light background - CAREFULLY LIGHTENED */
+  --gold-gradient-start: #eacc85;
+  --gold-gradient-mid: #fff5d0;
+  --gold-gradient-end: #bfa15f;
 }
 
 
@@ -126,7 +126,7 @@ html[data-theme="light"] {
   }
 
   .bg-gold-gradient {
-    background: linear-gradient(135deg, #d2ac47 0%, #fbeea4 50%, #8c6a25 100%);
+    background: linear-gradient(135deg, var(--gold-gradient-start) 0%, var(--gold-gradient-mid) 50%, var(--gold-gradient-end) 100%);
   }
 
   /* Velvet Surface */

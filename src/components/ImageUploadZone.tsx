@@ -88,7 +88,7 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
     return (
         <div
             className={`relative group w-full transition-all duration-300 rounded-xl overflow-hidden border-2 border-dashed 
-                ${isDragging ? 'border-[#d2ac47] bg-[#d2ac47]/10' : 'border-[#d2ac47]/30 bg-[#0a0a0a]'}
+                ${isDragging ? 'border-[#d2ac47] bg-[#d2ac47]/10' : 'border-[var(--border-color)]/30 bg-[var(--bg-secondary)]/50'}
                 ${preview ? 'border-none' : 'hover:border-[#d2ac47]/60'}
                 ${className}
             `}
@@ -125,15 +125,15 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
                     </button>
                 </div>
             ) : (
-                <div className="h-full flex flex-col items-center justify-center pt-10 px-4 text-center space-y-3">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center border transition-all duration-300 ${isDragging ? 'scale-110 border-[#d2ac47] bg-[#d2ac47]/20' : 'border-[#d2ac47]/30 bg-[#0f0f0f]'}`}>
-                        <Upload size={20} className={isDragging ? 'text-[#d2ac47]' : 'text-[#d2ac47]/50'} />
+                <div className="h-full flex flex-col items-center justify-center px-4 text-center space-y-3">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center border transition-all duration-300 ${isDragging ? 'scale-110 border-[#d2ac47] bg-[#d2ac47]/20' : 'border-[#d2ac47]/40 bg-[var(--bg-primary)] shadow-sm'}`}>
+                        <Upload size={20} className={isDragging ? 'text-[#d2ac47]' : 'text-[var(--text-secondary)]'} />
                     </div>
                     <div>
-                        <p className="text-[#F9F1D8] text-xs font-bold uppercase tracking-widest mb-1">
+                        <p className="text-[var(--text-primary)] text-[13px] font-black uppercase tracking-widest mb-1.5">
                             {isDragging ? "Drop to Upload" : placeholder}
                         </p>
-                        <p className="text-[#d2ac47]/50 text-[10px] uppercase tracking-wider">
+                        <p className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-wider opacity-60">
                             Supports JPG, PNG, WEBP
                         </p>
                     </div>

@@ -47,13 +47,13 @@ function AppContent() {
   });
 
   return (
-    <div className="min-h-screen flex flex-col text-[var(--text-primary)] selection:bg-[var(--text-secondary)] selection:text-black relative bg-pattern-deco overflow-x-hidden transition-colors duration-300">
+    <div className={`min-h-screen flex flex-col text-[var(--text-primary)] selection:bg-[var(--text-secondary)] selection:text-black relative overflow-x-hidden transition-colors duration-300 ${theme === 'dark' ? 'bg-pattern-deco' : 'bg-[var(--bg-primary)]'}`}>
       <PWAInstallPrompt />
-      <GoldenDust />
+      <GoldenDust theme={theme} />
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
 
       {/* Texture Overlay for that 'Velvet' feel - Only in Dark Mode */}
-      <div className={`fixed inset-0 pointer-events-none z-0 ${theme === 'dark' ? 'bg-black/80' : 'bg-white/40'}`}></div>
+      <div className={`fixed inset-0 pointer-events-none z-0 ${theme === 'dark' ? 'bg-black/80' : 'hidden'}`}></div>
 
       {/* Navigation - Strict Deco Style */}
       <nav className="w-full bg-[var(--glass-bg)] backdrop-blur-md border-b border-[var(--border-color)] sticky top-0 z-40 transition-all duration-500 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
@@ -140,13 +140,13 @@ function AppContent() {
       </div>
 
       {/* Simple Footer */}
-      <footer className="bg-[#050505] border-t border-[#d2ac47]/20 py-12 relative z-10">
+      <footer className="bg-[var(--glass-bg)] backdrop-blur-md border-t border-[var(--border-color)] py-12 relative z-10 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-[#d2ac47]/40 text-xs tracking-[0.3em] uppercase">© 2026 AI Girls Studio. Strict Luxury.</p>
-          <div className="flex items-center gap-8 text-xs text-[#d2ac47]/60 uppercase tracking-[0.25em]">
-            <a href="#" className="hover:text-[#fbeea4] transition-colors border-b border-transparent hover:border-[#fbeea4] pb-1">Privacy</a>
-            <a href="#" className="hover:text-[#fbeea4] transition-colors border-b border-transparent hover:border-[#fbeea4] pb-1">Terms</a>
-            <a href="#" className="hover:text-[#fbeea4] transition-colors border-b border-transparent hover:border-[#fbeea4] pb-1">Contact</a>
+          <p className="text-[var(--text-secondary)]/60 text-xs tracking-[0.3em] uppercase">© 2026 AI Girls Studio. Strict Luxury.</p>
+          <div className="flex items-center gap-8 text-xs text-[var(--text-secondary)]/80 uppercase tracking-[0.25em]">
+            <a href="#" className="hover:text-[var(--text-primary)] transition-colors border-b border-transparent hover:border-[var(--text-primary)] pb-1">Privacy</a>
+            <a href="#" className="hover:text-[var(--text-primary)] transition-colors border-b border-transparent hover:border-[var(--text-primary)] pb-1">Terms</a>
+            <a href="#" className="hover:text-[var(--text-primary)] transition-colors border-b border-transparent hover:border-[var(--text-primary)] pb-1">Contact</a>
           </div>
         </div>
       </footer>

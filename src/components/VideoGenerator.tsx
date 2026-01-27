@@ -82,7 +82,7 @@ const GenerationLogger = ({ status, error, startTime }: { status: string; error:
     }, [status, startTime]);
 
     return (
-        <div className="absolute inset-0 bg-black/95 flex flex-col items-start justify-start p-8 font-mono text-xs z-50">
+        <div className="absolute inset-0 bg-[var(--bg-primary)]/95 backdrop-blur-sm flex flex-col items-start justify-start p-8 font-mono text-xs z-50">
             <div className="w-full space-y-4">
                 {/* Progress Bar Top */}
                 <div className="h-2 w-full bg-[#d2ac47]/10 rounded-full overflow-hidden relative">
@@ -626,7 +626,7 @@ const VideoGenerator: React.FC = () => {
 
                 {/* Left Panel: Visual References (Mixed Gallery) - Mobile: Bottom (Order 3) */}
                 <div className="order-3 xl:order-none xl:col-span-4 xl:h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar pr-2 min-h-[500px] lg:min-h-0">
-                    <div className="flex items-center justify-between mb-6 sticky top-0 bg-[var(--bg-primary)] z-[30] py-2 shadow-lg">
+                    <div className="flex items-center justify-between mb-6 sticky top-0 bg-[var(--bg-primary)]/95 backdrop-blur-md z-[60] py-4 border-b border-[var(--border-color)] shadow-sm -mx-2 px-2 transition-all">
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-2 text-[var(--text-secondary)]">
                                 <Sparkles size={16} />
@@ -836,14 +836,14 @@ const VideoGenerator: React.FC = () => {
                                     {Array.from({ length: placeholdersNeeded }).map((_, i) => (
                                         <div
                                             key={`placeholder-${i}`}
-                                            className="relative bg-[var(--bg-input)] border border-dashed border-[#d2ac47]/15 rounded-xl aspect-[9/16] flex flex-col items-center justify-center gap-5 group/empty overflow-hidden transition-all duration-500 hover:border-[#d2ac47]/40 hover:bg-[#111]"
+                                            className="relative bg-[var(--bg-input)] border border-dashed border-[#d2ac47]/15 rounded-xl aspect-[9/16] flex flex-col items-center justify-center gap-5 group/empty overflow-hidden transition-all duration-500 hover:border-[#d2ac47]/40 hover:bg-[var(--bg-primary)] dark:hover:bg-[#111]"
                                         >
                                             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(210,172,71,0.1)_0%,transparent_70%)] opacity-30 group-hover/empty:opacity-80 transition-opacity duration-700"></div>
 
                                             {/* Glow effect behind icon */}
                                             <div className="absolute w-16 h-16 bg-[#d2ac47]/5 rounded-full blur-2xl group-hover/empty:bg-[#d2ac47]/15 transition-colors"></div>
 
-                                            <div className="relative w-12 h-12 rounded-full border border-[var(--border-color)] flex items-center justify-center text-[var(--text-secondary)]/30 transition-all duration-500 group-hover/empty:border-[#d2ac47]/60 group-hover/empty:text-[var(--text-secondary)]/80 group-hover/empty:scale-110 shadow-[0_0_20px_rgba(210,172,71,0.05)] group-hover/empty:shadow-[0_0_30px_rgba(210,172,71,0.2)] bg-black/40">
+                                            <div className="relative w-12 h-12 rounded-full border border-[var(--border-color)] flex items-center justify-center text-[var(--text-secondary)]/30 transition-all duration-500 group-hover/empty:border-[#d2ac47]/60 group-hover/empty:text-[var(--text-secondary)]/80 group-hover/empty:scale-110 shadow-[0_0_20px_rgba(210,172,71,0.05)] group-hover/empty:shadow-[0_0_30px_rgba(210,172,71,0.2)] bg-[var(--bg-input)]/40 dark:bg-black/40">
                                                 <Upload size={22} strokeWidth={1.5} />
                                             </div>
 
@@ -937,7 +937,7 @@ const VideoGenerator: React.FC = () => {
                     {/* Moved Hero Section - Integrated into Workspace */}
 
 
-                    <div className="bg-velvet-depth border border-[var(--border-color)] rounded-3xl p-4 md:p-5 relative z-50 flex-none flex flex-col justify-start shadow-2xl transition-all hover:border-[#d2ac47]/40 mx-2 md:mx-0">
+                    <div className="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl p-4 md:p-5 relative z-50 flex-none flex flex-col justify-start shadow-2xl transition-all hover:border-[#d2ac47]/40 mx-2 md:mx-0">
 
                         {/* Decorative Background Elements */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47]/50 to-transparent"></div>
@@ -989,7 +989,7 @@ const VideoGenerator: React.FC = () => {
                                             value={textPrompt}
                                             onChange={(e) => setTextPrompt(e.target.value)}
                                             placeholder="Describe the motion, atmosphere, and desire..."
-                                            className="w-full h-full bg-transparent p-3 md:p-6 pt-10 text-[var(--text-primary)] placeholder-[#d2ac47]/50 font-sans font-light text-base md:text-sm resize-none focus:outline-none"
+                                            className="w-full h-full bg-transparent p-3 md:p-6 pt-10 text-[var(--text-primary)] placeholder-[var(--text-secondary)]/60 font-sans font-light text-base md:text-sm resize-none focus:outline-none"
                                         />
                                     </div>
 
@@ -1022,13 +1022,13 @@ const VideoGenerator: React.FC = () => {
                         {/* Mode Toggle - Full Width Mobile */}
                         <div
                             onClick={() => setSafeMode(!safeMode)}
-                            className="cursor-pointer group flex items-center border border-[#d2ac47] w-full md:w-fit transition-all hover:scale-105 shadow-[0_0_15px_rgba(210,172,71,0.1)] bg-black rounded-xl overflow-hidden min-h-[48px]"
+                            className="cursor-pointer group flex items-center border border-[#d2ac47] w-full md:w-fit transition-all hover:scale-105 shadow-[0_0_15px_rgba(210,172,71,0.1)] bg-[var(--bg-input)] rounded-xl overflow-hidden min-h-[48px]"
                         >
-                            <div className={`flex-1 md:flex-none px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 ${safeMode ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.5)]' : 'text-[var(--text-secondary)]/40 bg-black hover:bg-[#d2ac47]/10 hover:text-[var(--text-secondary)]'} `}>
+                            <div className={`flex-1 md:flex-none px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 ${safeMode ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.5)]' : 'text-[var(--text-secondary)]/40 bg-[var(--bg-input)] hover:bg-[#d2ac47]/10 hover:text-[var(--text-secondary)]'} `}>
                                 <ShieldCheck size={16} strokeWidth={2.5} /> SAFE
                             </div>
                             <div className="w-[1px] h-full bg-[#d2ac47]/30"></div>
-                            <div className={`relative flex-1 md:flex-none px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 ${!safeMode ? 'bg-gradient-to-r from-red-600 to-red-900 text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]' : 'text-[var(--text-secondary)]/40 bg-black hover:bg-red-900/30 hover:text-red-500'} `}>
+                            <div className={`relative flex-1 md:flex-none px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 ${!safeMode ? 'bg-gradient-to-r from-red-600 to-red-900 text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]' : 'text-[var(--text-secondary)]/40 bg-[var(--bg-input)] hover:bg-red-900/30 hover:text-red-500'} `}>
                                 <Flame size={16} strokeWidth={2.5} /> SPICY
                                 <span className="absolute bottom-[1px] right-2 text-[8px] opacity-80 tracking-wider font-mono">BETA</span>
                             </div>
@@ -1040,7 +1040,7 @@ const VideoGenerator: React.FC = () => {
                                 <>
                                     <button
                                         onClick={handleCancel}
-                                        className="w-full md:w-auto min-h-[48px] px-6 py-3 border border-[#d2ac47] bg-[#1a1a1a] text-[var(--text-secondary)] hover:bg-red-950/40 hover:text-red-400 hover:border-red-500 transition-all text-xs font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2 group/cancel rounded-xl shadow-[0_0_10px_rgba(210,172,71,0.1)]"
+                                        className="w-full md:w-auto min-h-[48px] px-6 py-3 border border-[var(--border-color)] bg-[var(--bg-input)] text-[var(--text-secondary)] hover:bg-red-500/10 hover:text-red-500 hover:border-red-500 transition-all text-xs font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2 group/cancel rounded-xl shadow-[0_0_10px_rgba(210,172,71,0.1)]"
                                     >
                                         <XCircle size={16} className="group-hover/cancel:rotate-90 transition-transform duration-300" /> CANCEL
                                     </button>
@@ -1089,7 +1089,7 @@ const VideoGenerator: React.FC = () => {
                                             await minTime;
                                             setIsSyncing(false);
                                         }}
-                                        className={`group w-12 md:w-14 min-h-[48px] border ml-2 ${longWait ? 'border-red-500 bg-red-950/20 text-red-500 animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.4)]' : 'border-[#d2ac47] bg-[#1a1a1a] text-[var(--text-secondary)] hover:bg-[#d2ac47] hover:text-black shadow-[0_0_10px_rgba(210,172,71,0.1)]'} transition-all flex items-center justify-center rounded-xl relative z-40 hover:scale-105 active:scale-95 cursor-pointer hover:shadow-[0_0_15px_rgba(210,172,71,0.3)] ${isSyncing ? 'opacity-50 cursor-wait' : ''}`}
+                                        className={`group w-12 md:w-14 min-h-[48px] border ml-2 ${longWait ? 'border-red-500 bg-red-950/20 text-red-500 animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.4)]' : 'border-[var(--border-color)] bg-[var(--bg-input)] text-[var(--text-secondary)] hover:bg-[#d2ac47] hover:text-black shadow-[0_0_10px_rgba(210,172,71,0.1)]'} transition-all flex items-center justify-center rounded-xl relative z-40 hover:scale-105 active:scale-95 cursor-pointer hover:shadow-[0_0_15px_rgba(210,172,71,0.3)] ${isSyncing ? 'opacity-50 cursor-wait' : ''}`}
                                         title="Force Check Status"
                                     >
                                         <RefreshCw size={20} className={`active:animate-spin ${longWait || isSyncing ? 'animate-spin' : ''}`} />
@@ -1126,7 +1126,10 @@ const VideoGenerator: React.FC = () => {
 
                     {/* 3. Output / Generation Result (VERTICAL - 9:16) */}
                     <div className="mt-4 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-3xl p-2 shadow-2xl relative group w-full aspect-[9/16] max-h-[550px] mx-auto flex flex-col overflow-hidden transition-all duration-500">
-                        <div className="relative flex-1 bg-[var(--bg-primary)] flex items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#1a1a1a] to-[#050505] rounded-2xl">
+                        <div className="relative flex-1 bg-[var(--bg-primary)] flex items-center justify-center overflow-hidden rounded-2xl">
+                            {/* Theme-aware background - Dark mode gets the radial gradient, Light mode gets clean cream */}
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#1a1a1a] to-[#050505] opacity-100 dark:opacity-100 light:opacity-0 transition-opacity duration-300 pointer-events-none data-[theme=light]:hidden"></div>
+
                             {/* Art Deco Corners */}
                             <div className="absolute top-6 left-6 w-4 h-4 border-t border-l border-[#d2ac47] pointer-events-none z-10 rounded-tl-lg opacity-50"></div>
                             <div className="absolute top-6 right-6 w-4 h-4 border-t border-r border-[#d2ac47] pointer-events-none z-10 rounded-tr-lg opacity-50"></div>
@@ -1334,7 +1337,7 @@ const VideoGenerator: React.FC = () => {
                     </div>
 
                     {/* Infinity Actions Panel - Moved Below Output */}
-                    <div className="mt-4 border border-[var(--border-color)] bg-[var(--bg-primary)] p-5 relative overflow-hidden group rounded-3xl shadow-2xl mx-2 md:mx-0">
+                    <div className="mt-4 border border-[var(--border-color)] bg-[var(--bg-primary)] p-5 relative overflow-hidden group rounded-3xl shadow-2xl mx-2 md:mx-0 block xl:hidden">
                         <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47]/50 to-transparent"></div>
                         <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47]/50 to-transparent"></div>
 
@@ -1390,7 +1393,7 @@ const VideoGenerator: React.FC = () => {
 
 
                     {/* 3. History / Gallery - Taller on Mobile, Elastic & Stable on PC */}
-                    <div className="bg-[var(--bg-input)] border border-[var(--border-color)] rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden flex-1 min-h-[500px] lg:min-h-0 overflow-y-auto custom-scrollbar mx-2 md:mx-0">
+                    <div className="bg-[var(--bg-input)] border border-[var(--border-color)] rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden flex-1 min-h-[650px] lg:min-h-0 overflow-y-auto custom-scrollbar mx-2 md:mx-0">
                         <div className="flex items-center justify-between h-10 px-0">
                             <span className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-[0.2em] pl-4">History</span>
                         </div>
@@ -1414,6 +1417,54 @@ const VideoGenerator: React.FC = () => {
                             }}
                             onRefresh={() => fetchHistory()}
                         />
+                    </div>
+
+
+                    {/* Infinity Actions Panel - Moved to Right Column on Desktop */}
+                    <div className="mt-0 border border-[var(--border-color)] bg-[var(--bg-primary)] p-5 relative overflow-hidden group rounded-3xl shadow-2xl mx-2 md:mx-0 hidden xl:block shrink-0">
+                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47]/50 to-transparent"></div>
+                        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47]/50 to-transparent"></div>
+
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="h-[1px] flex-1 bg-[#d2ac47]/20"></div>
+                            <span className="text-[var(--text-secondary)] text-[9px] font-bold uppercase tracking-[0.3em]">Infinity Studio</span>
+                            <div className="h-[1px] flex-1 bg-[#d2ac47]/20"></div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-1 gap-3">
+                            {/* Extend Button */}
+                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/60 hover:border-[#d2ac47] bg-[var(--bg-primary)] backdrop-blur-sm transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl shadow-[0_4px_12px_rgba(210,172,71,0.08)]">
+                                <div className="p-2 rounded-xl border border-[#d2ac47]/50 bg-[#d2ac47]/10 text-[#d2ac47] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
+                                    <Layers size={16} />
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-[var(--text-primary)] text-[9px] font-black uppercase tracking-widest leading-tight mb-1">Extend Video</div>
+                                    <div className="text-[var(--text-secondary)]/60 text-[7px] uppercase tracking-wider leading-none">+5 Sec</div>
+                                </div>
+                            </button>
+
+                            {/* Upscale Button */}
+                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/60 hover:border-[#d2ac47] bg-[var(--bg-primary)] backdrop-blur-sm transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl shadow-[0_4px_12px_rgba(210,172,71,0.08)]">
+                                <div className="p-2 rounded-xl border border-[#d2ac47]/50 bg-[#d2ac47]/10 text-[#d2ac47] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
+                                    <Wand2 size={16} />
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-[var(--text-primary)] text-[9px] font-black uppercase tracking-widest leading-tight mb-1">Upscale 4K</div>
+                                    <div className="text-[var(--text-secondary)]/60 text-[7px] uppercase tracking-wider leading-none">Enhance</div>
+                                </div>
+                            </button>
+
+                            {/* Download Button */}
+                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/60 hover:border-[#d2ac47] bg-[var(--bg-primary)] backdrop-blur-sm transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl shadow-[0_4px_12px_rgba(210,172,71,0.08)]">
+                                <div className="p-2 rounded-xl border border-[#d2ac47]/50 bg-[#d2ac47]/10 text-[#d2ac47] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
+                                    <Download size={16} />
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-[var(--text-primary)] text-[9px] font-black uppercase tracking-widest leading-tight mb-1">Save</div>
+                                    <div className="text-[var(--text-secondary)]/60 text-[7px] uppercase tracking-wider leading-none">Original</div>
+                                </div>
+                            </button>
+                        </div>
                     </div>
 
 
