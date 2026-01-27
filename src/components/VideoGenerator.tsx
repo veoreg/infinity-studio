@@ -149,7 +149,7 @@ const VideoGenerator: React.FC = () => {
     const [fileName, setFileName] = useState('');
     const [textPrompt, setTextPrompt] = useState('');
     // const [negativePrompt, setNegativePrompt] = useState(''); <--- Feature Disabled
-    const [activeFilter, setActiveFilter] = useState<'all' | 'image' | 'video'>('all');
+    const [activeFilter, setActiveFilter] = useState<'all' | 'image' | 'video'>('video');
     // Video Player State
     const [videoProgress, setVideoProgress] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -596,7 +596,7 @@ const VideoGenerator: React.FC = () => {
 
                             {/* Filter Tabs - Inline */}
                             <div className="flex items-center gap-2">
-                                {['all', 'image', 'video'].map((filter) => (
+                                {['all', 'video', 'image'].map((filter) => (
                                     <button
                                         key={filter}
                                         onClick={() => setActiveFilter(filter as any)}
