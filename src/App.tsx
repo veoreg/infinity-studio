@@ -1,16 +1,20 @@
-import { useState } from 'react'
+
+import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'; // i18n
 import VideoGenerator from './components/VideoGenerator'
 import AvatarGenerator from './components/AvatarGenerator'
 import GoldenDust from './components/GoldenDust'
 import HolidayPromo from './components/HolidayPromo'
 import AuthModal from './components/AuthModal'
 import CompactHeaderInfo from './components/CompactHeaderInfo'
+import LanguageSwitcher from './components/LanguageSwitcher' // i18n
 import { PWAInstallPrompt } from './components/PWAInstallPrompt'
 import { Video, Sparkles, User, LogOut, Sun, Moon } from 'lucide-react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 
 
 function AppContent() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'video' | 'avatar'>('video');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { user, signOut } = useAuth();
@@ -21,21 +25,19 @@ function AppContent() {
   });
 
   // Sync Theme
-  useState(() => {
+  useEffect(() => {
     const root = document.documentElement;
     root.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
-  });
+  }, [theme]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
   };
 
   // Listen for tab switch events from children
-  useState(() => {
+  useEffect(() => {
     const handleTabSwitch = (e: CustomEvent) => {
       if (e.detail && (e.detail === 'video' || e.detail === 'avatar')) {
         setActiveTab(e.detail);
@@ -44,7 +46,7 @@ function AppContent() {
     };
     window.addEventListener('switch-tab', handleTabSwitch as EventListener);
     return () => window.removeEventListener('switch-tab', handleTabSwitch as EventListener);
-  });
+  }, []);
 
   return (
     <div className={`min-h-screen flex flex-col text-[var(--text-primary)] selection:bg-[var(--text-secondary)] selection:text-black relative overflow-x-hidden transition-colors duration-300 ${theme === 'dark' ? 'bg-pattern-deco' : 'bg-[var(--bg-primary)]'}`}>
@@ -68,7 +70,7 @@ function AppContent() {
                 <span className="font-serif text-xl md:text-2xl tracking-[0.2em] text-[var(--text-primary)] uppercase font-bold drop-shadow-lg">AI Girls <span className="text-gold-luxury text-2xl md:text-3xl">Studio</span></span>
                 <div className="flex items-center gap-2 mt-1">
                   <div className="h-[1px] w-8 bg-[var(--text-secondary)]"></div>
-                  <span className="text-[0.6rem] tracking-[0.4em] text-[var(--text-secondary)] uppercase font-bold">Infinity Avatars</span>
+                  <span className="text-[0.6rem] tracking-[0.4em] text-[var(--text-secondary)] uppercase font-bold">{t('app_title')}</span>
                   <div className="h-[1px] w-8 bg-[var(--text-secondary)]"></div>
                 </div>
               </div>
@@ -86,12 +88,14 @@ function AppContent() {
                 onClick={() => setActiveTab('avatar')}
                 className={`px-6 md:px-8 py-3 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all duration-300 ${activeTab === 'avatar' ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)]' : 'text-[#d2ac47]/50 hover:text-[#d2ac47]'}`}
               >
-                <User size={14} /> Create Avatar
+                <User size={14} /> {t('btn_generate')}
               </button>
             </div>
 
             {/* Auth / Profile Section */}
             <div className="flex items-center gap-4 order-2 md:order-3">
+              <LanguageSwitcher />
+
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}

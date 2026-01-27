@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next'; // i18n
 import axios from 'axios';
 import { Wand2, Download, RefreshCw, Sparkles, XCircle, Camera, User, X, Maximize2, Upload, Trash2, Plus } from 'lucide-react';
 
@@ -146,6 +147,7 @@ const AvatarLogger = ({ status, error }: { status: string; error: string | null 
 // Helper Component: ImageComparisonSlider
 // -----------------------------------------------------------------------------------------
 const ImageComparisonSlider = ({ before, after }: { before: string; after: string }) => {
+    const { t } = useTranslation();
     const [sliderPos, setSliderPos] = useState(50);
     const [isDragging, setIsDragging] = useState(false);
     const containerRef = React.useRef<HTMLDivElement>(null);
@@ -241,7 +243,7 @@ const ImageComparisonSlider = ({ before, after }: { before: string; after: strin
             </div>
 
             {/* Labels - Always visible, theme-aware */}
-            <div className="absolute top-5 left-5 px-3 py-1 bg-[var(--bg-primary)]/80 rounded-full text-[8px] text-[var(--text-primary)] uppercase tracking-[0.2em] backdrop-blur-md border border-[var(--border-color)] z-30 font-bold pointer-events-none select-none shadow-lg">Original</div>
+            <div className="absolute top-5 left-5 px-3 py-1 bg-[var(--bg-primary)]/80 rounded-full text-[8px] text-[var(--text-primary)] uppercase tracking-[0.2em] backdrop-blur-md border border-[var(--border-color)] z-30 font-bold pointer-events-none select-none shadow-lg">{t('badge_original')}</div>
 
             {/* Watermark/Instruction */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-[var(--bg-primary)]/60 backdrop-blur-sm rounded-full text-[7px] text-[var(--text-secondary)]/60 uppercase tracking-[0.3em] z-30 font-medium whitespace-nowrap opacity-0 group-hover/slider:opacity-100 transition-opacity pointer-events-none select-none">Slide to compare transformation</div>
@@ -252,6 +254,7 @@ const ImageComparisonSlider = ({ before, after }: { before: string; after: strin
 // EditPhotoModal Component Removed (Inline Editing Implemented)
 
 const AvatarGenerator: React.FC = () => {
+    const { t, i18n } = useTranslation(); // i18n hook
     const [loading, setLoading] = useState(false);
     const [currentStatus, setCurrentStatus] = useState<string>('pending');
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
@@ -1284,7 +1287,7 @@ const AvatarGenerator: React.FC = () => {
                             className={`flex-1 font-bold uppercase tracking-[0.3em] py-5 rounded-xl shadow-[0_0_25px_rgba(210,172,71,0.4)] transition-all flex items-center justify-center gap-3 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(210,172,71,0.6)] ${loading ? 'bg-gold-gradient text-black opacity-90 cursor-wait' : 'bg-gold-gradient text-black border border-[#fbeea4]/30'}`}
                         >
                             {loading ? <RefreshCw className="animate-spin" /> : <Sparkles />}
-                            {loading ? "Forging Identity..." : "Generate Avatar"}
+                            {loading ? "Forging Identity..." : t('btn_generate')}
                         </button>
                     </div>
 
@@ -1295,7 +1298,7 @@ const AvatarGenerator: React.FC = () => {
                         {/* 2. Visual Sources - Art Deco Panel */}
                         <div className="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl p-5 md:p-8 relative shadow-2xl transition-all hover:border-[#d2ac47]/40 mx-2 md:mx-0">
                             <div className="absolute top-0 left-0 px-4 md:px-6 py-2 bg-[#d2ac47] text-black text-[9px] md:text-[10px] font-bold tracking-[0.2em] uppercase rounded-tl-3xl rounded-br-2xl shadow-lg">
-                                Visual Source
+                                {t('section_visual_source')}
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
