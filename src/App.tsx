@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'; // i18n
 import VideoGenerator from './components/VideoGenerator'
 import AvatarGenerator from './components/AvatarGenerator'
 import GoldenDust from './components/GoldenDust'
-import HolidayPromo from './components/HolidayPromo'
+// import HolidayPromo from './components/HolidayPromo';
 import AuthModal from './components/AuthModal'
 import CompactHeaderInfo from './components/CompactHeaderInfo'
 import LanguageSwitcher from './components/LanguageSwitcher' // i18n

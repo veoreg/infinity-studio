@@ -142,6 +142,7 @@ const GenerationLogger = ({ status, error, startTime }: { status: string; error:
 // Webhook URL (Proxied via Vercel/Netlify/Vite)
 const WEBHOOK_URL = "/api/video";
 
+/*
 const CustomSelect = ({ options, value, onChange, label, disabled = false, centerLabel = false }: any) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -186,6 +187,7 @@ const CustomSelect = ({ options, value, onChange, label, disabled = false, cente
         </div>
     );
 };
+*/
 
 const VideoGenerator: React.FC = () => {
     const { t } = useTranslation();
@@ -196,11 +198,11 @@ const VideoGenerator: React.FC = () => {
     const [activeFilter, setActiveFilter] = useState<'all' | 'image' | 'video'>('video');
 
     // Fine Tuning State
-    const [seed, setSeed] = useState<number>(-1);
-    const [steps, setSteps] = useState<number>(30);
-    const [cfgScale, setCfgScale] = useState<number>(3.0);
-    const [rawPromptMode, setRawPromptMode] = useState(false);
-    const [selectedVoice, setSelectedVoice] = useState<string>('Ana de Armas - demo.MP3');
+    const [seed] = useState<number>(-1);
+    const [steps] = useState<number>(30);
+    const [cfgScale] = useState<number>(3.0);
+    // const [rawPromptMode] = useState(false);
+    const [selectedVoice] = useState<string>('Ana de Armas - demo.MP3');
 
     // Video Player State
     const [videoProgress, setVideoProgress] = useState(0);
