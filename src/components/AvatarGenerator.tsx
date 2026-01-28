@@ -1581,122 +1581,135 @@ const AvatarGenerator: React.FC = () => {
                                     { label: 'Gothic Noir', value: 'Gothic Noir' }
                                 ]}
                             />
+                            <div className="bg-[var(--bg-card)] p-4 md:p-6 rounded-3xl border border-[var(--border-color)]">
+                                <div className="flex items-center justify-between mb-3">
+                                    <label className="text-[var(--text-secondary)] text-[10px] font-bold tracking-[0.2em] uppercase">{t('label_prompt')}</label>
+                                </div>
 
-                            <div>
-                                <label className="text-[var(--text-secondary)] text-[9px] font-bold tracking-[0.2em] uppercase mb-1 block">{t('label_prompt')}</label>
-                                <textarea value={userPrompt} onChange={(e) => setUserPrompt(e.target.value)}
-                                    className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-[var(--text-primary)] p-3 text-xs h-20 focus:outline-none focus:border-[#d2ac47] rounded-xl shadow-inner resize-none"
-                                    placeholder={t('ph_prompt')} />
+                                {/* Prompt Input Container with Integrated Toggles */}
+                                <div className="relative group">
+                                    <textarea
+                                        value={userPrompt}
+                                        onChange={(e) => setUserPrompt(e.target.value)}
+                                        placeholder={t('ph_prompt')}
+                                        className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-[var(--text-primary)] p-4 pb-12 rounded-xl h-32 focus:outline-none focus:border-[#d2ac47] focus:shadow-[0_0_15px_rgba(210,172,71,0.1)] transition-all resize-none text-[11px] md:text-xs leading-relaxed"
+                                    />
 
-                                <div className="flex flex-col gap-2 mt-2">
-                                    <div className="flex flex-col gap-2 p-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)]">
-                                        <div className="flex justify-between items-center h-6">
-                                            <span className="text-[var(--text-secondary)] text-[9px] uppercase tracking-wider font-bold">{t('label_seed')}</span>
-                                            <div className="flex bg-[var(--bg-primary)] rounded-lg p-0.5 border border-[var(--border-color)]">
-                                                <button
-                                                    onClick={() => { setSeedMode('random'); setSeed(-1); }}
-                                                    className={`px-3 py-0.5 text-[8px] font-bold uppercase rounded-md transition-all ${seedMode === 'random' ? 'bg-[#d2ac47] text-black shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
-                                                >
-                                                    {t('ph_random')}
-                                                </button>
-                                                <button
-                                                    onClick={() => { setSeedMode('fixed'); setSeed((prev) => prev === -1 ? Math.floor(Math.random() * 1000000) : prev); }}
-                                                    className={`px-3 py-0.5 text-[8px] font-bold uppercase rounded-md transition-all ${seedMode === 'fixed' ? 'bg-[#d2ac47] text-black shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
-                                                >
-                                                    {t('mode_fixed')}
-                                                </button>
-                                            </div>
-                                        </div>
+                                    <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                                        {/* RAW Toggle */}
+                                        <button
+                                            onClick={() => setRawPromptMode(!rawPromptMode)}
+                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[9px] font-bold uppercase tracking-wider transition-all ${rawPromptMode
+                                                ? 'bg-[#d2ac47] text-black border-[#d2ac47] shadow-[0_0_10px_rgba(210,172,71,0.3)]'
+                                                : 'bg-black/40 text-[var(--text-secondary)] border-[var(--border-color)] hover:border-[#d2ac47]/50'
+                                                }`}
+                                        >
+                                            <div className={`w-1.5 h-1.5 rounded-full ${rawPromptMode ? 'bg-black animate-pulse' : 'bg-[var(--text-secondary)]/50'}`}></div>
+                                            {t('label_raw')}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
 
-                                        {/* Always visible input to prevent layout shift */}
-                                        <div className={`flex items-center gap-2 transition-all duration-300 ${seedMode === 'random' ? 'opacity-40 pointer-events-none grayscale' : 'opacity-100'}`}>
-                                            <input
-                                                type="text"
-                                                value={seed === -1 ? '' : seed}
-                                                placeholder={seedMode === 'random' ? "🎲 Randomized" : "Enter Seed"}
-                                                onChange={(e) => setSeed(parseInt(e.target.value) || 0)}
-                                                className="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] text-xs font-mono w-full p-1.5 focus:outline-none focus:border-[#d2ac47] text-center disabled:cursor-not-allowed placeholder:text-[var(--text-secondary)]/50"
-                                                disabled={seedMode === 'random'}
-                                            />
+                            <div className="flex flex-col gap-2 mt-2">
+                                <div className="flex flex-col gap-2 p-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)]">
+                                    <div className="flex justify-between items-center h-6">
+                                        <span className="text-[var(--text-secondary)] text-[9px] uppercase tracking-wider font-bold">{t('label_seed')}</span>
+                                        <div className="flex bg-[var(--bg-primary)] rounded-lg p-0.5 border border-[var(--border-color)]">
                                             <button
-                                                onClick={() => setSeed(Math.floor(Math.random() * 2147483647))}
-                                                className="p-1.5 border border-[var(--border-color)] rounded-lg hover:border-[#d2ac47] text-[var(--text-secondary)] transition-colors bg-[var(--bg-primary)]"
-                                                title="New Random Seed"
-                                                disabled={seedMode === 'random'}
+                                                onClick={() => { setSeedMode('random'); setSeed(-1); }}
+                                                className={`px-3 py-0.5 text-[8px] font-bold uppercase rounded-md transition-all ${seedMode === 'random' ? 'bg-[#d2ac47] text-black shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
                                             >
-                                                <RefreshCw size={12} />
+                                                {t('ph_random')}
+                                            </button>
+                                            <button
+                                                onClick={() => { setSeedMode('fixed'); setSeed((prev) => prev === -1 ? Math.floor(Math.random() * 1000000) : prev); }}
+                                                className={`px-3 py-0.5 text-[8px] font-bold uppercase rounded-md transition-all ${seedMode === 'fixed' ? 'bg-[#d2ac47] text-black shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+                                            >
+                                                {t('mode_fixed')}
                                             </button>
                                         </div>
                                     </div>
 
-                                    {/* Steps Slider (30-100) */}
-                                    <div className="w-full flex flex-col gap-1 b bg-[var(--bg-input)] border border-[var(--border-color)] p-2 px-3 rounded-xl">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-[var(--text-secondary)] text-[9px] uppercase tracking-wider">{t('label_steps')}</span>
-                                            <span className="text-[#d2ac47] text-[10px] font-mono font-bold">{steps}</span>
-                                        </div>
+                                    {/* Always visible input to prevent layout shift */}
+                                    <div className={`flex items-center gap-2 transition-all duration-300 ${seedMode === 'random' ? 'opacity-40 pointer-events-none grayscale' : 'opacity-100'}`}>
                                         <input
-                                            type="range"
-                                            min="20"
-                                            max="100"
-                                            step="1"
-                                            value={steps}
-                                            onChange={(e) => setSteps(parseInt(e.target.value))}
-                                            className="w-full h-1 bg-[#d2ac47]/20 rounded-lg appearance-none cursor-pointer mt-1 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-[#d2ac47] [&::-webkit-slider-thumb]:rounded-full hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
+                                            type="text"
+                                            value={seed === -1 ? '' : seed}
+                                            placeholder={seedMode === 'random' ? "🎲 Randomized" : "Enter Seed"}
+                                            onChange={(e) => setSeed(parseInt(e.target.value) || 0)}
+                                            className="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] text-xs font-mono w-full p-1.5 focus:outline-none focus:border-[#d2ac47] text-center disabled:cursor-not-allowed placeholder:text-[var(--text-secondary)]/50"
+                                            disabled={seedMode === 'random'}
                                         />
-                                    </div>
-
-                                    {/* CFG Mode Toggle (Photoreal vs Quality) */}
-                                    <div className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] p-1 rounded-xl flex gap-1 h-10 relative overflow-hidden">
                                         <button
-                                            onClick={() => setCfg(2.5)}
-                                            className={`flex-1 flex items-center justify-center gap-2 z-10 transition-all duration-300 ${cfg === 2.5 ? 'text-black font-black' : 'text-[var(--text-secondary)]/60 hover:text-[var(--text-secondary)]'}`}
+                                            onClick={() => setSeed(Math.floor(Math.random() * 2147483647))}
+                                            className="p-1.5 border border-[var(--border-color)] rounded-lg hover:border-[#d2ac47] text-[var(--text-secondary)] transition-colors bg-[var(--bg-primary)]"
+                                            title="New Random Seed"
+                                            disabled={seedMode === 'random'}
                                         >
-                                            <Camera size={14} />
-                                            <span className="text-[9px] uppercase tracking-widest">{t('cfg_natural')}</span>
-                                        </button>
-                                        <button
-                                            onClick={() => setCfg(3.5)}
-                                            className={`flex-1 flex items-center justify-center gap-2 z-10 transition-all duration-300 ${cfg === 3.5 ? 'text-black font-black' : 'text-[var(--text-secondary)]/60 hover:text-[var(--text-secondary)]'}`}
-                                        >
-                                            <Sparkles size={14} />
-                                            <span className="text-[9px] uppercase tracking-widest">{t('cfg_vivid')}</span>
-                                        </button>
-                                        {/* Sliding Background */}
-                                        <div
-                                            className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-gold-gradient rounded-lg transition-all duration-300 shadow-[0_0_15px_rgba(210,172,71,0.3)]"
-                                            style={{ left: cfg === 2.5 ? '4px' : 'calc(50%)' }}
-                                        ></div>
-                                    </div>
-
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => setRawPromptMode(!rawPromptMode)}
-                                            className={`flex-1 flex items-center justify-center gap-1 py-2 border transition-all rounded-xl ${rawPromptMode ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[var(--border-color)] text-[var(--text-secondary)]/60 hover:text-[var(--text-secondary)] hover:border-[#d2ac47]'}`}
-                                        >
-                                            <div className={`w-1.5 h-1.5 rounded-full ${rawPromptMode ? 'bg-black' : 'bg-[#d2ac47]/50'}`}></div>
-                                            <span className="text-[8px] uppercase tracking-widest font-bold">{t('label_raw')}</span>
-                                        </button>
-                                        <button
-                                            onClick={() => setUpscale(!upscale)}
-                                            className={`flex-1 flex items-center justify-center gap-1 py-2 border transition-all rounded-xl ${upscale ? 'bg-[#d2ac47] border-[#d2ac47] text-black' : 'bg-transparent border-[var(--border-color)] text-[var(--text-secondary)]/60 hover:text-[var(--text-secondary)] hover:border-[#d2ac47]'}`}
-                                        >
-                                            <Sparkles size={12} className={upscale ? 'text-black' : ''} />
-                                            <span className="text-[8px] uppercase tracking-widest font-bold">{t('label_upscale')}</span>
+                                            <RefreshCw size={12} />
                                         </button>
                                     </div>
                                 </div>
+
+                                {/* Steps Slider (30-100) */}
+                                <div className="w-full flex flex-col gap-1 b bg-[var(--bg-input)] border border-[var(--border-color)] p-2 px-3 rounded-xl">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-[var(--text-secondary)] text-[9px] uppercase tracking-wider">{t('label_steps')}</span>
+                                        <span className="text-[#d2ac47] text-[10px] font-mono font-bold">{steps}</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="20"
+                                        max="100"
+                                        step="1"
+                                        value={steps}
+                                        onChange={(e) => setSteps(parseInt(e.target.value))}
+                                        className="w-full h-1 bg-[#d2ac47]/20 rounded-lg appearance-none cursor-pointer mt-1 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-[#d2ac47] [&::-webkit-slider-thumb]:rounded-full hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
+                                    />
+                                </div>
+
+                                {/* CFG Mode Toggle (Photoreal vs Quality) */}
+                                <div className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] p-1 rounded-xl flex gap-1 h-10 relative overflow-hidden">
+                                    <button
+                                        onClick={() => setCfg(2.5)}
+                                        className={`flex-1 flex items-center justify-center gap-2 z-10 transition-all duration-300 ${cfg === 2.5 ? 'text-black font-black' : 'text-[var(--text-secondary)]/60 hover:text-[var(--text-secondary)]'}`}
+                                    >
+                                        <Camera size={14} />
+                                        <span className="text-[9px] uppercase tracking-widest">{t('cfg_natural')}</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setCfg(3.5)}
+                                        className={`flex-1 flex items-center justify-center gap-2 z-10 transition-all duration-300 ${cfg === 3.5 ? 'text-black font-black' : 'text-[var(--text-secondary)]/60 hover:text-[var(--text-secondary)]'}`}
+                                    >
+                                        <Sparkles size={14} />
+                                        <span className="text-[9px] uppercase tracking-widest">{t('cfg_vivid')}</span>
+                                    </button>
+                                    {/* Sliding Background */}
+                                    <div
+                                        className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-gold-gradient rounded-lg transition-all duration-300 shadow-[0_0_15px_rgba(210,172,71,0.3)]"
+                                        style={{ left: cfg === 2.5 ? '4px' : 'calc(50%)' }}
+                                    ></div>
+                                </div>
+
+                                {/* Upscale Toggle (Moved here) */}
+                                <button
+                                    onClick={() => setUpscale(!upscale)}
+                                    className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border transition-all duration-300 ${upscale
+                                        ? 'bg-[#d2ac47] border-[#d2ac47] text-black shadow-[0_0_15px_rgba(210,172,71,0.2)]'
+                                        : 'bg-[var(--bg-input)] border-[var(--border-color)] text-[var(--text-secondary)]/60 hover:text-[var(--text-secondary)] hover:border-[#d2ac47]/50'
+                                        }`}
+                                >
+                                    <Sparkles size={14} className={upscale ? 'animate-pulse' : ''} />
+                                    <span className="text-[9px] uppercase tracking-widest font-bold">{t('label_upscale')}</span>
+                                </button>
                             </div>
                         </div>
                     </div >
                 </div >
             </div > {/* End of Main Grid */}
 
-
-
-            {/* Edit Modal Removed - Inline Editing Active */}
-
-            < style > {`
+            <style>{`
                 @keyframes shine {
                     0% { transform: translateX(-100%) skewX(-45deg); opacity: 0; }
                     20% { opacity: 0.5; }
@@ -1723,8 +1736,8 @@ const AvatarGenerator: React.FC = () => {
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
                     background: rgba(210, 172, 71, 0.4);
                 }
-            `}</style >
-        </div >
+            `}</style>
+        </div>
     );
 };
 

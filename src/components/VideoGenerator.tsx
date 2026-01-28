@@ -1485,7 +1485,9 @@ const VideoGenerator: React.FC = () => {
                             </button>
 
                             {/* Voice Avatar Button */}
-                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/10 hover:border-[#d2ac47]/60 bg-[var(--bg-input)] transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl">
+                            <button
+                                className="flex items-center gap-4 p-3 border border-[#d2ac47]/10 hover:border-[#d2ac47]/60 bg-[var(--bg-input)] transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl"
+                            >
                                 <div className="p-2 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
                                     <Mic size={16} />
                                 </div>
@@ -1581,7 +1583,9 @@ const VideoGenerator: React.FC = () => {
                             </button>
 
                             {/* Voice Avatar Button */}
-                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/60 hover:border-[#d2ac47] bg-[var(--bg-primary)] backdrop-blur-sm transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl shadow-[0_4px_12px_rgba(210,172,71,0.08)]">
+                            <button
+                                className="flex items-center gap-4 p-3 border border-[#d2ac47]/60 hover:border-[#d2ac47] bg-[var(--bg-primary)] backdrop-blur-sm transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl shadow-[0_4px_12px_rgba(210,172,71,0.08)]"
+                            >
                                 <div className="p-2 rounded-xl border border-[#d2ac47]/50 bg-[#d2ac47]/10 text-[#d2ac47] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
                                     <Mic size={16} />
                                 </div>
