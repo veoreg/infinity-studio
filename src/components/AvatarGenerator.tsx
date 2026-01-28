@@ -5,6 +5,7 @@ import { Wand2, Download, RefreshCw, Sparkles, XCircle, Camera, User, X, Maximiz
 
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
+import FaceGallery from './FaceGallery';
 import { supabase } from '../lib/supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -290,6 +291,9 @@ const AvatarGenerator: React.FC = () => {
 
     // Advanced Controls
     const [seed, setSeed] = useState<number>(-1); // -1 = Random
+    const [seedMode, setSeedMode] = useState<'random' | 'fixed'>('random');
+    const [steps, setSteps] = useState<number>(30); // Default 30 as per user audio hint
+    const [cfg, setCfg] = useState<number>(3.5); // Default Quality
     const [rawPromptMode, setRawPromptMode] = useState(false);
     const [upscale, setUpscale] = useState(false);
 
@@ -608,7 +612,9 @@ const AvatarGenerator: React.FC = () => {
                 instantid_weight: instantIdWeight,
                 style_token: rawPromptMode ? userPrompt : `Style: ${artStyle}. Role: ${role}. Body: ${bodyType}. Clothing: ${clothing}. ${userPrompt} `,
                 user_prompt: userPrompt,
-                seed: seed === -1 ? Math.floor(Math.random() * 2147483647) : seed,
+                seed: seed,
+                steps: steps,
+                guidance_scale: cfg,
                 upscale: upscale,
                 safe_mode: 3 // Strictly 3 as requested
             };
@@ -704,25 +710,42 @@ const AvatarGenerator: React.FC = () => {
 
             // Let's stick to the simplest payload that worked yesterday:
 
+            // 1. Create a unique Generation ID (UUID) for tracking
+            const generationId = uuidv4();
+
+            // 2. Create an initial record in the 'generations' table
+            const { error: dbError } = await supabase
+                .from('generations')
+                .insert([{
+                    id: generationId,
+                    type: 'avatar',
+                    prompt: editPrompt,
+                    status: 'processing',
+                    image_url: generatedImage,
+                    metadata: {
+                        guest_id: guestId,
+                        job_type: 'edit',
+                        original_image: originalImageForCompare
+                    }
+                }]);
+
+            if (dbError) console.error("Database initialization failed for edit:", dbError);
+
             const payload = {
+                generation_id: generationId,
                 job_type: "edit",
                 gender: gender,
                 clothing: "edit",
                 face_image_url: generatedImage,
                 user_prompt: editPrompt,
+                // We no longer send steps/seed for edit jobs to avoid 'messing up' 
+                // the fast Qwen model. It uses values pre-set in the backend (n8n JSON).
                 instantid_weight: 0.85,
                 style_token: "realistic",
-                // We send the OLD ID so the system knows what to edit? 
-                // Or does it just need the image URL? It needs the URL.
-                // We do NOT send generation_id (new one) if N8n creates it.
-                // But wait, if we want to track it immediately...
-                // Let's assume N8N creates the ID for 'edit' jobs too.
-
-                // REVERTING TO "JUST SEND IT" STRATEGY:
-                guest_id: guestId // Send guest_id so N8n can attach it for us to find later
+                guest_id: guestId
             };
 
-            const response = await fetch('https://n8n.develotex.io/webhook/Flux_Image_Generator_Advanced_Upscl_3+SB', {
+            const response = await fetch('/api/edit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -996,17 +1019,18 @@ const AvatarGenerator: React.FC = () => {
                                 value={role}
                                 onChange={setRole}
                                 options={[
-                                    { label: 'Any', value: '' },
-                                    { label: 'Seductive Teacher', value: 'Seductive Teacher' },
-                                    { label: 'Submissive Maid', value: 'Submissive Maid' },
-                                    { label: 'Insatiable Flight Attendant', value: 'Insatiable Flight Attendant' },
-                                    { label: 'Strict Boss / CEO', value: 'Strict Boss / CEO' },
-                                    { label: 'Naughty Nun', value: 'Naughty Nun' },
-                                    { label: 'Gentle Yoga Instructor', value: 'Gentle Yoga Instructor' },
-                                    { label: 'BDSM Gothic diva', value: 'BDSM Gothic diva' },
-                                    { label: 'sex mashine Cyberpunk rebel', value: 'sex mashine Cyberpunk rebel' },
-                                    { label: 'The Insatiable Secretary', value: 'The Insatiable Secretary' },
-                                    { label: 'sexual outspoken tik tok blogger', value: 'sexual outspoken tik tok blogger' }
+                                    { label: t('opt_any'), value: '' },
+
+                                    { label: t('role_teacher'), value: 'Seductive Teacher' },
+                                    { label: t('role_maid'), value: 'Submissive Maid' },
+                                    { label: t('role_attendant'), value: 'Insatiable Flight Attendant' },
+                                    { label: t('role_boss'), value: 'Strict Boss / CEO' },
+                                    { label: t('role_nun'), value: 'Naughty Nun' },
+                                    { label: t('role_yoga'), value: 'Gentle Yoga Instructor' },
+                                    { label: t('role_gothic'), value: 'BDSM Gothic diva' },
+                                    { label: t('role_cyberpunk'), value: 'sex mashine Cyberpunk rebel' },
+                                    { label: t('role_secretary'), value: 'The Insatiable Secretary' },
+                                    { label: t('role_blogger'), value: 'sexual outspoken tik tok blogger' }
                                 ]}
                             />
                         </div>
@@ -1054,7 +1078,8 @@ const AvatarGenerator: React.FC = () => {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (window.confirm("Clear active workspace?")) {
+                                                if (window.confirm(t('msg_clear_workspace'))) {
+
                                                     setGeneratedImage(null);
                                                     setIsEditMode(false);
                                                     setOriginalImageForCompare(null);
@@ -1089,7 +1114,7 @@ const AvatarGenerator: React.FC = () => {
                                                         {[0, 1].map((idx) => (
                                                             <div key={idx} className="relative flex flex-col items-center gap-1 group/wrapper">
                                                                 <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)] opacity-50 group-hover/wrapper:opacity-100 transition-opacity">
-                                                                    Ref {idx + 2}
+                                                                    {t('lbl_ref')} {idx + 2}
                                                                 </span>
                                                                 <div
                                                                     className={`w-10 h-10 md:w-12 md:h-12 rounded-lg border border-dashed flex items-center justify-center cursor-pointer transition-all relative overflow-hidden group/slot
@@ -1115,7 +1140,8 @@ const AvatarGenerator: React.FC = () => {
                                                                         };
                                                                         input.click();
                                                                     }}
-                                                                    title={`Upload Ref ${idx + 2}`}
+                                                                    title={`${t('btn_upload')} ${t('lbl_ref')} ${idx + 2}`}
+
                                                                 >
                                                                     {editRefImages[idx] ? (
                                                                         <>
@@ -1150,7 +1176,7 @@ const AvatarGenerator: React.FC = () => {
                                                                 type="text"
                                                                 value={editPrompt}
                                                                 onChange={(e) => setEditPrompt(e.target.value)}
-                                                                placeholder="Describe changes... e.g. 'Make hair red'..."
+                                                                placeholder={t('ph_edit_desc')}
                                                                 className="flex-1 bg-transparent text-[var(--text-primary)] text-xs md:text-sm font-medium placeholder-[var(--text-secondary)]/30 focus:outline-none min-w-0"
                                                                 autoFocus
                                                                 onKeyDown={(e) => e.key === 'Enter' && handleEditSubmit()}
@@ -1166,7 +1192,8 @@ const AvatarGenerator: React.FC = () => {
                                                                 className="flex-1 md:flex-none px-4 md:px-6 py-2 bg-[#d2ac47]/10 border border-[#d2ac47] text-[#d2ac47] font-black uppercase tracking-widest text-[9px] md:text-[10px] rounded-xl hover:bg-gold-gradient hover:text-black hover:shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-2 whitespace-nowrap"
                                                             >
                                                                 {loading ? <RefreshCw className="animate-spin" size={14} /> : <Sparkles size={14} />}
-                                                                <span>{loading ? 'Forging...' : 'Refine'}</span>
+                                                                <span>{loading ? t('vid_forging') : t('btn_quick_edit')}</span>
+
                                                             </button>
                                                             <button
                                                                 onClick={() => setShowQuickEdit(false)}
@@ -1205,7 +1232,8 @@ const AvatarGenerator: React.FC = () => {
                                                     <line x1="17" y1="17" x2="22" y2="17"></line>
                                                     <line x1="17" y1="7" x2="22" y2="7"></line>
                                                 </svg>
-                                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">to Video</span>
+                                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('btn_to_video')}</span>
+
                                             </button>
 
                                             {/* Edit Button - Toggles Quick Edit Bar */}
@@ -1217,7 +1245,8 @@ const AvatarGenerator: React.FC = () => {
                                                 className={`px-4 py-2 backdrop-blur-md border rounded-xl transition-all flex items-center gap-2 shadow-lg hover:scale-105 group/btn ${showQuickEdit ? 'bg-[#d2ac47] text-black border-[#d2ac47]' : 'bg-[var(--bg-input)]/80 border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[#d2ac47] hover:text-black dark:bg-black/40'}`}
                                             >
                                                 <Sparkles size={14} className="group-hover/btn:animate-spin" />
-                                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{showQuickEdit ? 'Close Edit' : 'Quick Edit'}</span>
+                                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{showQuickEdit ? t('btn_close_edit') : t('btn_quick_edit')}</span>
+
                                             </button>
                                         </div>
                                     </div>
@@ -1230,7 +1259,8 @@ const AvatarGenerator: React.FC = () => {
                                         className="px-3 py-1.5 bg-[var(--bg-input)]/80 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)] rounded-lg hover:bg-[#d2ac47] hover:text-black transition-all flex items-center gap-2 shadow-lg hover:scale-105 dark:bg-black/40"
                                     >
                                         <Download size={12} />
-                                        <span className="text-[9px] font-bold uppercase tracking-widest opacity-80">Download</span>
+                                        <span className="text-[9px] font-bold uppercase tracking-widest opacity-80">{t('btn_download')}</span>
+
                                     </button>
                                 </div>
                             </>
@@ -1258,7 +1288,8 @@ const AvatarGenerator: React.FC = () => {
                                 <div
                                     className="flex flex-col items-center opacity-60 mt-4 cursor-pointer hover:opacity-100 hover:scale-110 transition-all active:scale-95 pointer-events-auto relative z-10"
                                     onClick={() => document.getElementById('sidebar-upload-trigger')?.click()}
-                                    title="Upload Image to Edit"
+                                    title={t('tooltip_upload_edit')}
+
                                 >
                                     <Camera size={42} className="text-[var(--text-secondary)]/30 mb-4 animate-pulse group-hover:text-[var(--text-secondary)] transition-colors" />
                                     <span className="text-[var(--text-secondary)]/40 text-[10px] font-bold uppercase tracking-[0.3em] text-center group-hover:text-[var(--text-secondary)] transition-colors">{t('ph_click_upload')}</span>
@@ -1269,7 +1300,8 @@ const AvatarGenerator: React.FC = () => {
                         {(loading || error) && (
                             <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center cursor-pointer" onClick={() => setError(null)}>
                                 <AvatarLogger status={currentStatus} error={error} />
-                                {error && <div className="absolute bottom-10 text-[var(--text-secondary)]/50 text-[10px] uppercase tracking-widest animate-pulse">Click to Dismiss</div>}
+                                {error && <div className="absolute bottom-10 text-[var(--text-secondary)]/50 text-[10px] uppercase tracking-widest animate-pulse">{t('btn_close_edit')}</div>}
+
                             </div>
                         )}
                     </div>
@@ -1325,6 +1357,17 @@ const AvatarGenerator: React.FC = () => {
                                             currentUrl={faceImageUrl}
                                             placeholder={t('ph_face_photo')}
                                             className="h-full w-full"
+                                        />
+                                    </div>
+
+                                    {/* Face Gallery - Horizontal Strip */}
+                                    <div className="flex justify-center mb-2 shrink-0 w-full px-1">
+                                        <FaceGallery
+                                            onSelect={(url) => {
+                                                setFaceImageUrl(url);
+                                                setError(null);
+                                            }}
+                                            className=""
                                         />
                                     </div>
                                     {/* Likeness Slider - Centered vertically for better balance */}
@@ -1394,7 +1437,8 @@ const AvatarGenerator: React.FC = () => {
                                     {/* OR Block */}
                                     <div className="flex items-center gap-3 h-6 shrink-0 opacity-60">
                                         <div className="h-[1px] flex-1 bg-[#d2ac47]/30"></div>
-                                        <span className="text-[var(--text-secondary)] text-[8px] font-bold tracking-[0.2em]">OR</span>
+                                        <span className="text-[var(--text-secondary)] text-[8px] font-bold tracking-[0.2em]">{t('label_or')}</span>
+
                                         <div className="h-[1px] flex-1 bg-[#d2ac47]/30"></div>
                                     </div>
 
@@ -1407,11 +1451,11 @@ const AvatarGenerator: React.FC = () => {
                                             disabled={grabBody}
                                             centerLabel={true}
                                             options={[
-                                                { label: t('body_ai'), value: '' },
-                                                { label: t('body_fitness'), value: 'fitness model' },
-                                                { label: t('body_thin'), value: 'thin' },
-                                                { label: t('body_athletic'), value: 'athletic' },
-                                                { label: t('body_curvy'), value: 'curvy' },
+                                                { label: 'Any', value: '' },
+                                                { label: 'Fitness Model', value: 'fitness model' },
+                                                { label: 'Thin', value: 'thin' },
+                                                { label: 'Athletic', value: 'athletic' },
+                                                { label: 'Curvy', value: 'curvy' },
                                                 { label: 'Thick', value: 'thick' },
                                                 { label: 'Chubby', value: 'chubby' },
                                                 { label: 'Obese / BBW', value: 'obese' },
@@ -1431,7 +1475,8 @@ const AvatarGenerator: React.FC = () => {
                                                 <button
                                                     className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-500 hover:rotate-90 bg-red-500/10 text-red-500 border border-red-500/50 hover:bg-red-500/20 hover:border-red-500 shrink-0 aspect-square shadow-[0_0_15px_rgba(239,68,68,0.2)] animate-in slide-in-from-left-6 fade-in duration-500"
                                                     onClick={() => setGrabComposition(false)}
-                                                    title="Close Slot"
+                                                    title={t('btn_close_edit')}
+
                                                 >
                                                     <XCircle size={20} strokeWidth={2} />
                                                 </button>
@@ -1486,7 +1531,8 @@ const AvatarGenerator: React.FC = () => {
 
 
                         {/* Error Message Display (Moved Up for Visibility) */}
-                        {error && <div className="text-red-400 text-center font-serif italic bg-red-950/30 p-4 border border-red-900/50 rounded-xl animate-pulse mb-4">{error}</div>}
+                        {error && <div className="text-red-400 text-center font-serif italic bg-red-950/30 p-4 border border-red-900/50 rounded-xl animate-pulse mb-4">{t('status_error')}: {error}</div>}
+
                     </div>
                 </div >
                 {/* Right Panel: Gallery + Fine Tuning (Stacked) - Moved to middle on mobile (order-2) */}
@@ -1524,15 +1570,15 @@ const AvatarGenerator: React.FC = () => {
                                 value={artStyle}
                                 onChange={(val) => setArtStyle(val)}
                                 options={[
-                                    { label: t('style_ai'), value: '' },
-                                    { label: t('style_realism'), value: 'Realistic RAW' },
-                                    { label: t('style_vintage'), value: 'Vintage Pin-Up' },
-                                    { label: t('style_polaroid'), value: 'Private Polaroid' },
-                                    { label: t('style_analogue'), value: 'Analogue Film' },
-                                    { label: t('style_anime'), value: 'Anime / Manga' },
-                                    { label: t('style_hentai'), value: 'Hentai / NSFW' },
-                                    { label: t('style_fashion'), value: 'Fashion Editorial' },
-                                    { label: t('style_gothic'), value: 'Gothic Noir' }
+                                    { label: 'AI Decide / Empty', value: '' },
+                                    { label: 'Realistic RAW', value: 'Realistic RAW' },
+                                    { label: 'Vintage Pin-Up', value: 'Vintage Pin-Up' },
+                                    { label: 'Private Polaroid', value: 'Private Polaroid' },
+                                    { label: 'Analogue Film', value: 'Analogue Film' },
+                                    { label: 'Anime / Manga', value: 'Anime / Manga' },
+                                    { label: 'Hentai / NSFW', value: 'Hentai / NSFW' },
+                                    { label: 'Fashion Editorial', value: 'Fashion Editorial' },
+                                    { label: 'Gothic Noir', value: 'Gothic Noir' }
                                 ]}
                             />
 
@@ -1543,22 +1589,84 @@ const AvatarGenerator: React.FC = () => {
                                     placeholder={t('ph_prompt')} />
 
                                 <div className="flex flex-col gap-2 mt-2">
-                                    <div className="w-full flex items-center gap-2 bg-[var(--bg-input)] border border-[var(--border-color)] p-2 rounded-xl">
-                                        <span className="text-[var(--text-secondary)] text-[9px] uppercase tracking-wider whitespace-nowrap">{t('label_seed')}</span>
+                                    <div className="flex flex-col gap-2 p-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)]">
+                                        <div className="flex justify-between items-center h-6">
+                                            <span className="text-[var(--text-secondary)] text-[9px] uppercase tracking-wider font-bold">{t('label_seed')}</span>
+                                            <div className="flex bg-[var(--bg-primary)] rounded-lg p-0.5 border border-[var(--border-color)]">
+                                                <button
+                                                    onClick={() => { setSeedMode('random'); setSeed(-1); }}
+                                                    className={`px-3 py-0.5 text-[8px] font-bold uppercase rounded-md transition-all ${seedMode === 'random' ? 'bg-[#d2ac47] text-black shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+                                                >
+                                                    {t('ph_random')}
+                                                </button>
+                                                <button
+                                                    onClick={() => { setSeedMode('fixed'); setSeed((prev) => prev === -1 ? Math.floor(Math.random() * 1000000) : prev); }}
+                                                    className={`px-3 py-0.5 text-[8px] font-bold uppercase rounded-md transition-all ${seedMode === 'fixed' ? 'bg-[#d2ac47] text-black shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+                                                >
+                                                    {t('mode_fixed')}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Always visible input to prevent layout shift */}
+                                        <div className={`flex items-center gap-2 transition-all duration-300 ${seedMode === 'random' ? 'opacity-40 pointer-events-none grayscale' : 'opacity-100'}`}>
+                                            <input
+                                                type="text"
+                                                value={seed === -1 ? '' : seed}
+                                                placeholder={seedMode === 'random' ? "🎲 Randomized" : "Enter Seed"}
+                                                onChange={(e) => setSeed(parseInt(e.target.value) || 0)}
+                                                className="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] text-xs font-mono w-full p-1.5 focus:outline-none focus:border-[#d2ac47] text-center disabled:cursor-not-allowed placeholder:text-[var(--text-secondary)]/50"
+                                                disabled={seedMode === 'random'}
+                                            />
+                                            <button
+                                                onClick={() => setSeed(Math.floor(Math.random() * 2147483647))}
+                                                className="p-1.5 border border-[var(--border-color)] rounded-lg hover:border-[#d2ac47] text-[var(--text-secondary)] transition-colors bg-[var(--bg-primary)]"
+                                                title="New Random Seed"
+                                                disabled={seedMode === 'random'}
+                                            >
+                                                <RefreshCw size={12} />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Steps Slider (30-100) */}
+                                    <div className="w-full flex flex-col gap-1 b bg-[var(--bg-input)] border border-[var(--border-color)] p-2 px-3 rounded-xl">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-[var(--text-secondary)] text-[9px] uppercase tracking-wider">{t('label_steps')}</span>
+                                            <span className="text-[#d2ac47] text-[10px] font-mono font-bold">{steps}</span>
+                                        </div>
                                         <input
-                                            type="number"
-                                            value={seed === -1 ? '' : seed}
-                                            placeholder="Random"
-                                            onChange={(e) => setSeed(e.target.value === '' ? -1 : parseInt(e.target.value))}
-                                            className="bg-transparent text-[var(--text-primary)] text-xs font-mono w-full focus:outline-none placeholder-[var(--text-muted)]"
+                                            type="range"
+                                            min="20"
+                                            max="100"
+                                            step="1"
+                                            value={steps}
+                                            onChange={(e) => setSteps(parseInt(e.target.value))}
+                                            className="w-full h-1 bg-[#d2ac47]/20 rounded-lg appearance-none cursor-pointer mt-1 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-[#d2ac47] [&::-webkit-slider-thumb]:rounded-full hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
                                         />
+                                    </div>
+
+                                    {/* CFG Mode Toggle (Photoreal vs Quality) */}
+                                    <div className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] p-1 rounded-xl flex gap-1 h-10 relative overflow-hidden">
                                         <button
-                                            onClick={() => setSeed(Math.floor(Math.random() * 2147483647))}
-                                            className="text-[var(--text-secondary)]/50 hover:text-[var(--text-secondary)] transition-colors"
-                                            title="Spin Random Seed"
+                                            onClick={() => setCfg(2.5)}
+                                            className={`flex-1 flex items-center justify-center gap-2 z-10 transition-all duration-300 ${cfg === 2.5 ? 'text-black font-black' : 'text-[var(--text-secondary)]/60 hover:text-[var(--text-secondary)]'}`}
                                         >
-                                            <RefreshCw size={14} className="active:animate-spin" />
+                                            <Camera size={14} />
+                                            <span className="text-[9px] uppercase tracking-widest">{t('cfg_natural')}</span>
                                         </button>
+                                        <button
+                                            onClick={() => setCfg(3.5)}
+                                            className={`flex-1 flex items-center justify-center gap-2 z-10 transition-all duration-300 ${cfg === 3.5 ? 'text-black font-black' : 'text-[var(--text-secondary)]/60 hover:text-[var(--text-secondary)]'}`}
+                                        >
+                                            <Sparkles size={14} />
+                                            <span className="text-[9px] uppercase tracking-widest">{t('cfg_vivid')}</span>
+                                        </button>
+                                        {/* Sliding Background */}
+                                        <div
+                                            className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-gold-gradient rounded-lg transition-all duration-300 shadow-[0_0_15px_rgba(210,172,71,0.3)]"
+                                            style={{ left: cfg === 2.5 ? '4px' : 'calc(50%)' }}
+                                        ></div>
                                     </div>
 
                                     <div className="flex gap-2">

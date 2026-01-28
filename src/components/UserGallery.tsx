@@ -43,6 +43,7 @@ interface UserGalleryProps {
 // Helper Sub-Component: Handles video state & Premium Apple-Glass Aesthetics
 // -----------------------------------------------------------------------------------------
 const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; isActive: boolean; onDelete?: (id: string | number) => void; onSelect?: (item: any) => void }) => {
+    const { t } = useTranslation();
     const videoRef = React.useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState(0);
@@ -243,7 +244,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                                         if (onSelect) onSelect(item);
                                     }}
                                 >
-                                    USE REF
+                                    {t('btn_use_ref')}
                                 </button>
                             </div>
                         )}
@@ -253,10 +254,10 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    if (window.confirm('Delete this item?')) onDelete(item.id);
+                                    if (window.confirm(t('tooltip_delete') + '?')) onDelete(item.id);
                                 }}
                                 className="absolute top-3 right-3 p-2.5 bg-red-950/40 backdrop-blur-xl text-red-200/60 rounded-full hover:bg-red-600 hover:text-white transition-all border border-red-500/10 shadow-lg hover:shadow-[0_0_20px_rgba(220,38,38,0.5)] pointer-events-auto opacity-0 group-hover/item:opacity-100"
-                                title="Delete"
+                                title={t('tooltip_delete')}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
                             </button>
@@ -269,7 +270,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
             <div className="relative px-4 pb-4 pt-1 text-center shrink-0">
                 <p className="text-[var(--text-primary)] text-[11px] font-serif italic mb-0.5 truncate">{item.label}</p>
                 <div className="flex items-center justify-center gap-2 text-[7px] uppercase tracking-widest text-[var(--text-secondary)]/40 font-bold">
-                    <span>{item.date || 'Just now'}</span>
+                    <span>{item.date || t('lbl_just_now')}</span>
                     <div className="w-1 h-1 rounded-full bg-[var(--text-secondary)]/10"></div>
                     {item.privacy === 'public' ? <Globe size={8} /> : <Lock size={8} />}
                     <div className="w-1 h-1 rounded-full bg-[var(--text-secondary)]/10"></div>
@@ -280,7 +281,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                             if (onSelect) onSelect(item);
                         }}
                     >
-                        Details
+                        {t('label_details')}
                     </button>
                 </div>
             </div>
@@ -310,7 +311,7 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSe
             ...item,
             thumb: item.image_url || item.thumb || '/placeholder-luxury.png',
             url: item.video_url || item.url,
-            label: item.prompt ? (item.prompt.substring(0, 20) + '...') : (item.label || 'Untitled')
+            label: item.prompt ? (item.prompt.substring(0, 20) + '...') : (item.label || t('lbl_untitled'))
         }))
     ), [rawItems]);
 

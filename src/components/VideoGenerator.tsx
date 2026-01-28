@@ -1,15 +1,17 @@
 import React, { useState, useRef } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import axios from 'axios';
-import { Wand2, Download, Sparkles, XCircle, ShieldCheck, Flame, Loader2, Play, Film, Image as ImageIcon, Archive, Layers, Video as VideoIcon, Maximize2, Trash2, Upload, RefreshCw, Eye } from 'lucide-react';
-
+import { Wand2, Download, Sparkles, XCircle, ShieldCheck, Flame, Loader2, Play, Film, Image as ImageIcon, Archive, Layers, Video as VideoIcon, Maximize2, Trash2, Upload, RefreshCw, Eye, Mic } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
 import { supabase } from '../lib/supabaseClient';
 
 // Simulated Progress Logger for UX
 const GenerationLogger = ({ status, error, startTime }: { status: string; error: string | null; startTime?: number }) => {
+    const { t } = useTranslation();
     const [initialPlayout, setInitialPlayout] = React.useState(false);
-    const [logs, setLogs] = React.useState<string[]>(["Initializing Neural Network..."]);
+    const [logs, setLogs] = React.useState<string[]>([t('log_receiving')]);
 
     // Calculate elapsed time for animation sync
     const elapsed = startTime ? Date.now() - startTime : 0;
@@ -22,16 +24,17 @@ const GenerationLogger = ({ status, error, startTime }: { status: string; error:
             const elapsedMs = now - startTime;
 
             const steps = [
-                { msg: "Studio: Receiving creative assets...", delay: 800 },
-                { msg: "Analysis: Deciphering visual context...", delay: 5000 },
-                { msg: "Director: Crafting cinematic screenplay...", delay: 15000 },
-                { msg: "Lighting: Configuring atmosphere & mood...", delay: 30000 },
-                { msg: "Engine: Calibrating render pipeline (This takes time)...", delay: 60000 },
-                { msg: "Core: Loading high-fidelity models...", delay: 90000 },
-                { msg: "Animation: Simulating physics and movement...", delay: 150000 },
-                { msg: "Rendering: Enhancing texture and detail...", delay: 240000 },
-                { msg: "Assembly: Compiling final video sequence...", delay: 300000 },
-                { msg: "Delivery: Finalizing masterpiece...", delay: 340000 }
+                { msg: t('log_receiving'), delay: 800 },
+
+                { msg: t('log_analysis'), delay: 5000 },
+                { msg: t('log_director'), delay: 15000 },
+                { msg: t('log_lighting'), delay: 30000 },
+                { msg: t('log_engine'), delay: 60000 },
+                { msg: t('log_core'), delay: 90000 },
+                { msg: t('log_animation'), delay: 150000 },
+                { msg: t('log_rendering'), delay: 240000 },
+                { msg: t('log_assembly'), delay: 300000 },
+                { msg: t('log_delivery'), delay: 340000 }
             ];
 
             const pastSteps = steps.filter(s => s.delay < elapsedMs).map(s => s.msg);
@@ -44,22 +47,22 @@ const GenerationLogger = ({ status, error, startTime }: { status: string; error:
 
     React.useEffect(() => {
         if (status === 'queued') {
-            setLogs(["Server received request...", "Searching for available GPU slot...", "You are in the creative queue..."]);
+            setLogs([t('log_queue_msg')]);
             return;
         }
 
         if (status === 'processing' || status === 'pending') {
             const steps = [
-                { msg: "Studio: Receiving creative assets...", delay: 800 },
-                { msg: "Analysis: Deciphering visual context...", delay: 5000 },
-                { msg: "Director: Crafting cinematic screenplay...", delay: 15000 },
-                { msg: "Lighting: Configuring atmosphere & mood...", delay: 30000 },
-                { msg: "Engine: Calibrating render pipeline (This takes time)...", delay: 60000 },
-                { msg: "Core: Loading high-fidelity models...", delay: 90000 },
-                { msg: "Animation: Simulating physics and movement...", delay: 150000 },
-                { msg: "Rendering: Enhancing texture and detail...", delay: 240000 },
-                { msg: "Assembly: Compiling final video sequence...", delay: 300000 },
-                { msg: "Delivery: Finalizing masterpiece...", delay: 340000 }
+                { msg: t('log_receiving'), delay: 800 },
+                { msg: t('log_analysis'), delay: 5000 },
+                { msg: t('log_director'), delay: 15000 },
+                { msg: t('log_lighting'), delay: 30000 },
+                { msg: t('log_engine'), delay: 60000 },
+                { msg: t('log_core'), delay: 90000 },
+                { msg: t('log_animation'), delay: 150000 },
+                { msg: t('log_rendering'), delay: 240000 },
+                { msg: t('log_assembly'), delay: 300000 },
+                { msg: t('log_delivery'), delay: 340000 }
             ];
 
             let timeouts: any[] = [];
@@ -97,15 +100,15 @@ const GenerationLogger = ({ status, error, startTime }: { status: string; error:
                     ></div>
                 </div>
                 <div className="flex justify-between text-[9px] text-[var(--text-secondary)]/40 uppercase tracking-widest">
-                    <span>{status === 'queued' ? '⚡ QUEUE ACTIVE' : '🚀 GENERATION ACTIVE'}</span>
-                    <span>{status === 'queued' ? 'EST: WAITING' : 'EST: 5-6 MINS'}</span>
+                    <span>{status === 'queued' ? `⚡ ${t('vid_queue_active')}` : `🚀 ${t('vid_gen_active')}`}</span>
+                    <span>{status === 'queued' ? t('vid_est_wait') : t('vid_est_time')}</span>
                 </div>
 
                 <div className="space-y-3 mt-8">
                     {error ? (
                         <div className="text-red-500 animate-pulse flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
-                            <span>ERROR: {error}</span>
+                            <span>{t('status_error')}: {error}</span>
                         </div>
                     ) : (
                         logs.map((log, i) => (
@@ -118,9 +121,9 @@ const GenerationLogger = ({ status, error, startTime }: { status: string; error:
 
                     {/* Diagnostic message for long waits */}
                     <div className="mt-8 pt-4 border-t border-[#d2ac47]/10 text-[10px] text-[var(--text-secondary)]/30 italic h-10">
-                        {status === 'queued' && "Server is currently handling other requests. Please stay on this page."}
-                        {status === 'processing' && "GPU is rendering your frames. This usually takes 5-7 minutes."}
-                        {elapsed > 360000 && !error && status !== 'completed' && "Taking longer than usual... Finalizing render."}
+                        {status === 'queued' && t('log_queue_msg')}
+                        {status === 'processing' && t('log_gpu_msg')}
+                        {elapsed > 360000 && !error && status !== 'completed' && t('log_long_wait')}
                     </div>
                 </div>
             </div>
@@ -134,15 +137,55 @@ const GenerationLogger = ({ status, error, startTime }: { status: string; error:
     );
 };
 
+
 // Webhook URL (Updated to Supabase Workflow)
 // Webhook URL (Proxied via Vercel/Netlify/Vite)
 const WEBHOOK_URL = "/api/video";
 
-import { useAuth } from '../contexts/AuthContext';
-import { useTranslation, Trans } from 'react-i18next';
+const CustomSelect = ({ options, value, onChange, label, disabled = false, centerLabel = false }: any) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
-// ... (existing imports)
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
+    return (
+        <div className="relative group" ref={dropdownRef}>
+            {label && <label className={`text-[var(--text-secondary)] text-[8px] md:text-[9px] font-bold tracking-[0.2em] uppercase mb-1.5 block ${centerLabel ? 'text-center' : ''} truncate`}>{label}</label>}
+            <div
+                className={`w-full bg-[var(--bg-input)] border ${isOpen ? 'border-[#d2ac47]' : 'border-[var(--border-color)]'} text-[var(--text-primary)] p-2 md:p-2.5 rounded-lg flex justify-between items-center transition-all ${disabled ? 'opacity-50 cursor-not-allowed border-[#d2ac47]/10' : 'cursor-pointer hover:border-[#d2ac47]/60'}`}
+                onClick={() => !disabled && setIsOpen(!isOpen)}
+            >
+                <span className="truncate text-[10px] md:text-xs font-bold tracking-widest uppercase">{options.find((o: any) => o.value == value)?.label || value}</span>
+                <span className="text-[var(--text-secondary)] text-[8px] transition-transform duration-300 transform shrink-0 ml-2" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+            </div>
+
+            {isOpen && (
+                <div className="absolute top-full left-0 min-w-full w-auto whitespace-nowrap bg-[var(--bg-primary)] border border-[#d2ac47] z-[99999] shadow-[0_10px_40px_rgba(0,0,0,0.9)] animate-fade-in-down mt-2 rounded-xl overflow-hidden max-h-[200px] overflow-y-auto custom-scrollbar">
+                    {options.map((opt: any) => (
+                        <div
+                            key={opt.value}
+                            className={`px-3 py-2 text-[10px] md:text-xs cursor-pointer transition-all border-b border-[#d2ac47]/10 last:border-0 uppercase tracking-wider ${opt.value == value ? 'bg-[#d2ac47] text-black font-bold shadow-[inset_0_0_10px_rgba(0,0,0,0.2)]' : 'text-[var(--text-primary)] hover:bg-[#d2ac47]/10 hover:text-[var(--text-secondary)] hover:pl-4'}`}
+                            onClick={() => {
+                                onChange(opt.value.toString());
+                                setIsOpen(false);
+                            }}
+                        >
+                            {opt.label}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
 
 const VideoGenerator: React.FC = () => {
     const { t } = useTranslation();
@@ -150,12 +193,20 @@ const VideoGenerator: React.FC = () => {
     const [imageUrl, setImageUrl] = useState('');
     const [fileName, setFileName] = useState('');
     const [textPrompt, setTextPrompt] = useState('');
-    // const [negativePrompt, setNegativePrompt] = useState(''); <--- Feature Disabled
     const [activeFilter, setActiveFilter] = useState<'all' | 'image' | 'video'>('video');
+
+    // Fine Tuning State
+    const [seed, setSeed] = useState<number>(-1);
+    const [steps, setSteps] = useState<number>(30);
+    const [cfgScale, setCfgScale] = useState<number>(3.0);
+    const [rawPromptMode, setRawPromptMode] = useState(false);
+    const [selectedVoice, setSelectedVoice] = useState<string>('Ana de Armas - demo.MP3');
+
     // Video Player State
     const [videoProgress, setVideoProgress] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
+
 
     const handleTimeUpdate = () => {
         if (videoRef.current) {
@@ -258,6 +309,8 @@ const VideoGenerator: React.FC = () => {
         }
         return id;
     });
+
+
 
     const fetchHistory = async () => {
         let query = supabase
@@ -560,7 +613,43 @@ const VideoGenerator: React.FC = () => {
         }, 1200000); // 20 minutes timeout
     };
 
-    const handleGenerate = async () => {
+    const handleExtend = () => {
+        if (!activeItem && !videoUrl) {
+            setError('Please select a video from history to extend.');
+            return;
+        }
+
+        // Prefer activeItem, fallback to finding item by videoUrl
+        let targetItem = activeItem;
+        if (!targetItem && videoUrl) {
+            targetItem = galleryItems.find(i => (i.result_url || i.video_url || i.url) === videoUrl);
+        }
+
+        if (!targetItem) {
+            setError('Could not identify the source video to extend.');
+            return;
+        }
+
+        // Set up state for extension
+        setImageUrl(targetItem.result_url || targetItem.video_url || targetItem.url);
+        setTextPrompt(targetItem.prompt || '');
+        setFileName(`Extending: ${targetItem.label || 'Video'}`);
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Trigger generic generation but with extension context
+        // We'll use a hack/prop to pass the ID, or updated handleGenerate
+
+        // Actually, let's just trigger it directly or set a "pendingExtensionId" state?
+        // Simpler: Call handleGenerate with an argument.
+        handleGenerate(targetItem.id);
+    };
+
+    const handleGenerate = async (eventOrId?: React.MouseEvent<HTMLButtonElement> | string) => {
+        // Determine if this is an extension or a fresh generation
+        const extendFromId = typeof eventOrId === 'string' ? eventOrId : undefined;
+
         if (!imageUrl || !textPrompt) {
             setError('Please provide both an image URL and a text prompt.');
             return;
@@ -579,7 +668,11 @@ const VideoGenerator: React.FC = () => {
                     status: 'pending',
                     prompt: textPrompt,
                     image_url: imageUrl,
-                    metadata: { safe_mode: safeMode ?? true, guest_id: guestId }
+                    metadata: {
+                        safe_mode: safeMode ?? true,
+                        guest_id: guestId,
+                        extend_from: extendFromId || null // <--- PASS PARENT ID
+                    }
                 })
                 .select()
                 .single();
@@ -587,7 +680,7 @@ const VideoGenerator: React.FC = () => {
             if (dbError) throw new Error(`Database Error: ${dbError.message}`);
             if (!generation) throw new Error('Failed to init generation');
 
-            console.log("Generation started, ID:", generation.id);
+            console.log("Generation started, ID:", generation.id, extendFromId ? `(Extending ${extendFromId})` : '');
 
             localStorage.setItem('active_generation', JSON.stringify({
                 id: generation.id,
@@ -604,6 +697,11 @@ const VideoGenerator: React.FC = () => {
                 filename: fileName,
                 textPrompt,
                 safeMode,
+                seed,
+                steps,
+                cfg_scale: cfgScale,
+                voice: selectedVoice,
+                extend_from: extendFromId // <--- Pass to N8n
             }).catch(err => {
                 console.warn("Webhook triggered (async path)", err);
             });
@@ -1351,7 +1449,10 @@ const VideoGenerator: React.FC = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             {/* Extend Button */}
-                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/10 hover:border-[#d2ac47]/60 bg-[var(--bg-input)] transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl">
+                            <button
+                                onClick={handleExtend}
+                                className="flex items-center gap-4 p-3 border border-[#d2ac47]/10 hover:border-[#d2ac47]/60 bg-[var(--bg-input)] transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl"
+                            >
                                 <div className="p-2 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
                                     <Layers size={16} />
                                 </div>
@@ -1382,6 +1483,17 @@ const VideoGenerator: React.FC = () => {
                                     <div className="text-[var(--text-secondary)]/50 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_original')}</div>
                                 </div>
                             </button>
+
+                            {/* Voice Avatar Button */}
+                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/10 hover:border-[#d2ac47]/60 bg-[var(--bg-input)] transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl">
+                                <div className="p-2 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
+                                    <Mic size={16} />
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-[var(--text-primary)] text-[9px] font-bold uppercase tracking-widest leading-tight mb-1"> {t('vid_voice')}</div>
+                                    <div className="text-[var(--text-secondary)]/50 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_voice')}</div>
+                                </div>
+                            </button>
                         </div>
                     </div>
 
@@ -1391,8 +1503,6 @@ const VideoGenerator: React.FC = () => {
 
                 {/* Right Col: Output & Stats & Coins - Mobile: Middle (Order 2) */}
                 <div className="order-2 xl:order-none w-full xl:w-auto xl:col-span-3 flex flex-col gap-4 xl:h-[calc(100vh-120px)]">
-
-
 
                     {/* 3. History / Gallery - Taller on Mobile, Elastic & Stable on PC */}
                     <div className="bg-[var(--bg-input)] border border-[var(--border-color)] rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden flex-1 min-h-[650px] lg:min-h-0 overflow-y-auto custom-scrollbar mx-2 md:mx-0">
@@ -1435,7 +1545,10 @@ const VideoGenerator: React.FC = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-1 gap-3">
                             {/* Extend Button */}
-                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/60 hover:border-[#d2ac47] bg-[var(--bg-primary)] backdrop-blur-sm transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl shadow-[0_4px_12px_rgba(210,172,71,0.08)]">
+                            <button
+                                onClick={handleExtend}
+                                className="flex items-center gap-4 p-3 border border-[#d2ac47]/60 hover:border-[#d2ac47] bg-[var(--bg-primary)] backdrop-blur-sm transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl shadow-[0_4px_12px_rgba(210,172,71,0.08)]"
+                            >
                                 <div className="p-2 rounded-xl border border-[#d2ac47]/50 bg-[#d2ac47]/10 text-[#d2ac47] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
                                     <Layers size={16} />
                                 </div>
@@ -1464,6 +1577,17 @@ const VideoGenerator: React.FC = () => {
                                 <div className="text-left">
                                     <div className="text-[var(--text-primary)] text-[9px] font-black uppercase tracking-widest leading-tight mb-1"> {t('vid_save')}</div>
                                     <div className="text-[var(--text-secondary)]/60 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_original')}</div>
+                                </div>
+                            </button>
+
+                            {/* Voice Avatar Button */}
+                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/60 hover:border-[#d2ac47] bg-[var(--bg-primary)] backdrop-blur-sm transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl shadow-[0_4px_12px_rgba(210,172,71,0.08)]">
+                                <div className="p-2 rounded-xl border border-[#d2ac47]/50 bg-[#d2ac47]/10 text-[#d2ac47] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
+                                    <Mic size={16} />
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-[var(--text-primary)] text-[9px] font-black uppercase tracking-widest leading-tight mb-1"> {t('vid_voice')}</div>
+                                    <div className="text-[var(--text-secondary)]/60 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_voice')}</div>
                                 </div>
                             </button>
                         </div>

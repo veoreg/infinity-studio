@@ -140,7 +140,7 @@ function AppContent() {
 
       {/* Global Promo - Inserted in Flow for Mobile, Fixed for Desktop */}
       <div className="relative z-50 md:fixed md:bottom-8 md:right-8 pointer-events-none">
-        {activeTab === 'avatar' && <HolidayPromo />}
+        {/* {activeTab === 'avatar' && <HolidayPromo />} */}
       </div>
 
       {/* Simple Footer */}
