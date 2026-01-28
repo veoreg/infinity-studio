@@ -1,5 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next'; // i18n
+import { useTranslation, Trans } from 'react-i18next'; // i18n
 import axios from 'axios';
 import { Wand2, Download, RefreshCw, Sparkles, XCircle, Camera, User, X, Maximize2, Upload, Trash2, Plus } from 'lucide-react';
 
@@ -50,7 +50,7 @@ const CustomSelect: React.FC<CustomSelectProps & { centerLabel?: boolean }> = ({
 
             {/* Dropdown Options - Absolute positioned with high Z-index */}
             {isOpen && (
-                <div className="absolute top-full left-0 min-w-full w-auto whitespace-nowrap bg-[var(--bg-primary)] border border-[#d2ac47] z-[99999] shadow-[0_10px_40px_rgba(0,0,0,0.9)] animate-fade-in-down mt-2 rounded-xl overflow-hidden max-h-[300px] overflow-y-auto custom-scrollbar">
+                <div className="absolute top-full left-0 min-w-full w-auto whitespace-nowrap bg-[var(--bg-primary)] border border-[#d2ac47] z-[99999] shadow-[0_10px_40px_rgba(0,0,0,0.9)] animate-fade-in-down mt-2 rounded-xl overflow-hidden max-h-[200px] overflow-y-auto custom-scrollbar">
                     {options.map((opt) => (
                         <div
                             key={opt.value}
@@ -831,7 +831,7 @@ const AvatarGenerator: React.FC = () => {
                     <div className="flex items-center justify-between mb-6 px-2">
                         <div className="flex items-center gap-2 text-[var(--text-secondary)]">
                             <Sparkles size={16} />
-                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase">Source Frames</span>
+                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase">{t('section_source_frames')}</span>
                         </div>
 
                         {/* Load & Edit Button (User Request) */}
@@ -841,7 +841,7 @@ const AvatarGenerator: React.FC = () => {
                                 className="px-3 py-1.5 border border-[#d2ac47] text-[var(--text-secondary)] rounded text-[9px] font-bold uppercase tracking-wider hover:bg-[#d2ac47] hover:text-black transition-all flex items-center gap-2"
                             >
                                 <Upload size={10} />
-                                <span>Load & Edit</span>
+                                <span>{t('btn_load_edit')}</span>
                             </button>
                             <input
                                 id="sidebar-upload-trigger"
@@ -952,13 +952,13 @@ const AvatarGenerator: React.FC = () => {
                     <div className="bg-[var(--glass-bg)] backdrop-blur-md border border-[var(--border-color)] rounded-xl px-2 py-1 flex flex-col md:flex-row gap-2 items-center justify-between shadow-lg relative z-[200]">
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-1.5 w-full">
                             <CustomSelect
-                                label="Gender"
+                                label={t('opt_gender')}
                                 value={gender}
                                 onChange={setGender}
                                 options={[{ label: 'Female', value: 'female' }, { label: 'Male', value: 'male' }, { label: 'Trans', value: 'transgender' }]}
                             />
                             <div className="group relative">
-                                <label className="text-[var(--text-secondary)] text-[8px] md:text-[9px] font-bold tracking-[0.2em] uppercase mb-1.5 block text-center truncate">Age</label>
+                                <label className="text-[var(--text-secondary)] text-[8px] md:text-[9px] font-bold tracking-[0.2em] uppercase mb-1.5 block text-center truncate">{t('opt_age')}</label>
                                 <input
                                     type="text"
                                     inputMode="numeric"
@@ -970,7 +970,7 @@ const AvatarGenerator: React.FC = () => {
                                 />
                             </div>
                             <CustomSelect
-                                label="Nation"
+                                label={t('opt_nation')}
                                 value={nationality}
                                 onChange={setNationality}
                                 options={[
@@ -986,13 +986,13 @@ const AvatarGenerator: React.FC = () => {
                                 ]}
                             />
                             <CustomSelect
-                                label="Clothing"
+                                label={t('opt_clothing')}
                                 value={clothing}
                                 onChange={setClothing}
                                 options={[{ label: 'Dressed', value: 'dressed' }, { label: 'Semi-Dressed', value: 'semi-dressed' }, { label: 'Nude', value: 'nude' }]}
                             />
                             <CustomSelect
-                                label="Role"
+                                label={t('opt_role')}
                                 value={role}
                                 onChange={setRole}
                                 options={[
@@ -1236,29 +1236,32 @@ const AvatarGenerator: React.FC = () => {
                             </>
                         ) : (
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
+                                {/* Gradient Overlay for readability */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent z-0"></div>
+
                                 {/* Brand Header */}
-                                <div className="mb-8 text-center transform -translate-y-4">
+                                <div className="mb-8 text-center transform -translate-y-4 relative z-10">
                                     <div className="flex items-center justify-center gap-4 mb-3 opacity-80">
                                         <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#d2ac47]/50"></div>
-                                        <span className="text-[var(--text-secondary)] text-[10px] uppercase tracking-[0.4em] font-bold animate-pulse">Identity Forge</span>
+                                        <span className="text-[var(--text-secondary)] text-[10px] uppercase tracking-[0.4em] font-bold animate-pulse">{t('title_identity_forge')}</span>
                                         <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#d2ac47]/50"></div>
                                     </div>
                                     <h1 className="text-4xl md:text-6xl font-serif text-[var(--text-primary)] tracking-wide drop-shadow-[0_0_25px_rgba(210,172,71,0.2)] mb-4">
-                                        Create Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d2ac47] to-[#F9F1D8] italic font-light">Avatar</span>
+                                        <Trans i18nKey="title_create_avatar" components={{ 1: <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d2ac47] to-[#F9F1D8] italic font-light" /> }} />
                                     </h1>
                                     <p className="text-[var(--text-secondary)]/40 text-[9px] uppercase tracking-[0.2em] max-w-md mx-auto leading-relaxed border-t border-[#d2ac47]/10 pt-4 mt-2">
-                                        The ultimate forge for high-fidelity <br /> personal identities and artistic portraits.
+                                        {t('desc_identity_forge')}
                                     </p>
                                 </div>
 
                                 {/* Active Workspace Indicator - Larger & Centered & Clickable */}
                                 <div
-                                    className="flex flex-col items-center opacity-60 mt-4 cursor-pointer hover:opacity-100 hover:scale-110 transition-all active:scale-95 pointer-events-auto"
+                                    className="flex flex-col items-center opacity-60 mt-4 cursor-pointer hover:opacity-100 hover:scale-110 transition-all active:scale-95 pointer-events-auto relative z-10"
                                     onClick={() => document.getElementById('sidebar-upload-trigger')?.click()}
                                     title="Upload Image to Edit"
                                 >
                                     <Camera size={42} className="text-[var(--text-secondary)]/30 mb-4 animate-pulse group-hover:text-[var(--text-secondary)] transition-colors" />
-                                    <span className="text-[var(--text-secondary)]/40 text-[10px] font-bold uppercase tracking-[0.3em] text-center group-hover:text-[var(--text-secondary)] transition-colors">Click to Upload</span>
+                                    <span className="text-[var(--text-secondary)]/40 text-[10px] font-bold uppercase tracking-[0.3em] text-center group-hover:text-[var(--text-secondary)] transition-colors">{t('ph_click_upload')}</span>
                                 </div>
                             </div>
                         )}
@@ -1287,7 +1290,7 @@ const AvatarGenerator: React.FC = () => {
                             className={`flex-1 font-bold uppercase tracking-[0.3em] py-5 rounded-xl shadow-[0_0_25px_rgba(210,172,71,0.4)] transition-all flex items-center justify-center gap-3 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(210,172,71,0.6)] ${loading ? 'bg-gold-gradient text-black opacity-90 cursor-wait' : 'bg-gold-gradient text-black border border-[#fbeea4]/30'}`}
                         >
                             {loading ? <RefreshCw className="animate-spin" /> : <Sparkles />}
-                            {loading ? "Forging Identity..." : t('btn_generate')}
+                            {loading ? t('vid_forging') : t('btn_generate')}
                         </button>
                     </div>
 
@@ -1492,7 +1495,7 @@ const AvatarGenerator: React.FC = () => {
                     {/* 1. Gallery (Styled like VideoGenerator) */}
                     <div className="order-2 xl:order-1 flex-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden mx-2 md:mx-0 min-h-[650px] lg:min-h-0">
                         <div className="flex items-center justify-between h-10 px-0">
-                            <span className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-[0.2em] pl-4">History</span>
+                            <span className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-[0.2em] pl-4">{t('vid_history')}</span>
                         </div>
                         <UserGallery
                             newItems={galleryItems}

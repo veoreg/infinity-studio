@@ -139,11 +139,13 @@ const GenerationLogger = ({ status, error, startTime }: { status: string; error:
 const WEBHOOK_URL = "/api/video";
 
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation, Trans } from 'react-i18next';
 
 // ... (existing imports)
 
 
 const VideoGenerator: React.FC = () => {
+    const { t } = useTranslation();
     const { user } = useAuth(); // <--- Get logged in user
     const [imageUrl, setImageUrl] = useState('');
     const [fileName, setFileName] = useState('');
@@ -630,7 +632,7 @@ const VideoGenerator: React.FC = () => {
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-2 text-[var(--text-secondary)]">
                                 <Sparkles size={16} />
-                                <span className="text-[10px] font-bold tracking-[0.2em] uppercase">Visual References</span>
+                                <span className="text-[10px] font-bold tracking-[0.2em] uppercase">{t('vid_vis_ref')}</span>
                             </div>
 
                             {/* Filter Tabs - Inline */}
@@ -644,7 +646,7 @@ const VideoGenerator: React.FC = () => {
                                             : 'bg-transparent text-[var(--text-secondary)]/50 border-[var(--border-color)] hover:border-[#d2ac47]/50'
                                             }`}
                                     >
-                                        {filter === 'all' ? 'All' : filter === 'image' ? 'Photos' : 'Videos'}
+                                        {filter === 'all' ? t('vid_filter_all') : filter === 'image' ? t('vid_filter_photos') : t('vid_filter_videos')}
                                     </button>
                                 ))}
                             </div>
@@ -656,7 +658,7 @@ const VideoGenerator: React.FC = () => {
                             if (activeFilter === 'image') return !isVideo;
                             if (activeFilter === 'video') return isVideo;
                             return true;
-                        }).length} ITEMS</span>
+                        }).length} {t('vid_items')}</span>
                     </div>
 
                     <div className="grid grid-cols-2 xl:grid-cols-3 gap-3 pb-20">
@@ -950,7 +952,7 @@ const VideoGenerator: React.FC = () => {
                                 {/* Image Input Frame */}
                                 <div className="group relative border border-[var(--border-color)] bg-[var(--bg-input)] hover:border-[#d2ac47] transition-all duration-500 overflow-hidden flex flex-col rounded-2xl h-56 md:h-64">
                                     <div className="absolute top-0 left-0 bg-[#d2ac47] text-black text-[9px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] z-20 rounded-tl-2xl rounded-br-xl pointer-events-none">
-                                        Source Image
+                                        {t('vid_src_img')}
                                     </div>
 
                                     {/* Main Upload Zone */}
@@ -962,7 +964,7 @@ const VideoGenerator: React.FC = () => {
                                                     setFileName(fileName);
                                                 }}
                                                 currentUrl={imageUrl}
-                                                placeholder="Click or Drag Image"
+                                                placeholder={t('vid_click_drag_main')}
                                                 className="h-full w-full border-none bg-transparent"
                                             />
                                             {imageUrl && (
@@ -983,12 +985,12 @@ const VideoGenerator: React.FC = () => {
                                     {/* Vision Prompt (Full Height) */}
                                     <div className="relative flex-1 flex flex-col border-b border-[#d2ac47]/10">
                                         <div className="absolute top-0 left-0 bg-[#d2ac47] text-black text-[9px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] z-20 rounded-tl-2xl rounded-br-xl">
-                                            Vision Prompt
+                                            {t('vid_vision_prompt')}
                                         </div>
                                         <textarea
                                             value={textPrompt}
                                             onChange={(e) => setTextPrompt(e.target.value)}
-                                            placeholder="Describe the motion, atmosphere, and desire..."
+                                            placeholder={t('vid_ph_prompt')}
                                             className="w-full h-full bg-transparent p-3 md:p-6 pt-10 text-[var(--text-primary)] placeholder-[var(--text-secondary)]/60 font-sans font-light text-base md:text-sm resize-none focus:outline-none"
                                         />
                                     </div>
@@ -1024,12 +1026,12 @@ const VideoGenerator: React.FC = () => {
                             onClick={() => setSafeMode(!safeMode)}
                             className="cursor-pointer group flex items-center border border-[#d2ac47] w-full md:w-fit transition-all hover:scale-105 shadow-[0_0_15px_rgba(210,172,71,0.1)] bg-[var(--bg-input)] rounded-xl overflow-hidden min-h-[48px]"
                         >
-                            <div className={`flex-1 md:flex-none px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 ${safeMode ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.5)]' : 'text-[var(--text-secondary)]/40 bg-[var(--bg-input)] hover:bg-[#d2ac47]/10 hover:text-[var(--text-secondary)]'} `}>
-                                <ShieldCheck size={16} strokeWidth={2.5} /> SAFE
+                            <div className={`flex-1 md:flex-none px-2 md:px-6 py-3 text-[10px] md:text-xs font-bold uppercase tracking-[0.1em] md:tracking-[0.25em] transition-all flex items-center justify-center gap-2 md:gap-3 ${safeMode ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.5)]' : 'text-[var(--text-secondary)]/40 bg-[var(--bg-input)] hover:bg-[#d2ac47]/10 hover:text-[var(--text-secondary)]'} `}>
+                                <ShieldCheck size={16} strokeWidth={2.5} /> {t('vid_mode_safe')}
                             </div>
                             <div className="w-[1px] h-full bg-[#d2ac47]/30"></div>
-                            <div className={`relative flex-1 md:flex-none px-6 py-3 text-xs font-bold uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 ${!safeMode ? 'bg-gradient-to-r from-red-600 to-red-900 text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]' : 'text-[var(--text-secondary)]/40 bg-[var(--bg-input)] hover:bg-red-900/30 hover:text-red-500'} `}>
-                                <Flame size={16} strokeWidth={2.5} /> SPICY
+                            <div className={`relative flex-1 md:flex-none px-2 md:px-6 py-3 text-[10px] md:text-xs font-bold uppercase tracking-[0.1em] md:tracking-[0.25em] transition-all flex items-center justify-center gap-2 md:gap-3 ${!safeMode ? 'bg-gradient-to-r from-red-600 to-red-900 text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]' : 'text-[var(--text-secondary)]/40 bg-[var(--bg-input)] hover:bg-red-900/30 hover:text-red-500'} `}>
+                                <Flame size={16} strokeWidth={2.5} /> {t('vid_mode_spicy')}
                                 <span className="absolute bottom-[1px] right-2 text-[8px] opacity-80 tracking-wider font-mono">BETA</span>
                             </div>
                         </div>
@@ -1111,7 +1113,7 @@ const VideoGenerator: React.FC = () => {
                                 {loading ? (
                                     <><Loader2 className="animate-spin" size={14} /> Forging...</>
                                 ) : (
-                                    <>CREATE VIDEO <Play size={12} fill="currentColor" className="group-hover:translate-x-1 transition-transform" /></>
+                                    <>{t('vid_btn_create')} <Play size={12} fill="currentColor" className="group-hover:translate-x-1 transition-transform" /></>
                                 )}
                             </button>
                         </div>
@@ -1297,20 +1299,20 @@ const VideoGenerator: React.FC = () => {
                                     <div className="text-center mb-6 relative z-10 animate-fade-in">
                                         <div className="inline-flex items-center gap-4 mb-4">
                                             <div className="h-[1px] w-12 bg-[#d2ac47]"></div>
-                                            <span className="text-[var(--text-secondary)] text-[10px] font-bold tracking-[0.4em] uppercase">Generation 2.4 Active</span>
+                                            <span className="text-[var(--text-secondary)] text-[10px] font-bold tracking-[0.4em] uppercase">{t('vid_gen_active')}</span>
                                             <div className="h-[1px] w-12 bg-[#d2ac47]"></div>
                                         </div>
                                         <h1 className="text-3xl md:text-5xl font-serif text-[var(--text-primary)] mb-4 leading-tight drop-shadow-[0_0_25px_rgba(210,172,71,0.2)]">
-                                            Infinity Video<span className="text-[var(--text-secondary)]">...</span>
+                                            {t('vid_tagline_title')}<span className="text-[var(--text-secondary)]">...</span>
                                         </h1>
                                         <p className="text-[var(--text-primary)]/60 max-w-lg mx-auto font-sans text-[10px] md:text-xs tracking-[0.1em] leading-relaxed uppercase">
-                                            Forging digital desire. The pinnacle of <i className="text-[var(--text-secondary)] italic lowercase text-lg font-serif">ai aesthetics</i>.
+                                            <Trans i18nKey="vid_tagline_desc" components={{ 1: <i className="text-[var(--text-secondary)] italic lowercase text-lg font-serif" /> }} />
                                         </p>
                                     </div>
 
                                     <div className="flex flex-col items-center gap-2 mt-8 transform group-hover:scale-110 transition-transform duration-500">
                                         <VideoIcon size={48} strokeWidth={1} />
-                                        <span className="text-[8px] tracking-[0.4em] uppercase font-bold opacity-50">Active Workspace</span>
+                                        <span className="text-[8px] tracking-[0.4em] uppercase font-bold opacity-50">{t('vid_active_workspace')}</span>
                                     </div>
                                 </div>
                             )}
@@ -1354,8 +1356,8 @@ const VideoGenerator: React.FC = () => {
                                     <Layers size={16} />
                                 </div>
                                 <div className="text-left">
-                                    <div className="text-[var(--text-primary)] text-[9px] font-bold uppercase tracking-widest leading-tight mb-1">Extend Video</div>
-                                    <div className="text-[var(--text-secondary)]/50 text-[7px] uppercase tracking-wider leading-none">+5 Sec</div>
+                                    <div className="text-[var(--text-primary)] text-[9px] font-bold uppercase tracking-widest leading-tight mb-1"> {t('vid_extend')}</div>
+                                    <div className="text-[var(--text-secondary)]/50 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_extend')}</div>
                                 </div>
                             </button>
 
@@ -1365,8 +1367,8 @@ const VideoGenerator: React.FC = () => {
                                     <Wand2 size={16} />
                                 </div>
                                 <div className="text-left">
-                                    <div className="text-[var(--text-primary)] text-[9px] font-bold uppercase tracking-widest leading-tight mb-1">Upscale 4K</div>
-                                    <div className="text-[var(--text-secondary)]/50 text-[7px] uppercase tracking-wider leading-none">Enhance</div>
+                                    <div className="text-[var(--text-primary)] text-[9px] font-bold uppercase tracking-widest leading-tight mb-1"> {t('vid_upscale')}</div>
+                                    <div className="text-[var(--text-secondary)]/50 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_enhance')}</div>
                                 </div>
                             </button>
 
@@ -1376,8 +1378,8 @@ const VideoGenerator: React.FC = () => {
                                     <Download size={16} />
                                 </div>
                                 <div className="text-left">
-                                    <div className="text-[var(--text-primary)] text-[9px] font-bold uppercase tracking-widest leading-tight mb-1">Save</div>
-                                    <div className="text-[var(--text-secondary)]/50 text-[7px] uppercase tracking-wider leading-none">Original</div>
+                                    <div className="text-[var(--text-primary)] text-[9px] font-bold uppercase tracking-widest leading-tight mb-1"> {t('vid_save')}</div>
+                                    <div className="text-[var(--text-secondary)]/50 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_original')}</div>
                                 </div>
                             </button>
                         </div>
@@ -1395,7 +1397,7 @@ const VideoGenerator: React.FC = () => {
                     {/* 3. History / Gallery - Taller on Mobile, Elastic & Stable on PC */}
                     <div className="bg-[var(--bg-input)] border border-[var(--border-color)] rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden flex-1 min-h-[650px] lg:min-h-0 overflow-y-auto custom-scrollbar mx-2 md:mx-0">
                         <div className="flex items-center justify-between h-10 px-0">
-                            <span className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-[0.2em] pl-4">History</span>
+                            <span className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-[0.2em] pl-4">{t('vid_history')}</span>
                         </div>
                         <UserGallery
                             newItems={galleryItems}
@@ -1438,8 +1440,8 @@ const VideoGenerator: React.FC = () => {
                                     <Layers size={16} />
                                 </div>
                                 <div className="text-left">
-                                    <div className="text-[var(--text-primary)] text-[9px] font-black uppercase tracking-widest leading-tight mb-1">Extend Video</div>
-                                    <div className="text-[var(--text-secondary)]/60 text-[7px] uppercase tracking-wider leading-none">+5 Sec</div>
+                                    <div className="text-[var(--text-primary)] text-[9px] font-black uppercase tracking-widest leading-tight mb-1"> {t('vid_extend')}</div>
+                                    <div className="text-[var(--text-secondary)]/60 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_extend')}</div>
                                 </div>
                             </button>
 
@@ -1449,8 +1451,8 @@ const VideoGenerator: React.FC = () => {
                                     <Wand2 size={16} />
                                 </div>
                                 <div className="text-left">
-                                    <div className="text-[var(--text-primary)] text-[9px] font-black uppercase tracking-widest leading-tight mb-1">Upscale 4K</div>
-                                    <div className="text-[var(--text-secondary)]/60 text-[7px] uppercase tracking-wider leading-none">Enhance</div>
+                                    <div className="text-[var(--text-primary)] text-[9px] font-black uppercase tracking-widest leading-tight mb-1"> {t('vid_upscale')}</div>
+                                    <div className="text-[var(--text-secondary)]/60 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_enhance')}</div>
                                 </div>
                             </button>
 
@@ -1460,8 +1462,8 @@ const VideoGenerator: React.FC = () => {
                                     <Download size={16} />
                                 </div>
                                 <div className="text-left">
-                                    <div className="text-[var(--text-primary)] text-[9px] font-black uppercase tracking-widest leading-tight mb-1">Save</div>
-                                    <div className="text-[var(--text-secondary)]/60 text-[7px] uppercase tracking-wider leading-none">Original</div>
+                                    <div className="text-[var(--text-primary)] text-[9px] font-black uppercase tracking-widest leading-tight mb-1"> {t('vid_save')}</div>
+                                    <div className="text-[var(--text-secondary)]/60 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_original')}</div>
                                 </div>
                             </button>
                         </div>

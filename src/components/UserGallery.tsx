@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, Play, Globe, Lock, Heart, Share2, Maximize2, Image as ImageIcon, Video as VideoIcon } from 'lucide-react';
 
 const PLACEHOLDERS = [
@@ -288,6 +289,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
 };
 
 const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSelect, onRefresh }) => {
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState<'my' | 'community'>('my');
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -356,7 +358,7 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSe
                         }}
                         className={`text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'my' ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]/30 hover:text-[var(--text-secondary)]/60'}`}
                     >
-                        My Library
+                        {t('vid_lib')}
                     </button>
                     <button
                         onClick={() => {
@@ -365,7 +367,7 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSe
                         }}
                         className={`text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'community' ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]/30 hover:text-[var(--text-secondary)]/60'}`}
                     >
-                        Trending
+                        {t('vid_trending')}
                     </button>
                 </div>
 
