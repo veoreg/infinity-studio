@@ -655,7 +655,7 @@ const VideoGenerator: React.FC = () => {
 
             const payload = {
                 generation_id: generation.id,
-                imageUrl,
+                imageUrl: imageUrl.startsWith('/') ? window.location.origin + imageUrl : imageUrl,
                 textPrompt,
                 safeMode: safeMode, // Match workflow expected name
                 seed: seed === -1 ? Math.floor(Math.random() * 2147483647) : seed,
