@@ -6,11 +6,10 @@ import { supabase } from '../lib/supabaseClient';
 
 interface FaceGalleryProps {
     onSelect: (url: string) => void;
-    onToVideo?: (url: string) => void;
     className?: string;
 }
 
-const FaceGallery: React.FC<FaceGalleryProps> = ({ onSelect, onToVideo, className = "" }) => {
+const FaceGallery: React.FC<FaceGalleryProps> = ({ onSelect, className = "" }) => {
     const { t } = useTranslation();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
