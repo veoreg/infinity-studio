@@ -7,6 +7,7 @@ import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
 import FaceGallery from './FaceGallery';
 import { supabase } from '../lib/supabaseClient';
+import { useAuth } from '../contexts/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
 import { REF_FACES } from '../constants/refFaces';
 
@@ -272,6 +273,7 @@ const ImageComparisonSlider = ({ before, after }: { before: string; after: strin
 
 const AvatarGenerator: React.FC = () => {
     const { t } = useTranslation(); // i18n hook
+    const { user, profile, refreshProfile } = useAuth();
     const [loading, setLoading] = useState(false);
     const [currentStatus, setCurrentStatus] = useState<string>('pending');
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
@@ -606,8 +608,51 @@ const AvatarGenerator: React.FC = () => {
     };
 
     const handleGenerate = async () => {
+        let currentUserId = user?.id;
+        let isGuestTrial = false;
+        let clientIp = '';
+
+        // 1. Guest Check & IP Logic
+        if (!user) {
+            try {
+                const ipRes = await axios.get('https://api.ipify.org?format=json');
+                clientIp = ipRes.data.ip;
+
+                // RPC call to check/increment trial
+                const { data: trialCount, error: trialError } = await supabase.rpc('check_guest_trial', { client_ip: clientIp });
+
+                if (trialError) throw trialError;
+
+                if ((trialCount || 0) > 10) {
+                    setError("Guest trial exceeded (max 10). Please Sign In for more credits!");
+                    return;
+                }
+                isGuestTrial = true;
+            } catch (err) {
+                console.error("IP check failed:", err);
+                setError("Please Sign In to generate avatars.");
+                return;
+            }
+        }
+
         if (!faceImageUrl) {
             setError("Face Image URL is required.");
+            return;
+        }
+
+        // 2. Balance Check (Only for logged in users)
+        const totalBalance = user ? (profile?.credits || 0) + (profile?.purchased_coins || 0) : 0;
+        const isAdmin = profile?.is_admin || false;
+
+        if (user && !isAdmin && totalBalance <= 0) {
+            setError("Insufficient credits. Please top up or wait for daily refresh.");
+            return;
+        }
+
+        // 3. Premium Content Gating
+        const isPremiumOption = clothing === 'nude' || clothing === 'semi-dressed';
+        if (isPremiumOption && !isAdmin) {
+            setError("Nude and Semi-dressed modes are for Premium users only.");
             return;
         }
 
@@ -637,16 +682,31 @@ const AvatarGenerator: React.FC = () => {
                 .from('generations')
                 .insert([{
                     id: generationId,
+                    user_id: currentUserId || null,
                     type: 'avatar',
                     prompt: userPrompt,
                     status: 'processing',
                     image_url: null,
-                    metadata: { guest_id: guestId }
+                    is_public: isGuestTrial, // Guest images are ALWAYS public
+                    metadata: {
+                        guest_id: guestId,
+                        client_ip: clientIp
+                    }
                 }]);
 
             if (dbError) {
                 console.error("Database initialization failed:", dbError);
                 // We proceed anyway, but warn
+            }
+
+            // 4. Deduct Credit (Only for logged in users)
+            if (user && !isAdmin) {
+                if ((profile?.credits || 0) > 0) {
+                    await supabase.rpc('decrement_credits', { user_id: user.id });
+                } else if ((profile?.purchased_coins || 0) > 0) {
+                    await supabase.rpc('decrement_coins', { user_id: user.id });
+                }
+                refreshProfile(); // Update Header UI
             }
 
             // Calculate final seed: ONLY randomize if in 'random' mode.
@@ -1384,6 +1444,13 @@ const AvatarGenerator: React.FC = () => {
                                     <p className="text-[var(--text-secondary)]/40 text-[9px] uppercase tracking-[0.2em] max-w-md mx-auto leading-relaxed border-t border-[#d2ac47]/10 pt-4 mt-2">
                                         {t('desc_identity_forge')}
                                     </p>
+                                    {!user && (
+                                        <div className="mt-6 px-4 py-2 bg-[#d2ac47]/10 border border-[#d2ac47]/30 rounded-xl animate-pulse">
+                                            <p className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-widest">
+                                                вљ пёЏ Public Trial: 10 avatars total. Sign In for privacy.
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Active Workspace Indicator - Larger & Centered & Clickable */}

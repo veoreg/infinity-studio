@@ -60,18 +60,21 @@ function AppContent() {
       {/* Navigation - Strict Deco Style */}
       <nav className="w-full bg-[var(--glass-bg)] backdrop-blur-md border-b border-[var(--border-color)] sticky top-0 z-40 transition-all duration-500 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
         <div className="max-w-[1800px] mx-auto px-6 lg:px-12">
-          <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-24 py-2 md:py-0 gap-3 md:gap-0">
+          <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-16 py-2 md:py-0 gap-3 md:gap-8">
             {/* Logo Section */}
             <div className="flex items-center gap-2 md:gap-3 group cursor-pointer mb-2 md:mb-0">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[var(--bg-tertiary)] to-[var(--bg-primary)] border border-[var(--text-secondary)] rounded-sm rotate-45 flex items-center justify-center shadow-[0_0_15px_rgba(210,172,71,0.2)] group-hover:shadow-[0_0_25px_rgba(210,172,71,0.4)] transition-all duration-500 animate-pulse">
-                <Video className="text-[var(--text-secondary)] -rotate-45 group-hover:scale-110 transition-transform duration-500" size={18} />
+              <div className="w-8 h-8 md:w-9 md:h-9 bg-gradient-to-br from-[var(--bg-tertiary)] to-[var(--bg-primary)] border border-[var(--text-secondary)] rounded-sm rotate-45 flex items-center justify-center shadow-[0_0_15px_rgba(210,172,71,0.2)] group-hover:shadow-[0_0_25px_rgba(210,172,71,0.4)] transition-all duration-500 animate-pulse">
+                <Video className="text-[var(--text-secondary)] -rotate-45 group-hover:scale-110 transition-transform duration-500" size={14} />
               </div>
-              <div className="ml-3 md:ml-4 flex flex-col">
-                <span className="font-serif text-xl md:text-2xl tracking-[0.2em] text-[var(--text-primary)] uppercase font-bold drop-shadow-lg">AI Girls <span className="text-gold-luxury text-2xl md:text-3xl">Studio</span></span>
+              <div className="ml-2 md:ml-3 flex flex-col items-start translate-y-[1px]">
+                <div className="flex items-baseline gap-1.5 md:gap-2">
+                  <span className="font-serif text-base md:text-lg tracking-[0.2em] text-[var(--text-primary)] uppercase font-bold drop-shadow-lg leading-none">AI Girls</span>
+                  <span className="text-gold-luxury font-serif text-lg md:text-xl uppercase font-bold drop-shadow-lg leading-none">Studio</span>
+                </div>
                 <div className="flex items-center gap-2 mt-1">
-                  <div className="h-[1px] w-8 bg-[var(--text-secondary)]"></div>
-                  <span className="text-[0.6rem] tracking-[0.4em] text-[var(--text-secondary)] uppercase font-bold">{t('app_title')}</span>
-                  <div className="h-[1px] w-8 bg-[var(--text-secondary)]"></div>
+                  <div className="h-[1px] w-4 bg-[var(--text-secondary)] opacity-50"></div>
+                  <span className="text-[0.45rem] tracking-[0.4em] text-[var(--text-secondary)] uppercase font-bold opacity-70">{t('app_title')}</span>
+                  <div className="h-[1px] w-4 bg-[var(--text-secondary)] opacity-50"></div>
                 </div>
               </div>
             </div>
@@ -80,37 +83,37 @@ function AppContent() {
             <div className="flex items-center p-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-full shadow-inner relative w-full md:w-auto justify-center mx-4 md:mx-0 order-3 md:order-2">
               <button
                 onClick={() => setActiveTab('video')}
-                className={`px-6 md:px-8 py-3 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all duration-300 ${activeTab === 'video' ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)]' : 'text-[#d2ac47]/50 hover:text-[#d2ac47]'}`}
+                className={`px-4 md:px-6 py-2 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all duration-300 ${activeTab === 'video' ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)]' : 'text-[#d2ac47]/50 hover:text-[#d2ac47]'}`}
               >
-                <Sparkles size={14} /> {t('nav_cinematic')}
+                <Sparkles size={12} /> {t('nav_cinematic')}
               </button>
               <button
                 onClick={() => setActiveTab('avatar')}
-                className={`px-6 md:px-8 py-3 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all duration-300 ${activeTab === 'avatar' ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)]' : 'text-[#d2ac47]/50 hover:text-[#d2ac47]'}`}
+                className={`px-4 md:px-6 py-2 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all duration-300 ${activeTab === 'avatar' ? 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)]' : 'text-[#d2ac47]/50 hover:text-[#d2ac47]'}`}
               >
-                <User size={14} /> {t('btn_generate')}
+                <User size={12} /> {t('btn_generate')}
               </button>
             </div>
 
             {/* Auth / Profile Section */}
-            <div className="flex items-center gap-4 order-2 md:order-3">
+            <div className="flex items-center gap-2 md:gap-3 order-2 md:order-3">
               <LanguageSwitcher />
 
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-full border border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--border-color)] transition-all"
+                className="p-1.5 rounded-full border border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--border-color)] transition-all shadow-sm"
                 title="Toggle Theme"
               >
-                {theme === 'dark' ? <Moon size={14} /> : <Sun size={14} />}
+                {theme === 'dark' ? <Moon size={11} /> : <Sun size={11} />}
               </button>
 
               <CompactHeaderInfo />
               {user ? (
-                <div className="flex items-center gap-4">
-                  <span className="hidden md:inline text-[10px] uppercase tracking-widest text-[#d2ac47]/80 font-bold">{user.email?.split('@')[0]}</span>
-                  <button onClick={() => signOut()} className="flex items-center gap-2 px-4 py-2 border border-[#d2ac47]/30 rounded-full text-[#d2ac47] text-[10px] uppercase tracking-widest hover:bg-[#d2ac47] hover:text-black transition-all">
-                    <LogOut size={12} /> Sign Out
+                <div className="flex flex-col items-end gap-0 ml-2">
+                  <span className="hidden md:inline text-[8px] uppercase tracking-[0.2em] text-[#d2ac47]/60 font-black leading-none mb-0.5">{user.email?.split('@')[0]}</span>
+                  <button onClick={() => signOut()} className="flex items-center gap-1.5 px-2.5 py-1.5 border border-[#d2ac47]/30 rounded-full text-[#d2ac47] text-[8.5px] font-bold uppercase tracking-widest hover:bg-[#d2ac47] hover:text-black transition-all group/signout">
+                    <LogOut size={9} className="group-hover/signout:rotate-12 transition-transform" /> Sign Out
                   </button>
                 </div>
               ) : (

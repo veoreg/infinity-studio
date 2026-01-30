@@ -192,7 +192,7 @@ const CustomSelect = ({ options, value, onChange, label, disabled = false, cente
 
 const VideoGenerator: React.FC = () => {
     const { t } = useTranslation();
-    const { user } = useAuth(); // <--- Get logged in user
+    const { user, profile, refreshProfile } = useAuth(); // <--- Get profile data
     const [imageUrl, setImageUrl] = useState('');
     const [_fileName, setFileName] = useState('');
     const [textPrompt, setTextPrompt] = useState('');
@@ -601,6 +601,48 @@ const VideoGenerator: React.FC = () => {
     };
 
     const handleGenerate = async (eventOrId?: React.MouseEvent<HTMLButtonElement> | string) => {
+        let currentUserId = user?.id;
+        let isGuestTrial = false;
+        let clientIp = '';
+
+        // 1. Guest Check & IP Logic
+        if (!user) {
+            try {
+                const ipRes = await axios.get('https://api.ipify.org?format=json');
+                clientIp = ipRes.data.ip;
+
+                // RPC call to check/increment trial
+                const { data: trialCount, error: trialError } = await supabase.rpc('check_guest_trial', { client_ip: clientIp });
+
+                if (trialError) throw trialError;
+
+                if ((trialCount || 0) > 10) {
+                    setError("Guest trial exceeded (max 10). Please Sign In for more credits!");
+                    return;
+                }
+                isGuestTrial = true;
+            } catch (err) {
+                console.error("IP check failed:", err);
+                setError("Please Sign In to generate videos.");
+                return;
+            }
+        }
+
+        // 2. Balance Check (Only for logged in users)
+        const totalBalance = user ? (profile?.credits || 0) + (profile?.purchased_coins || 0) : 0;
+        const isAdmin = profile?.is_admin || false;
+
+        if (user && !isAdmin && totalBalance <= 0) {
+            setError("Insufficient credits. Please top up or wait for daily refresh.");
+            return;
+        }
+
+        // 2. Premium Content Gating (Spicy Mode)
+        if (!safeMode && !isAdmin) {
+            setError("Spicy Mode is for Premium users only.");
+            return;
+        }
+
         console.log("🚀 [GEN] Starting Generation. Webhook:", WEBHOOK_URL);
 
         // Determine if this is an extension or a fresh generation
@@ -619,14 +661,16 @@ const VideoGenerator: React.FC = () => {
             const { data: generation, error: dbError } = await supabase
                 .from('generations')
                 .insert({
-                    user_id: user?.id,
+                    user_id: currentUserId || null,
                     type: 'video',
                     status: 'pending',
                     prompt: textPrompt,
                     image_url: imageUrl,
+                    is_public: isGuestTrial, // Guest videos are ALWAYS public
                     metadata: {
                         safe_mode: safeMode ?? true,
                         guest_id: guestId,
+                        client_ip: clientIp,
                         extend_from: extendFromId || null // <--- PASS PARENT ID
                     }
                 })
@@ -640,6 +684,17 @@ const VideoGenerator: React.FC = () => {
             if (!generation) {
                 console.error("❌ [GEN] No generation returned after Supabase insert.");
                 throw new Error('Failed to init generation');
+            }
+
+            // 4. Deduct Credit (Only for logged in users)
+            if (user && !isAdmin) {
+                // Call RPC to decrement
+                if ((profile?.credits || 0) > 0) {
+                    await supabase.rpc('decrement_credits', { user_id: user.id });
+                } else if ((profile?.purchased_coins || 0) > 0) {
+                    await supabase.rpc('decrement_coins', { user_id: user.id });
+                }
+                refreshProfile(); // Update Header UI
             }
 
             console.log("✅ [GEN] Generation started, ID:", generation.id, extendFromId ? `(Extending ${extendFromId})` : '');
@@ -1249,12 +1304,19 @@ const VideoGenerator: React.FC = () => {
                                 className={`w-full md:flex-1 min-h-[48px] py-3 px-6 md:px-8 text-[10px] tracking-[0.3em] font-bold uppercase flex items-center justify-center gap-3 group rounded-xl transition-all duration-300 ${loading ? 'opacity-90 cursor-wait bg-[#d2ac47] text-black shadow-[0_0_10px_rgba(210,172,71,0.3)]' : 'bg-gold-gradient text-black shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] hover:scale-[1.02]'} `}
                             >
                                 {loading ? (
-                                    <><Loader2 className="animate-spin" size={14} /> Forging...</>
+                                    <><Loader2 className="animate-spin" size={14} /> {t('vid_forging')}</>
                                 ) : (
                                     <>{t('vid_btn_create')} <Play size={12} fill="currentColor" className="group-hover:translate-x-1 transition-transform" /></>
                                 )}
                             </button>
                         </div>
+                        {!user && (
+                            <div className="mt-3 px-4 py-2 bg-[#d2ac47]/10 border border-[#d2ac47]/30 rounded-xl text-center">
+                                <p className="text-[#d2ac47] text-[9px] font-bold uppercase tracking-widest">
+                                    вљ пёЏ Public Trial: 10 videos total. Sign In for privacy.
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     {error && (
