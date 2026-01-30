@@ -287,9 +287,9 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect, onReference, onT
 
                         {/* Full View Button for Images (Replacement for Scrubber) */}
                         {!isVideoFile && (
-                            <div className="absolute inset-0 flex flex-col gap-2 items-center justify-center pointer-events-none">
+                            <div className="absolute inset-0 flex flex-col gap-1.5 items-center justify-center pointer-events-none">
                                 <button
-                                    className="px-5 py-2 bg-white/5 backdrop-blur-[2px] border border-white/10 text-white/90 text-[9px] font-bold uppercase tracking-[0.3em] rounded-full shadow-sm pointer-events-auto hover:bg-black/40 hover:border-white/30 hover:text-white transition-all hover:scale-105"
+                                    className="px-3 py-1.5 bg-white/5 backdrop-blur-[2px] border border-white/10 text-white/90 text-[8px] font-bold uppercase tracking-[0.2em] rounded-full shadow-sm pointer-events-auto hover:bg-black/40 hover:border-white/30 hover:text-white transition-all hover:scale-105"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         if (onSelect) onSelect(item);
@@ -300,13 +300,13 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect, onReference, onT
 
                                 {onToVideo && (
                                     <button
-                                        className="px-5 py-2 bg-[var(--bg-card)]/80 backdrop-blur-md border border-[#d2ac47]/50 text-[#d2ac47] text-[9px] font-bold uppercase tracking-[0.3em] rounded-full shadow-lg pointer-events-auto hover:bg-[#d2ac47] hover:text-black transition-all hover:scale-105 flex items-center gap-2"
+                                        className="px-3 py-1.5 bg-[var(--bg-card)]/80 backdrop-blur-md border border-[#d2ac47]/50 text-[#d2ac47] text-[8px] font-bold uppercase tracking-[0.2em] rounded-full shadow-lg pointer-events-auto hover:bg-[#d2ac47] hover:text-black transition-all hover:scale-105 flex items-center gap-1.5"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onToVideo(item);
                                         }}
                                     >
-                                        <VideoIcon size={12} />
+                                        <VideoIcon size={10} />
                                         {t('btn_to_video')}
                                     </button>
                                 )}
