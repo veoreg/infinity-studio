@@ -131,11 +131,11 @@ const FaceGallery: React.FC<FaceGalleryProps> = ({ onSelect, className = "" }) =
                                 }`}
                             onClick={() => {
                                 setCurrentIndex(idx);
-                                handleSelect(face.filename);
+                                handleSelect(face.url || face.filename);
                             }}
                         >
                             <img
-                                src={getUrl(face.filename)}
+                                src={face.url || getUrl(face.filename)}
                                 alt={face.label}
                                 className="w-full h-full object-cover"
                             />
@@ -183,10 +183,10 @@ const FaceGallery: React.FC<FaceGalleryProps> = ({ onSelect, className = "" }) =
                                 key={face.id || idx}
                                 className="relative group rounded-xl overflow-hidden cursor-pointer border border-white/10 hover:border-[#d2ac47] transition-all transform hover:scale-[1.02]"
                                 style={{ aspectRatio: '3/4' }}
-                                onClick={() => handleSelect(face.filename)}
+                                onClick={() => handleSelect(face.url || face.filename)}
                             >
                                 <img
-                                    src={getUrl(face.filename)}
+                                    src={face.url || getUrl(face.filename)}
                                     alt={face.label}
                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                 />

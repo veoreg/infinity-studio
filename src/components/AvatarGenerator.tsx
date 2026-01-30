@@ -1461,10 +1461,8 @@ const AvatarGenerator: React.FC = () => {
                                     {/* Face Gallery - Horizontal Strip */}
                                     <div className="flex justify-center mb-2 shrink-0 w-full px-1">
                                         <FaceGallery
-                                            onSelect={(filename) => {
-                                                // Construct path for preview - Use relative path for UI
-                                                const previewPath = filename.startsWith('/') ? filename : `/ref_faces/${filename}`;
-                                                setFaceImageUrl(previewPath);
+                                            onSelect={(url) => {
+                                                setFaceImageUrl(url);
                                                 setIsGalleryExpanded(false);
                                                 // Scroll to Face Source
                                                 document.getElementById('avatar-face-source')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
