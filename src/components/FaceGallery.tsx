@@ -32,11 +32,8 @@ const FaceGallery: React.FC<FaceGalleryProps> = ({ onSelect, className = "" }) =
             return;
         }
 
-        const fullUrl = filename.startsWith('/')
-            ? window.location.origin + filename
-            : window.location.origin + getUrl(filename);
-
-        onSelect(fullUrl);
+        // Pass relative path for UI consistency / mixed content avoidance
+        onSelect(getUrl(filename));
         setIsExpanded(false);
     };
 
@@ -131,11 +128,11 @@ const FaceGallery: React.FC<FaceGalleryProps> = ({ onSelect, className = "" }) =
                                 }`}
                             onClick={() => {
                                 setCurrentIndex(idx);
-                                handleSelect(face.url || face.filename);
+                                handleSelect(face.filename);
                             }}
                         >
                             <img
-                                src={face.url || getUrl(face.filename)}
+                                src={getUrl(face.filename)}
                                 alt={face.label}
                                 className="w-full h-full object-cover"
                             />
@@ -183,10 +180,10 @@ const FaceGallery: React.FC<FaceGalleryProps> = ({ onSelect, className = "" }) =
                                 key={face.id || idx}
                                 className="relative group rounded-xl overflow-hidden cursor-pointer border border-white/10 hover:border-[#d2ac47] transition-all transform hover:scale-[1.02]"
                                 style={{ aspectRatio: '3/4' }}
-                                onClick={() => handleSelect(face.url || face.filename)}
+                                onClick={() => handleSelect(face.filename)}
                             >
                                 <img
-                                    src={face.url || getUrl(face.filename)}
+                                    src={getUrl(face.filename)}
                                     alt={face.label}
                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                 />

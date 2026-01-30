@@ -8,6 +8,7 @@ import ImageUploadZone from './ImageUploadZone';
 import FaceGallery from './FaceGallery';
 import { supabase } from '../lib/supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
+import { REF_FACES } from '../constants/refFaces';
 
 // Webhook URL - Direct n8n endpoint for Avatar Generation
 // Webhook URL - Direct n8n endpoint for Avatar Generation
@@ -662,7 +663,14 @@ const AvatarGenerator: React.FC = () => {
                 clothing,
                 role: role,
                 art_style: artStyle,
-                face_image_url: faceImageUrl,
+                face_image_url: (() => {
+                    if (faceImageUrl.startsWith('/ref_faces/')) {
+                        const filename = faceImageUrl.split('/').pop();
+                        const face = REF_FACES.find(f => f.filename === filename);
+                        return face?.url || faceImageUrl;
+                    }
+                    return faceImageUrl;
+                })(),
                 body_reference_image_url: (grabBody && bodyRefUrl) ? bodyRefUrl : undefined,
                 composition_image_url: (grabComposition && compositionUrl) ? compositionUrl : undefined,
                 // Strict Logic: Validation ensures images exist if Toggles are True
