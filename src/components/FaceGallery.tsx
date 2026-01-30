@@ -147,7 +147,7 @@ const FaceGallery: React.FC<FaceGalleryProps> = ({ onSelect, className = "" }) =
             {/* Expanded Modal */}
             {isExpanded && (
                 <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-2 animate-in fade-in duration-200">
-                    <div className="w-full max-w-6xl flex justify-between items-center mb-2 px-2">
+                    <div className="w-full max-w-5xl flex justify-between items-center mb-2 px-2">
                         <h3 className="text-[#d2ac47] text-lg sm:text-xl font-bold uppercase tracking-widest shrink-0">
                             {t('select_reference_face', 'Select Reference Face')}
                         </h3>
@@ -159,7 +159,7 @@ const FaceGallery: React.FC<FaceGalleryProps> = ({ onSelect, className = "" }) =
                         </button>
                     </div>
 
-                    <div className="w-full max-w-6xl max-h-[90vh] overflow-y-auto custom-scrollbar grid grid-cols-3 min-[480px]:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-1.5 sm:gap-2 p-1">
+                    <div className="w-full max-w-5xl max-h-[90vh] overflow-y-auto custom-scrollbar grid grid-cols-3 min-[480px]:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-1.5 sm:gap-2 p-1">
                         {/* Add/Upload Tile */}
                         <div
                             className="relative group aspect-[3/4] rounded-xl overflow-hidden cursor-pointer border border-[#d2ac47]/30 hover:border-[#d2ac47] flex flex-col items-center justify-center bg-[#d2ac47]/5 hover:bg-[#d2ac47]/10 transition-all"
@@ -194,9 +194,9 @@ const FaceGallery: React.FC<FaceGalleryProps> = ({ onSelect, className = "" }) =
 
 
                                 {/* Marquee/Scrollable Label Container - Maximized Visibility & Compactness */}
-                                <div className="absolute bottom-0 left-0 right-0 h-6 sm:h-7 bg-black/85 backdrop-blur-sm flex items-center justify-center z-20 overflow-hidden pointer-events-none">
+                                <div className="absolute bottom-0 left-0 right-0 h-5 sm:h-6 bg-black/85 backdrop-blur-sm flex items-center justify-center z-20 overflow-hidden pointer-events-none">
                                     <div className="w-full px-0.5 text-center">
-                                        <span className="text-[8px] sm:text-[9px] font-bold text-[#d2ac47] uppercase tracking-wider block truncate scale-95 sm:scale-100 origin-center leading-tight">
+                                        <span className="text-[7px] sm:text-[8px] font-bold text-[#d2ac47] uppercase tracking-wider block truncate scale-95 sm:scale-100 origin-center leading-tight">
                                             {face.label}
                                         </span>
                                     </div>
