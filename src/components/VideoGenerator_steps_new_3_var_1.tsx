@@ -868,7 +868,7 @@ const VideoGenerator: React.FC = () => {
                                                                 }
                                                             }}
                                                             className="absolute bottom-14 right-12 p-2 bg-[#d2ac47]/10 backdrop-blur-xl text-[var(--text-secondary)] rounded-full hover:bg-[#d2ac47] hover:text-black transition-all border border-[var(--border-color)] shadow-lg pointer-events-auto z-40 cursor-pointer"
-                                                            title="Download"
+                                                            title={t('tooltip_download')}
                                                         >
                                                             <Download size={12} />
                                                         </button>
@@ -878,7 +878,7 @@ const VideoGenerator: React.FC = () => {
                                                         <button
                                                             onClick={(e) => handleDeleteItem(e, item.id)}
                                                             className="absolute bottom-14 right-2 p-2 bg-red-950/40 backdrop-blur-xl text-red-400 rounded-full hover:bg-red-600 hover:text-white transition-all border border-red-500/10 shadow-lg pointer-events-auto z-40 cursor-pointer"
-                                                            title="Delete"
+                                                            title={t('tooltip_delete')}
                                                         >
                                                             <Trash2 size={12} />
                                                         </button>
@@ -929,8 +929,30 @@ const VideoGenerator: React.FC = () => {
                                                             }}
                                                             className="relative w-fit mx-auto px-3 py-1.5 bg-black/40 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)]/80 hover:text-black text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-lg flex items-center justify-center gap-1 shadow-lg transform translate-y-4 group-hover/item:translate-y-0 transition-all hover:bg-[#d2ac47] hover:scale-[1.02] active:scale-95 pointer-events-auto z-40 cursor-pointer"
                                                         >
-                                                            {isVideo ? 'Use as Source' : 'Use Reference'}
+                                                            {isVideo ? t('btn_to_video', t('btn_use_source')) : t('btn_use_source')}
                                                         </button>
+                                                    )}
+
+                                                    {/* NEW: Round 'Use as Reference' Button (Left) - PHOTOS ONLY */}
+                                                    {!isVideo && (
+                                                        <div className="absolute top-1/2 left-3 -translate-y-1/2">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    // For Video Generator, 'Use as Ref' might mean Secondary Input?
+                                                                    // User said "logically incorrect... sends both...".
+                                                                    // We will map this to strictly "Use Reference" (if functionality exists)
+                                                                    // Or for now, keep it distinct from 'Source'
+                                                                    // Since Video Gen has one main input, we'll map this to standard ImageUrl for now,
+                                                                    // BUT visually distinct.
+                                                                    setImageUrl(url);
+                                                                }}
+                                                                className="w-9 h-9 rounded-full bg-[#d2ac47]/20 backdrop-blur-md border border-[#d2ac47] text-[#d2ac47] flex items-center justify-center hover:bg-[#d2ac47] hover:text-black hover:scale-110 transition-all shadow-[0_0_15px_rgba(210,172,71,0.4)] z-50 pointer-events-auto"
+                                                                title={t('btn_use_source')}
+                                                            >
+                                                                <Layers size={14} />
+                                                            </button>
+                                                        </div>
                                                     )}
                                                 </div>
                                             </div>
@@ -1420,7 +1442,7 @@ const VideoGenerator: React.FC = () => {
                                         {videoUrl && !videoUrl.toLowerCase().endsWith('.mp4') && (
                                             <button
                                                 onClick={handleUseAsReference}
-                                                className="px-6 py-2 border border-[#d2ac47]/50 bg-black/60 backdrop-blur-xl text-[var(--text-secondary)] hover:bg-[#d2ac47] hover:text-black transition-all text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 rounded-xl shadow-[0_0_20px_rgba(210,172,71,0.3)] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] z-50 overflow-hidden group/ref pointer-events-auto"
+                                                className="px-6 py-2 border border-[#d2ac47]/50 bg-[var(--bg-input)]/90 backdrop-blur-xl text-[var(--text-secondary)] hover:bg-[#d2ac47] hover:text-black transition-all text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 rounded-xl shadow-[0_0_20px_rgba(210,172,71,0.3)] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] z-50 overflow-hidden group/ref pointer-events-auto"
                                             >
                                                 <span className="relative z-10 flex items-center gap-2">
                                                     <Layers size={14} className="group-hover/ref:scale-120 transition-transform" />
@@ -1433,7 +1455,7 @@ const VideoGenerator: React.FC = () => {
                                         {/* Download Button - Improved Premium Style: Golden Glow */}
                                         <button
                                             onClick={handleDownload}
-                                            className="px-6 py-2 border border-[#d2ac47]/50 bg-black/50 backdrop-blur-xl text-[var(--text-secondary)] hover:bg-[#d2ac47] hover:text-black transition-all text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 rounded-xl shadow-[0_0_20px_rgba(210,172,71,0.2)] hover:shadow-[0_0_30px_rgba(210,172,71,0.5)] z-50 overflow-hidden group/dl pointer-events-auto"
+                                            className="px-6 py-2 border border-[#d2ac47]/50 bg-[var(--bg-input)]/90 backdrop-blur-xl text-[var(--text-secondary)] hover:bg-[#d2ac47] hover:text-black transition-all text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 rounded-xl shadow-[0_0_20px_rgba(210,172,71,0.2)] hover:shadow-[0_0_30px_rgba(210,172,71,0.5)] z-50 overflow-hidden group/dl pointer-events-auto"
                                         >
                                             <span className="relative z-10 flex items-center gap-2">
                                                 <Download size={14} className="group-hover/dl:animate-bounce" />
@@ -1450,7 +1472,7 @@ const VideoGenerator: React.FC = () => {
                                                 setImageUrl('');
                                                 setActiveItem(null);
                                             }}
-                                            className="px-3 py-2 border border-red-500/30 bg-black/50 backdrop-blur-xl text-red-500 hover:bg-red-500 hover:text-white transition-all text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 rounded-xl shadow-[0_0_20px_rgba(239,68,68,0.2)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)] z-50 overflow-hidden group/close pointer-events-auto"
+                                            className="px-3 py-2 border border-red-500/30 bg-[var(--bg-input)]/90 backdrop-blur-xl text-red-500 hover:bg-red-500 hover:text-white transition-all text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 rounded-xl shadow-[0_0_20px_rgba(239,68,68,0.2)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)] z-50 overflow-hidden group/close pointer-events-auto"
                                         >
                                             <XCircle size={14} className="group-hover/close:rotate-90 transition-transform" />
                                         </button>
@@ -1477,8 +1499,8 @@ const VideoGenerator: React.FC = () => {
                                     <div className="flex flex-col items-center gap-2 mt-8 transform group-hover:scale-110 transition-transform duration-500">
                                         <VideoIcon size={48} strokeWidth={1} />
                                         <span className="text-[8px] tracking-[0.4em] uppercase font-bold opacity-50">{t('vid_active_workspace')}</span>
-                                        <p className="text-[var(--text-secondary)]/70 text-[9px] font-sans font-light tracking-[0.2em] mt-2 opacity-80 uppercase text-center max-w-xs">
-                                            Upload or Select Media to Animate
+                                        <p className="text-[var(--text-secondary)]/70 text-[8px] font-sans font-light tracking-[0.2em] mt-1 opacity-80 uppercase text-center max-w-xs">
+                                            {t('vid_upload_instruction')}
                                         </p>
                                     </div>
                                 </div>
@@ -1537,6 +1559,10 @@ const VideoGenerator: React.FC = () => {
                             onSelect={(item) => {
                                 setVideoUrl(item.result_url || item.video_url || item.url || null);
                                 setActiveItem(item);
+                            }}
+                            onReference={(item) => {
+                                setImageUrl(item.result_url || item.video_url || item.url || '');
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
                             }}
                             onRefresh={() => fetchHistory()}
                         />

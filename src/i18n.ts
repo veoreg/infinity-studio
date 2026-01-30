@@ -38,7 +38,7 @@ const resources = {
             btn_to_video: "TO VIDEO",
             btn_quick_edit: "EDIT",
             btn_close_edit: "CLOSE",
-            btn_use_ref: "USE AS REF",
+            btn_use_ref: "SEND TO EDITOR",
             ph_edit_desc: "Describe changes... e.g. 'Red hair'...",
             lbl_just_now: "Just now",
             lbl_untitled: "Untitled",
@@ -110,7 +110,10 @@ const resources = {
             vid_ph_prompt: "Describe the motion, atmosphere, and desire...",
 
             vid_btn_create: "CREATE VIDEO",
+            btn_use_source: "SEND TO EDITOR",
+            btn_use_ref: "USE AS REF",
             vid_active_workspace: "Active Workspace",
+            vid_upload_instruction: "Upload or Select Media to Animate",
 
             vid_history: "History",
             vid_lib: "My Library",
@@ -253,7 +256,7 @@ const resources = {
             btn_to_video: "В ВИДЕО",
             btn_quick_edit: "ИЗМЕНИТЬ",
             btn_close_edit: "ЗАКРЫТЬ",
-            btn_use_ref: "ИСПОЛЬЗОВАТЬ REF",
+            btn_use_ref: "В РЕДАКТОР",
             ph_edit_desc: "Опишите изменения... напр. 'Рыжие волосы'...",
             lbl_just_now: "Только что",
             lbl_untitled: "Без названия",
@@ -322,7 +325,10 @@ const resources = {
             vid_ph_prompt: "Опишите движение, атмосферу и желания (на английском)...",
 
             vid_btn_create: "СОЗДАТЬ ВИДЕО",
+            btn_use_source: "В РЕДАКТОР",
+            btn_use_ref: "РЕФЕРЕНС",
             vid_active_workspace: "Активная Область",
+            vid_upload_instruction: "Загрузите или выберите медиа для анимации",
 
             vid_history: "История",
             vid_lib: "Библиотека",
@@ -464,7 +470,7 @@ const resources = {
             btn_to_video: "ZU VIDEO",
             btn_quick_edit: "EDITIEREN",
             btn_close_edit: "SCHLIESSEN",
-            btn_use_ref: "ALS REF VERWENDEN",
+            btn_use_ref: "ZUM EDITOR",
             ph_edit_desc: "Änderungen beschreiben... z.B. 'Rote Haare'...",
             lbl_just_now: "Gerade eben",
             lbl_untitled: "Unbenannt",
@@ -530,7 +536,10 @@ const resources = {
             vid_ph_prompt: "Beschreibe Bewegung und Atmosphäre...",
 
             vid_btn_create: "VIDEO ERSTELLEN",
+            btn_use_source: "IN EDITOR",
+            btn_use_ref: "REFERENZ",
             vid_active_workspace: "Aktiver Bereich",
+            vid_upload_instruction: "Medien zum Animieren hochladen oder auswählen",
 
             vid_history: "Verlauf",
             vid_lib: "Bibliothek",
@@ -671,7 +680,7 @@ const resources = {
             btn_to_video: "A VIDEO",
             btn_quick_edit: "EDITAR",
             btn_close_edit: "CERRAR",
-            btn_use_ref: "USAR REF",
+            btn_use_ref: "AL EDITOR",
             ph_edit_desc: "Describe cambios... ej. 'Pelo rojo'...",
             lbl_just_now: "Ahora mismo",
             lbl_untitled: "Sin título",

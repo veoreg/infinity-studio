@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Play, Globe, Lock, Heart, Share2, Maximize2, Image as ImageIcon, Video as VideoIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Globe, Lock, Heart, Share2, Maximize2, Image as ImageIcon, Video as VideoIcon, Layers } from 'lucide-react';
 
 const PLACEHOLDERS = [
     { id: 'lib_1', type: 'video', url: '/assets/my_library/1.mp4', thumb: '/assets/my_library/1.mp4', label: 'Library 1', privacy: 'private' },
@@ -37,6 +37,8 @@ interface UserGalleryProps {
     columns?: number;
     onDelete?: (id: number | string) => void;
     onSelect?: (item: GalleryItem) => void;
+    onReference?: (item: GalleryItem) => void;
+    onToVideo?: (item: GalleryItem) => void;
     onRefresh?: () => void;
     compact?: boolean;
 }
@@ -44,7 +46,7 @@ interface UserGalleryProps {
 // -----------------------------------------------------------------------------------------
 // Helper Sub-Component: Handles video state & Premium Apple-Glass Aesthetics
 // -----------------------------------------------------------------------------------------
-const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; isActive: boolean; onDelete?: (id: string | number) => void; onSelect?: (item: any) => void }) => {
+const VideoGalleryItem = ({ item, isActive, onDelete, onSelect, onReference, onToVideo }: { item: any; isActive: boolean; onDelete?: (id: string | number) => void; onSelect?: (item: any) => void; onReference?: (item: any) => void; onToVideo?: (item: any) => void }) => {
     const { t } = useTranslation();
     const videoRef = React.useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -205,6 +207,19 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                             <button className="group/btn relative p-2.5 bg-transparent backdrop-blur-xl border border-[var(--border-color)] rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg hover:shadow-[0_0_20px_rgba(96,165,250,0.4)] hover:border-blue-400/50">
                                 <Share2 size={18} className="text-[var(--text-secondary)]/60 group-hover/btn:text-blue-400 transition-colors" />
                             </button>
+                            {/* NEW: Use as Reference Button (Round) - Photos Only */}
+                            {!isVideoFile && onReference && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onReference(item);
+                                    }}
+                                    className="group/btn relative p-2.5 bg-transparent backdrop-blur-xl border border-[var(--border-color)] rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg hover:shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:border-[#d2ac47]/50"
+                                    title={t('btn_use_ref')}
+                                >
+                                    <Layers size={18} className="text-[var(--text-secondary)]/60 group-hover/btn:text-[#d2ac47] transition-colors" />
+                                </button>
+                            )}
                         </div>
 
                         {/* Bottom Control Bar - Only for Videos */}
@@ -269,9 +284,10 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                             </div>
                         )}
 
+
                         {/* Full View Button for Images (Replacement for Scrubber) */}
                         {!isVideoFile && (
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="absolute inset-0 flex flex-col gap-2 items-center justify-center pointer-events-none">
                                 <button
                                     className="px-5 py-2 bg-white/5 backdrop-blur-[2px] border border-white/10 text-white/90 text-[9px] font-bold uppercase tracking-[0.3em] rounded-full shadow-sm pointer-events-auto hover:bg-black/40 hover:border-white/30 hover:text-white transition-all hover:scale-105"
                                     onClick={(e) => {
@@ -281,6 +297,19 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                                 >
                                     {t('btn_use_ref')}
                                 </button>
+
+                                {onToVideo && (
+                                    <button
+                                        className="px-5 py-2 bg-[var(--bg-card)]/80 backdrop-blur-md border border-[#d2ac47]/50 text-[#d2ac47] text-[9px] font-bold uppercase tracking-[0.3em] rounded-full shadow-lg pointer-events-auto hover:bg-[#d2ac47] hover:text-black transition-all hover:scale-105 flex items-center gap-2"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onToVideo(item);
+                                        }}
+                                    >
+                                        <VideoIcon size={12} />
+                                        {t('btn_to_video')}
+                                    </button>
+                                )}
                             </div>
                         )}
 
@@ -324,7 +353,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
     );
 };
 
-const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSelect, onRefresh }) => {
+const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSelect, onReference, onToVideo, onRefresh }) => {
     const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState<'my' | 'community'>('my');
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -434,6 +463,8 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSe
                             isActive={idx === currentIndex}
                             onDelete={onDelete}
                             onSelect={onSelect}
+                            onReference={onReference}
+                            onToVideo={onToVideo}
                         />
                     ))}
                 </div>

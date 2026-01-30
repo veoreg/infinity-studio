@@ -6,10 +6,11 @@ import { supabase } from '../lib/supabaseClient';
 
 interface FaceGalleryProps {
     onSelect: (url: string) => void;
+    onToVideo?: (url: string) => void;
     className?: string;
 }
 
-const FaceGallery: React.FC<FaceGalleryProps> = ({ onSelect, className = "" }) => {
+const FaceGallery: React.FC<FaceGalleryProps> = ({ onSelect, onToVideo, className = "" }) => {
     const { t } = useTranslation();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -190,8 +191,36 @@ const FaceGallery: React.FC<FaceGalleryProps> = ({ onSelect, className = "" }) =
                                 {/* Gradient Overlay for better text readability */}
                                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-60 group-hover:opacity-80 transition-opacity pointer-events-none" />
 
+                                {/* Interactive Overlay */}
+                                <div className="absolute inset-0 z-30 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3">
+                                    {/* Select / Use as Ref Button */}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleSelect(face.filename);
+                                        }}
+                                        className="px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 text-white text-[9px] font-bold uppercase tracking-widest rounded-full hover:bg-white/20 hover:scale-105 transition-all shadow-lg"
+                                    >
+                                        {t('btn_use_ref', 'USE AS REF')}
+                                    </button>
+
+                                    {/* TO VIDEO Button */}
+                                    {onToVideo && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onToVideo(getUrl(face.filename));
+                                            }}
+                                            className="w-10 h-10 rounded-full bg-[#d2ac47] text-black flex items-center justify-center hover:scale-110 hover:shadow-[0_0_15px_rgba(210,172,71,0.5)] transition-all shadow-lg"
+                                            title={t('btn_to_video', 'TO VIDEO')}
+                                        >
+                                            <div className="w-0 h-0 border-l-[6px] border-l-black border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent ml-0.5"></div>
+                                        </button>
+                                    )}
+                                </div>
+
                                 {/* Marquee/Scrollable Label Container - Maximized Visibility & Compactness */}
-                                <div className="absolute bottom-0 left-0 right-0 h-6 sm:h-7 bg-black/85 backdrop-blur-sm flex items-center justify-center z-20 overflow-hidden">
+                                <div className="absolute bottom-0 left-0 right-0 h-6 sm:h-7 bg-black/85 backdrop-blur-sm flex items-center justify-center z-20 overflow-hidden pointer-events-none">
                                     <div className="w-full px-0.5 text-center">
                                         <span className="text-[8px] sm:text-[9px] font-bold text-[#d2ac47] uppercase tracking-wider block truncate scale-95 sm:scale-100 origin-center leading-tight">
                                             {face.label}

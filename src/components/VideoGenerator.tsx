@@ -917,20 +917,34 @@ const VideoGenerator: React.FC = () => {
                                                             <Eye size={14} className="mr-1" /> WATCH
                                                         </button>
                                                     ) : (
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                if (isVideo) {
-                                                                    setVideoUrl(url);
-                                                                } else {
-                                                                    setImageUrl(url);
-                                                                }
-                                                                window.scrollTo({ top: 300, behavior: 'smooth' });
-                                                            }}
-                                                            className="relative w-fit mx-auto px-3 py-1.5 bg-black/40 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)]/80 hover:text-black text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-lg flex items-center justify-center gap-1 shadow-lg transform translate-y-4 group-hover/item:translate-y-0 transition-all hover:bg-[#d2ac47] hover:scale-[1.02] active:scale-95 pointer-events-auto z-40 cursor-pointer"
-                                                        >
-                                                            {isVideo ? 'Use as Source' : 'Use Reference'}
-                                                        </button>
+                                                        <div className="flex items-center justify-center gap-2">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (isVideo) {
+                                                                        setVideoUrl(url);
+                                                                    } else {
+                                                                        setVideoUrl(url); // Editor now targets Main Canvas (Video Url slot)
+                                                                    }
+                                                                    window.scrollTo({ top: 300, behavior: 'smooth' });
+                                                                }}
+                                                                className="relative px-3 py-1.5 bg-black/40 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)]/80 hover:text-black text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-lg flex items-center justify-center gap-1 shadow-lg transform translate-y-4 group-hover/item:translate-y-0 transition-all hover:bg-[#d2ac47] hover:scale-[1.02] active:scale-95 pointer-events-auto z-40 cursor-pointer"
+                                                            >
+                                                                {t('btn_use_source')}
+                                                            </button>
+                                                            {!isVideo && (
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setImageUrl(url); // Ref now targets Source Image (Top slot)
+                                                                        window.scrollTo({ top: 300, behavior: 'smooth' });
+                                                                    }}
+                                                                    className="relative px-3 py-1.5 bg-black/40 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)]/80 hover:text-black text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-lg flex items-center justify-center gap-1 shadow-lg transform translate-y-4 group-hover/item:translate-y-0 transition-all hover:bg-[#d2ac47] hover:scale-[1.02] active:scale-95 pointer-events-auto z-40 cursor-pointer"
+                                                                >
+                                                                    {t('btn_use_ref')}
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </div>
                                             </div>
@@ -1478,8 +1492,8 @@ const VideoGenerator: React.FC = () => {
                                     <div className="flex flex-col items-center gap-2 mt-8 transform group-hover:scale-110 transition-transform duration-500">
                                         <VideoIcon size={48} strokeWidth={1} />
                                         <span className="text-[8px] tracking-[0.4em] uppercase font-bold opacity-50">{t('vid_active_workspace')}</span>
-                                        <p className="text-[var(--text-secondary)]/70 text-[9px] font-sans font-light tracking-[0.2em] mt-2 opacity-80 uppercase text-center max-w-xs">
-                                            Upload or Select Media to Animate
+                                        <p className="text-[var(--text-secondary)]/70 text-[8px] font-sans font-light tracking-[0.2em] mt-1 opacity-80 uppercase text-center max-w-xs">
+                                            {t('vid_upload_instruction')}
                                         </p>
                                     </div>
                                 </div>

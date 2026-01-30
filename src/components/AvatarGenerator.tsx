@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useTranslation, Trans } from 'react-i18next'; // i18n
 import axios from 'axios';
-import { Wand2, Download, RefreshCw, Sparkles, XCircle, Camera, User, X, Maximize2, Upload, Trash2, Plus } from 'lucide-react';
+import { Wand2, Download, RefreshCw, Sparkles, XCircle, Camera, User, X, Maximize2, Upload, Trash2, Plus, Video as VideoIcon } from 'lucide-react';
 
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
@@ -286,7 +286,7 @@ const AvatarGenerator: React.FC = () => {
     const [gender, setGender] = useState('female');
     const [age, setAge] = useState<string>('24');
     const [nationality, setNationality] = useState('Russian');
-    const [bodyType, setBodyType] = useState('fitness model');
+    const [bodyType, setBodyType] = useState('');
     const [clothing, setClothing] = useState('dressed');
     const [role, setRole] = useState('Seductive Teacher');
     const [artStyle, setArtStyle] = useState('Realistic RAW');
@@ -609,10 +609,8 @@ const AvatarGenerator: React.FC = () => {
             return;
         }
 
-        if (grabBody && !bodyRefUrl) {
-            setError("Body Reference is ON but empty. Please upload an image or close the slot.");
-            return;
-        }
+        // Body Ref Validation REMOVED - Allow empty slot to just mean "No Ref"
+
 
         if (grabComposition && !compositionUrl) {
             setError("Background Reference is ON but empty. Please upload an image or close the slot.");
@@ -667,7 +665,7 @@ const AvatarGenerator: React.FC = () => {
                 body_reference_image_url: (grabBody && bodyRefUrl) ? bodyRefUrl : undefined,
                 composition_image_url: (grabComposition && compositionUrl) ? compositionUrl : undefined,
                 // Strict Logic: Validation ensures images exist if Toggles are True
-                grab_body_from_image: grabBody,
+                grab_body_from_image: grabBody && !!bodyRefUrl,
                 grab_composition: grabComposition,
                 instantid_weight: instantIdWeight,
                 // CRITICAL: job_type is required for Switch node routing
@@ -984,6 +982,7 @@ const AvatarGenerator: React.FC = () => {
 
                                         {/* Floating Action Buttons (Download & Delete) */}
                                         <div className="flex gap-4 transform translate-y-4 group-hover/item:translate-y-0 transition-transform duration-300">
+
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -1011,9 +1010,38 @@ const AvatarGenerator: React.FC = () => {
                                             </button>
                                         </div>
 
-                                        {/* "Use As Source" Button */}
-                                        <div className="w-full py-2.5 bg-[var(--bg-input)]/80 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)] text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-xl cursor-pointer hover:bg-[#d2ac47] hover:text-black hover:border-[#d2ac47] transition-all transform translate-y-4 group-hover/item:translate-y-0 transition-transform duration-300 delay-75 shadow-lg dark:bg-black/80">
-                                            Use As Source
+                                        {/* 'Send to Editor' Button (Flat) */}
+                                        <div className="w-full flex gap-2 transform translate-y-4 group-hover/item:translate-y-0 transition-transform duration-300 delay-75">
+                                            {/* USE AS REF */}
+                                            <div
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setGeneratedImage(item.result_url || item.image_url || item.url);
+                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                }}
+                                                className="flex-1 py-2.5 bg-white/10 backdrop-blur-md border border-white/20 text-white text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-xl cursor-pointer hover:bg-white hover:text-black transition-all shadow-lg flex items-center justify-center gap-1"
+                                                title={t('btn_use_ref')}
+                                            >
+                                                {t('btn_use_ref')}
+                                            </div>
+
+                                            {/* TO VIDEO */}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const url = item.result_url || item.image_url || item.url;
+                                                    if (url) {
+                                                        localStorage.setItem('pendingVideoSource', url);
+                                                        window.dispatchEvent(new CustomEvent('switch-tab', { detail: 'video' }));
+                                                    }
+                                                }}
+                                                className="flex-1 py-2.5 bg-[#d2ac47] text-black text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-xl cursor-pointer hover:bg-white hover:text-black transition-all shadow-lg flex items-center justify-center gap-2"
+                                                title={t('btn_to_video')}
+                                            >
+                                                <VideoIcon size={10} />
+                                                <span className="hidden sm:inline">{t('btn_to_video')}</span>
+                                                <span className="sm:hidden">VID</span>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -1436,6 +1464,12 @@ const AvatarGenerator: React.FC = () => {
                                                 setFaceImageUrl(url);
                                                 setError(null);
                                             }}
+                                            onToVideo={(url) => {
+                                                if (url) {
+                                                    localStorage.setItem('pendingVideoSource', url);
+                                                    window.dispatchEvent(new CustomEvent('switch-tab', { detail: 'video' }));
+                                                }
+                                            }}
                                             className=""
                                         />
                                     </div>
@@ -1451,22 +1485,22 @@ const AvatarGenerator: React.FC = () => {
                                 </div>
 
                                 {/* 2. Body Reference Toggle */}
-                                <div className={`border rounded-2xl p-4 md:p-6 group/body flex flex-col h-[340px] md:h-[480px] transition-all duration-500 ${error?.includes('Body') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : (grabBody && !bodyRefUrl) ? 'border-solid border-red-500/50 bg-red-950/5' : grabBody ? 'border-solid border-[#d2ac47]/50 bg-[var(--bg-input)]' : 'border-dashed border-[var(--border-color)] bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5'} `}>
+                                <div className={`border rounded-2xl p-4 md:p-6 group/body flex flex-col h-[340px] md:h-[480px] transition-all duration-500 ${error?.includes('Body') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : (grabBody && !bodyRefUrl) ? 'border-solid border-red-500/50 bg-red-950/5' : grabBody ? 'border-solid border-[#d2ac47] shadow-[0_0_15px_rgba(210,172,71,0.15)] bg-[var(--bg-input)]' : 'border-dashed border-[var(--border-color)] bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5'} `}>
 
                                     {/* Header Area: Fixed Height */}
                                     <div className="h-8 mb-4 flex items-center gap-3 shrink-0">
                                         {grabBody ? (
                                             <>
                                                 <button
-                                                    className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-500 hover:rotate-90 bg-red-500/10 text-red-500 border border-red-500/50 hover:bg-red-500/20 hover:border-red-500 shrink-0 aspect-square shadow-[0_0_15px_rgba(239,68,68,0.2)] animate-in slide-in-from-left-6 fade-in duration-500"
+                                                    className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-500 hover:rotate-90 shrink-0 aspect-square shadow-[0_0_15px_rgba(210,172,71,0.1)] animate-in slide-in-from-left-6 fade-in duration-500 ${!bodyRefUrl ? 'bg-red-500/10 text-red-500 border border-red-500/50 hover:bg-red-500/20 hover:border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'bg-[#d2ac47]/10 text-[#d2ac47] border border-[#d2ac47]/30 hover:bg-[#d2ac47]/20 hover:border-[#d2ac47]'}`}
                                                     onClick={() => setGrabBody(false)}
                                                     title="Close Slot"
                                                 >
                                                     <XCircle size={20} strokeWidth={2} />
                                                 </button>
                                                 <div className="flex flex-col justify-center leading-none animate-in slide-in-from-left-8 fade-in duration-700">
-                                                    <span className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-0.5 ${!bodyRefUrl ? 'text-red-500' : 'text-[var(--text-secondary)]'}`}>{t('label_body_ref')}</span>
-                                                    <span className={`text-[8px] uppercase tracking-wider ${!bodyRefUrl ? 'text-red-500/40' : 'text-[var(--text-secondary)]/40'}`}>{t('ph_close_unused')}</span>
+                                                    <span className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-0.5 ${!bodyRefUrl ? 'text-red-500' : 'text-[#d2ac47]'}`}>{t('label_body_ref')}</span>
+                                                    <span className={`text-[8px] uppercase tracking-wider ${!bodyRefUrl ? 'text-red-500/40' : 'text-[#d2ac47]/40'}`}>{t('ph_close_unused')}</span>
                                                 </div>
                                             </>
                                         ) : (
@@ -1481,7 +1515,7 @@ const AvatarGenerator: React.FC = () => {
                                         {/* Inactive Overlay - Visible when Body Structure is selected */}
                                         <div
                                             onClick={() => setBodyType('')}
-                                            className={`absolute inset-0 bg-black/60 z-20 flex flex-col items-center justify-start pt-12 transition-all duration-300 cursor-pointer backdrop-blur-[1px] ${bodyType ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                                            className={`absolute inset-0 bg-black/60 z-20 flex flex-col items-center justify-end pb-8 transition-all duration-300 cursor-pointer backdrop-blur-[1px] ${bodyType ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                                         >
                                             <div className="bg-black/50 p-2 rounded-full border border-white/10 mb-2">
                                                 <div className="w-2 h-2 rounded-full bg-white/20"></div>
@@ -1556,14 +1590,14 @@ const AvatarGenerator: React.FC = () => {
                                 </div>
 
                                 {/* 3. Composition Reference Toggle */}
-                                <div className={`border rounded-2xl p-4 md:p-6 group/comp flex flex-col h-[340px] md:h-[480px] transition-all duration-500 ${error?.includes('Background') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : (grabComposition && !compositionUrl) ? 'border-solid border-red-500/50 bg-[var(--bg-input)]' : grabComposition ? 'border-solid border-[#d2ac47]/50 bg-[var(--bg-input)]' : 'border-dashed border-[var(--border-color)] bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5'} `}>
+                                <div className={`border rounded-2xl p-4 md:p-6 group/comp flex flex-col h-[340px] md:h-[480px] transition-all duration-500 ${error?.includes('Background') ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-950/10' : (grabComposition && !compositionUrl) ? 'border-solid border-red-500/50 bg-red-950/5' : grabComposition ? 'border-solid border-[#d2ac47] shadow-[0_0_15px_rgba(210,172,71,0.15)] bg-[var(--bg-input)]' : 'border-dashed border-[var(--border-color)] bg-transparent hover:border-[#d2ac47]/50 hover:bg-[#d2ac47]/5'} `}>
 
                                     {/* Structural Alignment: Header Spacer or Real Header */}
                                     <div className="h-8 mb-4 flex items-center gap-3 shrink-0">
                                         {grabComposition ? (
                                             <>
                                                 <button
-                                                    className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-500 hover:rotate-90 bg-red-500/10 text-red-500 border border-red-500/50 hover:bg-red-500/20 hover:border-red-500 shrink-0 aspect-square shadow-[0_0_15px_rgba(239,68,68,0.2)] animate-in slide-in-from-left-6 fade-in duration-500"
+                                                    className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-500 hover:rotate-90 shrink-0 aspect-square shadow-[0_0_15px_rgba(210,172,71,0.1)] animate-in slide-in-from-left-6 fade-in duration-500 ${!compositionUrl ? 'bg-red-500/10 text-red-500 border border-red-500/50 hover:bg-red-500/20 hover:border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'bg-[#d2ac47]/10 text-[#d2ac47] border border-[#d2ac47]/30 hover:bg-[#d2ac47]/20 hover:border-[#d2ac47]'}`}
                                                     onClick={() => setGrabComposition(false)}
                                                     title={t('btn_close_edit')}
 
@@ -1571,8 +1605,8 @@ const AvatarGenerator: React.FC = () => {
                                                     <XCircle size={20} strokeWidth={2} />
                                                 </button>
                                                 <div className="flex flex-col leading-none animate-in slide-in-from-left-8 fade-in duration-700">
-                                                    <span className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-0.5 ${!compositionUrl ? 'text-red-500' : 'text-[var(--text-secondary)]'}`}>{t('label_bg_reference')}</span>
-                                                    <span className={`text-[8px] uppercase tracking-wider ${!compositionUrl ? 'text-red-500/40' : 'text-[var(--text-secondary)]/40'}`}>{t('ph_close_unused')}</span>
+                                                    <span className={`text-[10px] font-bold tracking-[0.2em] uppercase mb-0.5 ${!compositionUrl ? 'text-red-500' : 'text-[#d2ac47]'}`}>{t('label_bg_reference')}</span>
+                                                    <span className={`text-[8px] uppercase tracking-wider ${!compositionUrl ? 'text-red-500/40' : 'text-[#d2ac47]/40'}`}>{t('ph_close_unused')}</span>
                                                 </div>
                                             </>
                                         ) : (
@@ -1644,6 +1678,13 @@ const AvatarGenerator: React.FC = () => {
                                 const { error } = await supabase.from('generations').delete().eq('id', id);
                                 if (!error) fetchHistory();
                             }}
+                            onToVideo={(item) => {
+                                const url = item.result_url || item.video_url || item.url;
+                                if (url) {
+                                    localStorage.setItem('pendingVideoSource', url);
+                                    window.dispatchEvent(new CustomEvent('switch-tab', { detail: 'video' }));
+                                }
+                            }}
                         />
                     </div >
 
@@ -1699,10 +1740,10 @@ const AvatarGenerator: React.FC = () => {
                                                 {t('label_raw')}
                                             </button>
                                             {/* Tooltip for RAW */}
-                                            <div className="absolute bottom-full right-0 mb-2 w-48 bg-black/90 border border-[#d2ac47]/30 text-[var(--text-primary)] text-[9px] p-2 rounded-lg opacity-0 group-hover/raw:opacity-100 transition-opacity pointer-events-none z-50 backdrop-blur-md shadow-xl text-right">
+                                            <div className="absolute bottom-full right-0 mb-2 w-48 bg-[var(--bg-input)] border border-[#d2ac47]/30 text-[var(--text-primary)] text-[9px] p-2 rounded-lg opacity-0 group-hover/raw:opacity-100 transition-opacity pointer-events-none z-50 backdrop-blur-md shadow-xl text-right">
                                                 Active = USES ONLY YOUR TEXT<br />
                                                 <span className="opacity-50">Ignores internal style & defaults</span>
-                                                <div className="absolute -bottom-1 right-4 w-2 h-2 bg-black/90 border-r border-b border-[#d2ac47]/30 transform rotate-45"></div>
+                                                <div className="absolute -bottom-1 right-4 w-2 h-2 bg-[var(--bg-input)] border-r border-b border-[#d2ac47]/30 transform rotate-45"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -1759,10 +1800,10 @@ const AvatarGenerator: React.FC = () => {
                                         <div className="relative group cursor-help">
                                             <span className="text-[var(--text-secondary)] text-[9px] uppercase tracking-wider border-b border-dashed border-[var(--text-secondary)]/30 group-hover:text-[var(--text-primary)] transition-colors">{t('label_steps')}</span>
                                             {/* Tooltip */}
-                                            <div className="absolute bottom-full left-0 mb-2 w-32 bg-black/90 border border-[#d2ac47]/30 text-[var(--text-primary)] text-[9px] p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 backdrop-blur-md shadow-xl">
+                                            <div className="absolute bottom-full left-0 mb-2 w-32 bg-[var(--bg-input)] border border-[#d2ac47]/30 text-[var(--text-primary)] text-[9px] p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 backdrop-blur-md shadow-xl">
                                                 LOWER steps = FASTER generation<br />
                                                 HIGHER steps = BETTER quality
-                                                <div className="absolute -bottom-1 left-4 w-2 h-2 bg-black/90 border-r border-b border-[#d2ac47]/30 transform rotate-45"></div>
+                                                <div className="absolute -bottom-1 left-4 w-2 h-2 bg-[var(--bg-input)] border-r border-b border-[#d2ac47]/30 transform rotate-45"></div>
                                             </div>
                                         </div>
                                         <span className="text-[#d2ac47] text-[10px] font-mono font-bold">{steps}</span>
@@ -1784,10 +1825,10 @@ const AvatarGenerator: React.FC = () => {
                                         <div className="relative group cursor-help">
                                             <span className="text-[var(--text-secondary)] text-[9px] uppercase tracking-wider border-b border-dashed border-[var(--text-secondary)]/30 group-hover:text-[var(--text-primary)] transition-colors">{t('label_cfg')}</span>
                                             {/* Tooltip for CFG */}
-                                            <div className="absolute bottom-full left-0 mb-2 w-32 bg-black/90 border border-[#d2ac47]/30 text-[var(--text-primary)] text-[9px] p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 backdrop-blur-md shadow-xl">
+                                            <div className="absolute bottom-full left-0 mb-2 w-32 bg-[var(--bg-input)] border border-[#d2ac47]/30 text-[var(--text-primary)] text-[9px] p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 backdrop-blur-md shadow-xl">
                                                 LOWER = Softer / Natural<br />
                                                 HIGHER = Vivid / Intense
-                                                <div className="absolute -bottom-1 left-4 w-2 h-2 bg-black/90 border-r border-b border-[#d2ac47]/30 transform rotate-45"></div>
+                                                <div className="absolute -bottom-1 left-4 w-2 h-2 bg-[var(--bg-input)] border-r border-b border-[#d2ac47]/30 transform rotate-45"></div>
                                             </div>
                                         </div>
                                         <span className="text-[#d2ac47] text-[10px] font-mono font-bold">{cfg.toFixed(1)}</span>
