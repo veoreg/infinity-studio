@@ -148,16 +148,17 @@ const FaceGallery: React.FC<FaceGalleryProps> = ({ onSelect, onToVideo, classNam
             {/* Expanded Modal */}
             {isExpanded && (
                 <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-2 animate-in fade-in duration-200">
-                    <button
-                        onClick={() => setIsExpanded(false)}
-                        className="absolute top-2 right-2 p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-colors z-50"
-                    >
-                        <X size={24} />
-                    </button>
-
-                    <h3 className="text-[#d2ac47] text-lg sm:text-xl font-bold uppercase tracking-widest mb-2 sm:mb-4 shrink-0">
-                        {t('select_reference_face', 'Select Reference Face')}
-                    </h3>
+                    <div className="w-full max-w-6xl flex justify-between items-center mb-2 px-2">
+                        <h3 className="text-[#d2ac47] text-lg sm:text-xl font-bold uppercase tracking-widest shrink-0">
+                            {t('select_reference_face', 'Select Reference Face')}
+                        </h3>
+                        <button
+                            onClick={() => setIsExpanded(false)}
+                            className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
 
                     <div className="w-full max-w-6xl max-h-[90vh] overflow-y-auto custom-scrollbar grid grid-cols-3 min-[480px]:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-1.5 sm:gap-2 p-1">
                         {/* Add/Upload Tile */}
