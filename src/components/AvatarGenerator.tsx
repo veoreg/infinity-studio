@@ -1120,7 +1120,7 @@ const AvatarGenerator: React.FC = () => {
                                     {/* Top Right Controls */}
                                     <div className="absolute top-4 right-4 z-50 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                         <button
-                                            onClick={(e) => {
+                                            onClick={() => {
                                                 // toggle fullscreen on wrapper
                                                 const elem = document.getElementById('avatar-canvas-wrapper');
                                                 if (elem) {

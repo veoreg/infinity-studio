@@ -194,7 +194,7 @@ const VideoGenerator: React.FC = () => {
     const { t } = useTranslation();
     const { user } = useAuth(); // <--- Get logged in user
     const [imageUrl, setImageUrl] = useState('');
-    const [fileName, setFileName] = useState('');
+    const [_fileName, setFileName] = useState('');
     const [textPrompt, setTextPrompt] = useState('');
     const [activeFilter, setActiveFilter] = useState<'all' | 'image' | 'video'>('image');
 
