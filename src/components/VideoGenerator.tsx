@@ -1056,7 +1056,7 @@ const VideoGenerator: React.FC = () => {
                     {/* Moved Hero Section - Integrated into Workspace */}
 
 
-                    <div className="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl p-4 md:p-5 relative z-50 flex-none flex flex-col justify-start shadow-2xl transition-all hover:border-[#d2ac47]/40 mx-2 md:mx-0">
+                    <div id="video-workspace" className="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl p-4 md:p-5 relative z-50 flex-none flex flex-col justify-start shadow-2xl transition-all hover:border-[#d2ac47]/40 mx-2 md:mx-0">
 
                         {/* Decorative Background Elements */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47]/50 to-transparent"></div>
@@ -1536,7 +1536,13 @@ const VideoGenerator: React.FC = () => {
                             <span className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-[0.2em] pl-4">{t('vid_history')}</span>
                         </div>
                         <UserGallery
-                            newItems={galleryItems}
+                            newItems={galleryItems} // Actually historyItems? The prop name in UserGallery is newItems?
+                            onRefresh={fetchHistory}
+                            onSelect={(item) => {
+                                const url = item.result_url || item.video_url || item.url;
+                                if (url) setVideoUrl(url);
+                                setActiveItem(item); // Added this back to ensure activeItem is set
+                            }}
                             onDelete={async (id) => {
                                 const { error } = await supabase.from('generations').delete().eq('id', id);
                                 if (!error) {
@@ -1549,24 +1555,27 @@ const VideoGenerator: React.FC = () => {
                                     }
                                 }
                             }}
-                            onSelect={(item) => {
-                                setVideoUrl(item.result_url || item.video_url || item.url || null);
-                                setActiveItem(item);
+                            onReference={(item) => {
+                                const url = item.result_url || item.video_url || item.url;
+                                if (url && !url.toLowerCase().endsWith('.mp4')) {
+                                    setImageUrl(url);
+                                    setFileName('From Library');
+                                    // Scroll to workspace
+                                    document.getElementById('video-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }
                             }}
-                            onRefresh={() => fetchHistory()}
                         />
+
+
+                        {/* Infinity Actions Panel - Moved to Right Column on Desktop */}
+
+
+
                     </div>
-
-
-                    {/* Infinity Actions Panel - Moved to Right Column on Desktop */}
-
-
-
                 </div>
-            </div>
 
-        </div >
-    );
+            </div>
+            );
 };
 
-export default VideoGenerator;
+            export default VideoGenerator;

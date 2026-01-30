@@ -327,6 +327,7 @@ const AvatarGenerator: React.FC = () => {
 
     // Gallery State
     const [galleryItems, setGalleryItems] = useState<any[]>([]);
+    const [isGalleryExpanded, setIsGalleryExpanded] = useState(false); // New state for gallery expansion
 
     // Monitoring Refs
     const controllerRef = React.useRef<AbortController | null>(null);
@@ -1061,7 +1062,7 @@ const AvatarGenerator: React.FC = () => {
                 </div>
 
                 {/* Center COLUMN: Canvas / Preview (Span 6) */}
-                <div className="order-1 lg:order-2 w-full lg:col-span-6 flex flex-col gap-6 relative z-50">
+                <div id="avatar-workspace" className={`order-1 xl:order-2 w-full xl:col-span-6 flex flex-col gap-6 relative z-50 ${isGalleryExpanded ? 'xl:opacity-50 xl:scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}>
 
                     {/* NEW: Compact Identity Toolbar (Above Canvas) */}
                     <div className="bg-[var(--glass-bg)] backdrop-blur-md border border-[var(--border-color)] rounded-xl px-2 py-1 flex flex-col md:flex-row gap-2 items-center justify-between shadow-lg relative z-[200] mx-2 md:mx-0">
@@ -1360,7 +1361,7 @@ const AvatarGenerator: React.FC = () => {
                         ) : (
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
                                 {/* Gradient Overlay for readability - Light/Dark Aware - Fixed Conflict */}
-                                <div className="absolute inset-0 bg-gradient-to-t z-0 from-[#F9F1D8]/90 via-[#F9F1D8]/40 to-transparent dark:from-black/80 dark:via-black/10 dark:to-transparent"></div>
+                                <div className="absolute inset-0 bg-gradient-to-t z-0 from-[#F9F1D8] via-[#F9F1D8]/40 to-transparent dark:from-black/80 dark:via-black/10 dark:to-transparent"></div>
 
                                 {/* Brand Header */}
                                 <div className="mb-8 text-center transform -translate-y-4 relative z-10">
@@ -1434,8 +1435,8 @@ const AvatarGenerator: React.FC = () => {
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-                                {/* 1. Main Face Input */}
-                                <div className="border rounded-2xl p-4 md:p-6 border-[#d2ac47] bg-[var(--bg-input)] flex flex-col group overflow-hidden hover:border-[#d2ac47]/60 h-[450px] md:h-[480px]">
+                                {/* 1. Face Source - Photo Upload or Gallery */}
+                                <div id="avatar-face-source" className="border rounded-2xl p-4 md:p-6 border-[#d2ac47] bg-[var(--bg-input)] flex flex-col group overflow-hidden hover:border-[#d2ac47]/60 h-[450px] md:h-[480px]">
                                     <div className="flex items-center gap-3 mb-4 h-8 shrink-0">
                                         <div className="w-8 h-8 border border-[#d2ac47] rounded-full flex items-center justify-center bg-[#d2ac47]/10 text-[var(--text-secondary)]">
                                             <User size={16} />
@@ -1460,9 +1461,11 @@ const AvatarGenerator: React.FC = () => {
                                     {/* Face Gallery - Horizontal Strip */}
                                     <div className="flex justify-center mb-2 shrink-0 w-full px-1">
                                         <FaceGallery
-                                            onSelect={(url) => {
-                                                setFaceImageUrl(url);
-                                                setError(null);
+                                            onSelect={(filename) => {
+                                                setFaceImageUrl(`http://127.0.0.1:8188/view?filename=${filename}&type=input&subfolder=ref_faces`);
+                                                setIsGalleryExpanded(false);
+                                                // Scroll to Face Source
+                                                document.getElementById('avatar-face-source')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                             }}
                                             className=""
                                         />
@@ -1573,10 +1576,17 @@ const AvatarGenerator: React.FC = () => {
                                         />
 
                                         {/* Inactive Text Overlay */}
+                                        {/* Inactive Text Overlay - Clickable Backdrop to Prevent Misclicks */}
                                         {(grabBody && !bodyType) && (
-                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover/text:opacity-0 transition-opacity z-10">
-                                                <span className="bg-black/80 text-[7px] font-bold uppercase tracking-[0.2em] text-white/40 px-2 py-1 rounded border border-white/5 backdrop-blur-sm">
-                                                    Inactive
+                                            <div
+                                                className="absolute inset-0 flex items-center justify-center cursor-pointer z-20 hover:bg-black/5 rounded-xl transition-colors"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setBodyType('fitness model'); // Auto-select first option to activate
+                                                }}
+                                            >
+                                                <span className="bg-black/80 text-[7px] font-bold uppercase tracking-[0.2em] text-white/40 px-3 py-1.5 rounded border border-white/5 backdrop-blur-sm shadow-md">
+                                                    Tap to Activate
                                                 </span>
                                             </div>
                                         )}
@@ -1667,6 +1677,7 @@ const AvatarGenerator: React.FC = () => {
                             onSelect={(item) => {
                                 const url = item.result_url || item.video_url || item.url;
                                 if (url) setGeneratedImage(url);
+                                // Optional: Scroll to result?
                             }}
                             onDelete={async (id) => {
                                 const { error } = await supabase.from('generations').delete().eq('id', id);
@@ -1677,6 +1688,16 @@ const AvatarGenerator: React.FC = () => {
                                 if (url) {
                                     localStorage.setItem('pendingVideoSource', url);
                                     window.dispatchEvent(new CustomEvent('switch-tab', { detail: 'video' }));
+                                }
+                            }}
+                            onReference={(item) => {
+                                const url = item.result_url || item.video_url || item.url;
+                                if (url) {
+                                    // Default behavior: Use as Body Reference (Img2Img)
+                                    setGrabBody(true);
+                                    setBodyRefUrl(url);
+                                    // Scroll to Workspace
+                                    document.getElementById('avatar-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                 }
                             }}
                         />
