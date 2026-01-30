@@ -1229,13 +1229,13 @@ const VideoGenerator: React.FC = () => {
                                             await minTime;
                                             setIsSyncing(false);
                                         }}
-                                        className={`group w-12 md:w-14 min-h-[48px] border ml-2 ${longWait ? 'border-red-500 bg-red-950/20 text-red-500 animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.4)]' : 'border-[var(--border-color)] bg-[var(--bg-input)] text-[var(--text-secondary)] hover:bg-[#d2ac47] hover:text-black shadow-[0_0_10px_rgba(210,172,71,0.1)]'} transition-all flex items-center justify-center rounded-xl relative z-40 hover:scale-105 active:scale-95 cursor-pointer hover:shadow-[0_0_15px_rgba(210,172,71,0.3)] ${isSyncing ? 'opacity-50 cursor-wait' : ''}`}
+                                        className={`group w-12 md:w-14 min-h-[48px] border ml-2 ${longWait ? 'border-green-500 bg-green-950/20 text-green-500 animate-pulse shadow-[0_0_20px_rgba(34,197,94,0.4)]' : 'border-[var(--border-color)] bg-[var(--bg-input)] text-[var(--text-secondary)] hover:bg-[#d2ac47] hover:text-black shadow-[0_0_10px_rgba(210,172,71,0.1)]'} transition-all flex items-center justify-center rounded-xl relative z-40 hover:scale-105 active:scale-95 cursor-pointer hover:shadow-[0_0_15px_rgba(210,172,71,0.3)] ${isSyncing ? 'opacity-50 cursor-wait' : ''}`}
                                         title="Force Check Status"
                                     >
                                         <RefreshCw size={20} className={`active:animate-spin ${longWait || isSyncing ? 'animate-spin' : ''}`} />
 
                                         {longWait && !isSyncing && (
-                                            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 bg-red-600/90 backdrop-blur-md text-white text-[9px] font-bold px-3 py-1.5 rounded-lg whitespace-nowrap animate-bounce shadow-lg z-50 after:content-[''] after:absolute after:right-full after:top-1/2 after:-translate-y-1/2 after:border-4 after:border-transparent after:border-r-red-600/90 cursor-pointer group-hover:scale-110 transition-transform origin-left">
+                                            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 bg-green-600/90 backdrop-blur-md text-white text-[9px] font-bold px-3 py-1.5 rounded-lg whitespace-nowrap animate-bounce shadow-lg z-50 after:content-[''] after:absolute after:right-full after:top-1/2 after:-translate-y-1/2 after:border-4 after:border-transparent after:border-r-green-600/90 cursor-pointer group-hover:scale-110 transition-transform origin-left">
                                                 Stuck? Sync
                                             </div>
                                         )}
