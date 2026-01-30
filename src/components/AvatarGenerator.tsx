@@ -1464,12 +1464,6 @@ const AvatarGenerator: React.FC = () => {
                                                 setFaceImageUrl(url);
                                                 setError(null);
                                             }}
-                                            onToVideo={(url) => {
-                                                if (url) {
-                                                    localStorage.setItem('pendingVideoSource', url);
-                                                    window.dispatchEvent(new CustomEvent('switch-tab', { detail: 'video' }));
-                                                }
-                                            }}
                                             className=""
                                         />
                                     </div>
