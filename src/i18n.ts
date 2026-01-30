@@ -111,7 +111,7 @@ const resources = {
 
             vid_btn_create: "CREATE VIDEO",
             btn_use_source: "SEND TO EDITOR",
-            btn_use_ref: "USE AS REF",
+
             vid_active_workspace: "Active Workspace",
             vid_upload_instruction: "Upload or Select Media to Animate",
 
@@ -326,7 +326,7 @@ const resources = {
 
             vid_btn_create: "СОЗДАТЬ ВИДЕО",
             btn_use_source: "В РЕДАКТОР",
-            btn_use_ref: "РЕФЕРЕНС",
+
             vid_active_workspace: "Активная Область",
             vid_upload_instruction: "Загрузите или выберите медиа для анимации",
 
@@ -537,7 +537,7 @@ const resources = {
 
             vid_btn_create: "VIDEO ERSTELLEN",
             btn_use_source: "IN EDITOR",
-            btn_use_ref: "REFERENZ",
+
             vid_active_workspace: "Aktiver Bereich",
             vid_upload_instruction: "Medien zum Animieren hochladen oder auswählen",
 
