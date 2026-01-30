@@ -191,7 +191,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect, onReference, onT
                     {/* Interactive Overlay - Visible only on hover (PC) or tap/playing (Mobile) */}
                     <div
                         data-visible={showUI}
-                        className="absolute inset-0 z-20 pointer-events-none opacity-0 [@media(hover:hover)]:group-hover/item:opacity-100 [@media(hover:none)]:data-[visible=true]:opacity-100 transition-all duration-300"
+                        className="absolute inset-0 z-20 pointer-events-none opacity-100 md:opacity-0 md:[@media(hover:hover)]:group-hover/item:opacity-100 md:[@media(hover:none)]:data-[visible=true]:opacity-100 transition-all duration-300"
                     >
                         {/* Type Indicator - Top Right (Below Delete) */}
                         <div className="absolute top-16 right-3 flex flex-col gap-2">

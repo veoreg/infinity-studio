@@ -159,20 +159,21 @@ const FaceGallery: React.FC<FaceGalleryProps> = ({ onSelect, className = "" }) =
                         </button>
                     </div>
 
-                    <div className="w-full max-w-5xl max-h-[90vh] overflow-y-auto custom-scrollbar grid grid-cols-2 min-[480px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 p-1">
+                    <div className="w-full max-w-5xl max-h-[90vh] overflow-y-auto custom-scrollbar grid grid-cols-3 min-[480px]:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-1.5 p-1">
                         {/* Add/Upload Tile */}
                         <div
-                            className="relative group aspect-[3/4] rounded-xl overflow-hidden cursor-pointer border border-[#d2ac47]/30 hover:border-[#d2ac47] flex flex-col items-center justify-center bg-[#d2ac47]/5 hover:bg-[#d2ac47]/10 transition-all"
+                            className="relative group rounded-xl overflow-hidden cursor-pointer border border-[#d2ac47]/30 hover:border-[#d2ac47] flex flex-col items-center justify-center bg-[#d2ac47]/5 hover:bg-[#d2ac47]/10 transition-all"
+                            style={{ aspectRatio: '3/4' }}
                             onClick={() => !uploading && document.getElementById('face-gallery-upload')?.click()}
                         >
                             {uploading ? (
                                 <Loader2 size={24} className="text-[#d2ac47] animate-spin" />
                             ) : (
                                 <>
-                                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-[#d2ac47]/50 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
-                                        <Upload size={20} className="text-[#d2ac47]" />
+                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-[#d2ac47]/50 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                                        <Upload size={16} className="text-[#d2ac47]" />
                                     </div>
-                                    <span className="text-[9px] uppercase font-bold text-[#d2ac47] tracking-widest">Add New</span>
+                                    <span className="text-[8px] uppercase font-bold text-[#d2ac47] tracking-widest">Add New</span>
                                 </>
                             )}
                         </div>
@@ -180,23 +181,22 @@ const FaceGallery: React.FC<FaceGalleryProps> = ({ onSelect, className = "" }) =
                         {displayFaces.map((face, idx) => (
                             <div
                                 key={face.id || idx}
-                                className="relative group aspect-[3/4] rounded-xl overflow-hidden cursor-pointer border border-white/10 hover:border-[#d2ac47] transition-all transform hover:scale-[1.02]"
+                                className="relative group rounded-xl overflow-hidden cursor-pointer border border-white/10 hover:border-[#d2ac47] transition-all transform hover:scale-[1.02]"
+                                style={{ aspectRatio: '3/4' }}
                                 onClick={() => handleSelect(face.filename)}
                             >
                                 <img
                                     src={getUrl(face.filename)}
                                     alt={face.label}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                 />
                                 {/* Gradient Overlay for better text readability */}
-                                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-60 group-hover:opacity-80 transition-opacity pointer-events-none" />
-
-
+                                <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity pointer-events-none" />
 
                                 {/* Marquee/Scrollable Label Container - Gradient Style */}
-                                <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black via-black/70 to-transparent flex items-end justify-center z-20 overflow-hidden pointer-events-none pb-1.5">
-                                    <div className="w-full px-1 text-center">
-                                        <span className="text-[9px] sm:text-[10px] font-bold text-[#d2ac47] uppercase tracking-wider block truncate leading-none drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+                                <div className="absolute bottom-0 left-0 right-0 h-8 flex items-end justify-center z-20 overflow-hidden pointer-events-none pb-1">
+                                    <div className="w-full px-0.5 text-center">
+                                        <span className="text-[8px] sm:text-[9px] font-bold text-[#d2ac47] uppercase tracking-wider block truncate leading-none drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
                                             {face.label}
                                         </span>
                                     </div>

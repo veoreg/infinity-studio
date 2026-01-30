@@ -837,7 +837,7 @@ const VideoGenerator: React.FC = () => {
                                                 </div>
 
                                                 {/* Hover Overlay - Action Text */}
-                                                <div className={`absolute inset-0 transition-opacity duration-300 flex flex-col justify-end p-2 px-3 pb-3 ${item.status === 'processing' || item.status === 'pending' ? 'opacity-100 bg-black/60' : 'opacity-0 group-hover/item:opacity-100'}`}>
+                                                <div className={`absolute inset-0 transition-opacity duration-300 flex flex-col justify-end p-2 px-3 pb-3 ${item.status === 'processing' || item.status === 'pending' ? 'opacity-100 bg-black/60' : 'opacity-100 md:opacity-0 md:group-hover/item:opacity-100'}`}>
 
 
                                                     <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/90 to-transparent pointer-none"></div>
@@ -1322,7 +1322,7 @@ const VideoGenerator: React.FC = () => {
                                     {/* Infinity Action Deck - Slide Up Menu (Visible for BOTH Video & Image) */}
                                     {videoUrl && (
                                         <div
-                                            className="absolute bottom-0 left-0 w-full p-6 pt-20 flex flex-col justify-end bg-gradient-to-t from-black/95 via-black/60 to-transparent translate-y-[10px] opacity-10 hover:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 active:opacity-100 focus-within:opacity-100 transition-all duration-500 z-40"
+                                            className="absolute bottom-0 left-0 w-full p-6 pt-20 flex flex-col justify-end bg-gradient-to-t from-black/95 via-black/60 to-transparent translate-y-0 md:translate-y-[10px] opacity-100 md:opacity-10 md:hover:opacity-100 md:group-hover:translate-y-0 md:group-hover:opacity-100 active:opacity-100 focus-within:opacity-100 transition-all duration-500 z-40"
                                             onClick={(e) => e.stopPropagation()} // Prevent closing if clicking deck
                                         >
 
@@ -1430,7 +1430,7 @@ const VideoGenerator: React.FC = () => {
                                     )}
 
                                     {/* Top Overlay: Download & Meta (Styled like Safe/Spicy) */}
-                                    <div className="absolute top-4 right-4 flex flex-col items-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-30">
+                                    <div className="absolute top-4 right-4 flex flex-col items-end gap-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-30">
                                         {/* Use as Reference Button - Only for Images */}
                                         {videoUrl && !videoUrl.toLowerCase().endsWith('.mp4') && (
                                             <button

@@ -1303,7 +1303,7 @@ const AvatarGenerator: React.FC = () => {
 
                                     {/* Overlay Layer - Removed blur & central button */}
                                     <div className="absolute inset-0 z-20 pointer-events-none group-hover:bg-transparent transition-all duration-300">
-                                        <div className="absolute bottom-14 right-4 pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0 flex flex-col gap-2 items-end">
+                                        <div className="absolute bottom-14 right-4 pointer-events-auto opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 transform translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 flex flex-col gap-2 items-end">
                                             {/* Animate Button */}
                                             <button
                                                 onClick={(e) => {
