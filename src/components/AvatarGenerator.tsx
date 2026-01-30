@@ -1481,7 +1481,7 @@ const AvatarGenerator: React.FC = () => {
                                         {/* Inactive Overlay - Visible when Body Structure is selected */}
                                         <div
                                             onClick={() => setBodyType('')}
-                                            className={`absolute inset-0 bg-black/60 z-20 flex flex-col items-center justify-center transition-all duration-300 cursor-pointer backdrop-blur-[1px] ${bodyType ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                                            className={`absolute inset-0 bg-black/60 z-20 flex flex-col items-center justify-start pt-12 transition-all duration-300 cursor-pointer backdrop-blur-[1px] ${bodyType ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                                         >
                                             <div className="bg-black/50 p-2 rounded-full border border-white/10 mb-2">
                                                 <div className="w-2 h-2 rounded-full bg-white/20"></div>
