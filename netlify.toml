@@ -4,25 +4,25 @@
 
 [[redirects]]
   from = "/api/video"
-  to = "https://n8n.develotex.io/webhook/wan_context_safeMode_3_SB"
+  to = "https://n8n.develotex.io/webhook-test/wan_context_safeMode_3_SB"
   status = 200
   force = true
 
 [[redirects]]
   from = "/api/avatar"
-  to = "https://n8n.develotex.io/webhook/Flux_Image_Generator_Advanced_Upscl_3+SB"
+  to = "https://n8n.develotex.io/webhook-test/Flux_Image_Generator_Advanced_Upscl_3+SB"
   status = 200
   force = true
 
 [[redirects]]
   from = "/api/edit"
-  to = "https://n8n.develotex.io/webhook/Flux_Image_Generator_Advanced_Upscl_3+SB"
+  to = "https://n8n.develotex.io/webhook-test/Flux_Image_Generator_Advanced_Upscl_3+SB"
   status = 200
   force = true
 
 [[redirects]]
   from = "/api/cancel-generation"
-  to = "https://n8n.develotex.io/webhook/cancel-generation"
+  to = "https://n8n.develotex.io/webhook-test/cancel-generation"
   status = 200
   force = true
 

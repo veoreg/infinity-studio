@@ -3,17 +3,19 @@ import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, Play, Globe, Lock, Heart, Share2, Maximize2, Image as ImageIcon, Video as VideoIcon } from 'lucide-react';
 
 const PLACEHOLDERS = [
-    { id: 'p1', type: 'video', url: '/videos/wan22_2026-01-22T15_36_40 FALSE_00001.mp4', thumb: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=2864&auto=format&fit=crop', label: 'Elegance Redefined', privacy: 'private' },
-    { id: 'p2', type: 'video', url: '/videos/infinity_video_1769098200041.mp4', thumb: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=2787&auto=format&fit=crop', label: 'Shadow Bloom', privacy: 'private' },
-    { id: 'p3', type: 'video', url: '/videos/infinity_video_1769099816091.mp4', thumb: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=2787&auto=format&fit=crop', label: 'Dark Angel', privacy: 'private' },
+    { id: 'lib_1', type: 'video', url: '/assets/my_library/1.mp4', thumb: '/assets/my_library/1.mp4', label: 'Library 1', privacy: 'private' },
+    { id: 'lib_2', type: 'video', url: '/assets/my_library/2.mp4', thumb: '/assets/my_library/2.mp4', label: 'Library 2', privacy: 'private' },
+    { id: 'lib_3', type: 'video', url: '/assets/my_library/3.mp4', thumb: '/assets/my_library/3.mp4', label: 'Library 3', privacy: 'private' },
+    { id: 'lib_4', type: 'video', url: '/assets/my_library/4.mp4', thumb: '/assets/my_library/4.mp4', label: 'Library 4', privacy: 'private' },
+    { id: 'lib_5', type: 'video', url: '/assets/my_library/5.mp4', thumb: '/assets/my_library/5.mp4', label: 'Library 5', privacy: 'private' },
 ];
 
 const COMMUNITY_FEED = [
-    { id: 201, type: 'video', url: '/videos/infinity_video_1769040650308.mp4', thumb: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop', label: 'Golden Majesty', author: 'AI_Studio', likes: 12540 },
-    { id: 202, type: 'video', url: '/videos/wan22_2026-01-22T16_45_50 NSFW_00001.mp4', thumb: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=2787&auto=format&fit=crop', label: 'Winter Goddess', author: 'AI_Studio', likes: 21450 },
-    { id: 203, type: 'video', url: '/videos/wan22_2026-01-20T16_41_35 FALSE_00001.mp4', thumb: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=2787&auto=format&fit=crop', label: 'Maldives Diva', author: 'AI_Studio', likes: 8900 },
-    { id: 204, type: 'video', url: '/videos/infinity_video_1769098912544.mp4', thumb: 'https://images.unsplash.com/photo-1583243552698-25029a1396eb?q=80&w=2400&auto=format&fit=crop', label: 'Poolside Dream', author: 'AI_Studio', likes: 15400 },
-    { id: 205, type: 'video', url: '/videos/infinity_video_1769091280526.mp4', thumb: 'https://images.unsplash.com/photo-1563620915-8478239e9aab?q=80&w=2670&auto=format&fit=crop', label: 'Ethereal Motion', author: 'AI_Studio', likes: 8900 },
+    { id: 'tr_1', type: 'video', url: '/assets/trending/1.mp4', thumb: '/assets/trending/1.mp4', label: 'Trending 1', author: 'AI_Studio', likes: 1200 },
+    { id: 'tr_2', type: 'video', url: '/assets/trending/2.mp4', thumb: '/assets/trending/2.mp4', label: 'Trending 2', author: 'AI_Studio', likes: 1150 },
+    { id: 'tr_3', type: 'video', url: '/assets/trending/3.mp4', thumb: '/assets/trending/3.mp4', label: 'Trending 3', author: 'AI_Studio', likes: 980 },
+    { id: 'tr_4', type: 'video', url: '/assets/trending/4.mp4', thumb: '/assets/trending/4.mp4', label: 'Trending 4', author: 'AI_Studio', likes: 850 },
+    { id: 'tr_5', type: 'video', url: '/assets/trending/5.mp4', thumb: '/assets/trending/5.mp4', label: 'Trending 5', author: 'AI_Studio', likes: 720 },
 ];
 
 export interface GalleryItem {
@@ -71,7 +73,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                 }
             }
         }
-    }, [isActive, item, isVideoFile]);
+    }, [isActive, item.id, isVideoFile]);
 
     const handleTimeUpdate = () => {
         if (videoRef.current && videoRef.current.duration) {
@@ -116,12 +118,22 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
     const handleSeek = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (!videoRef.current || !videoRef.current.duration) return;
+
+        // Use currentTarget to get the full progress bar dimensions
         const rect = e.currentTarget.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const width = rect.width;
-        const newTime = (x / width) * videoRef.current.duration;
+
+        // Calculate X relative to the LEFT edge of the progress bar
+        const offsetX = e.clientX - rect.left;
+
+        // Ensure we are within bounds [0, width]
+        // This handles cases where dragging might go slightly outside
+        const validX = Math.max(0, Math.min(offsetX, rect.width));
+
+        const percentage = validX / rect.width;
+        const newTime = percentage * videoRef.current.duration;
+
         videoRef.current.currentTime = newTime;
-        setProgress((x / width) * 100);
+        setProgress(percentage * 100);
     };
 
     // const isVideo = item.type === 'video' || item.url?.includes('.mp4') || item.url?.includes('video');
@@ -161,6 +173,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                             muted
                             loop
                             playsInline
+                            preload="metadata"
                             onTimeUpdate={handleTimeUpdate}
                             onPlay={() => setIsPlaying(true)}
                             onPause={() => setIsPlaying(false)}
@@ -180,17 +193,16 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                     >
                         {/* Type Indicator - Top Right (Below Delete) */}
                         <div className="absolute top-16 right-3 flex flex-col gap-2">
-                            <div className="p-2 bg-black/40 backdrop-blur-md border border-[var(--border-color)] rounded-lg text-[var(--text-secondary)]/60 shadow-lg animate-in zoom-in duration-300">
+                            <div className="p-2 bg-transparent backdrop-blur-md border border-[var(--border-color)] rounded-lg text-[var(--text-secondary)]/60 shadow-lg animate-in zoom-in duration-300">
                                 {isVideoFile ? <VideoIcon size={14} /> : <ImageIcon size={14} />}
                             </div>
                         </div>
 
-                        {/* Top Icons - Apple Glassmorphism + Soft Glow + Golden Border */}
                         <div className="absolute top-3 left-3 flex gap-2 pointer-events-auto">
-                            <button className="group/btn relative p-2.5 bg-black/30 backdrop-blur-xl border border-[var(--border-color)] rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] hover:border-red-500/50">
+                            <button className="group/btn relative p-2.5 bg-transparent backdrop-blur-xl border border-[var(--border-color)] rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] hover:border-red-500/50">
                                 <Heart size={18} className="text-[var(--text-secondary)]/60 group-hover/btn:text-red-500 transition-colors" />
                             </button>
-                            <button className="group/btn relative p-2.5 bg-black/30 backdrop-blur-xl border border-[var(--border-color)] rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg hover:shadow-[0_0_20px_rgba(96,165,250,0.4)] hover:border-blue-400/50">
+                            <button className="group/btn relative p-2.5 bg-transparent backdrop-blur-xl border border-[var(--border-color)] rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg hover:shadow-[0_0_20px_rgba(96,165,250,0.4)] hover:border-blue-400/50">
                                 <Share2 size={18} className="text-[var(--text-secondary)]/60 group-hover/btn:text-blue-400 transition-colors" />
                             </button>
                         </div>
@@ -213,9 +225,32 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect }: { item: any; i
                                     )}
                                 </button>
 
-                                {/* Scrubber - Golden Glow */}
-                                <div className="flex-1 h-full flex items-center justify-center cursor-pointer group/scrub" onClick={handleSeek}>
-                                    <div className="w-full h-1.5 bg-white/10 rounded-full relative overflow-visible">
+                                {/* Scrubber - Golden Glow with Drag Support */}
+                                <div
+                                    className="flex-1 h-full flex items-center justify-center cursor-ew-resize group/scrub touch-none"
+                                    onClick={handleSeek}
+                                    onMouseMove={(e) => {
+                                        if (e.buttons === 1) handleSeek(e); // Allow drag seeking
+                                    }}
+                                    onTouchStart={(e) => e.stopPropagation()} // Stop swipe propagation
+                                    onTouchMove={(e) => {
+                                        e.stopPropagation(); // Prevent swipes
+                                        if (!videoRef.current || !videoRef.current.duration) return;
+
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        const offsetX = e.touches[0].clientX - rect.left;
+                                        const validX = Math.max(0, Math.min(offsetX, rect.width));
+
+                                        const percentage = validX / rect.width;
+                                        const newTime = percentage * videoRef.current.duration;
+
+                                        if (!isNaN(newTime) && isFinite(newTime)) {
+                                            videoRef.current.currentTime = newTime;
+                                            setProgress(percentage * 100);
+                                        }
+                                    }}
+                                >
+                                    <div className="w-full h-1.5 bg-white/10 rounded-full relative overflow-visible pointer-events-none">
                                         <div
                                             className="absolute inset-y-0 left-0 bg-gold-gradient rounded-full shadow-[0_0_15px_var(--border-color)] transition-all duration-100 ease-linear"
                                             style={{ width: `${progress}%` }}
@@ -374,8 +409,8 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSe
 
                 {/* Navigation Arrows */}
                 <div className="flex gap-1.5">
-                    <button onClick={prevSlide} className="p-1 hover:text-[var(--text-secondary)] transition-colors border border-[var(--border-color)] rounded-lg bg-black/40"><ChevronLeft size={12} /></button>
-                    <button onClick={nextSlide} className="p-1 hover:text-[var(--text-secondary)] transition-colors border border-[var(--border-color)] rounded-lg bg-black/40"><ChevronRight size={12} /></button>
+                    <button onClick={prevSlide} className="p-1 hover:text-[var(--text-secondary)] transition-colors border border-[var(--border-color)] rounded-lg bg-transparent"><ChevronLeft size={12} /></button>
+                    <button onClick={nextSlide} className="p-1 hover:text-[var(--text-secondary)] transition-colors border border-[var(--border-color)] rounded-lg bg-transparent"><ChevronRight size={12} /></button>
                 </div>
             </div>
 

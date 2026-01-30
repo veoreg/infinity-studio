@@ -140,7 +140,8 @@ const GenerationLogger = ({ status, error, startTime }: { status: string; error:
 
 // Webhook URL (Updated to Supabase Workflow)
 // Webhook URL (Proxied via Vercel/Netlify/Vite)
-const WEBHOOK_URL = "/api/video";
+// Webhook URL (Direct n8n endpoint for Video Generation)
+const WEBHOOK_URL = "https://n8n.develotex.io/webhook/wan_context_safeMode_3_SB";
 
 /*
 const CustomSelect = ({ options, value, onChange, label, disabled = false, centerLabel = false }: any) => {
@@ -195,12 +196,12 @@ const VideoGenerator: React.FC = () => {
     const [imageUrl, setImageUrl] = useState('');
     const [fileName, setFileName] = useState('');
     const [textPrompt, setTextPrompt] = useState('');
-    const [activeFilter, setActiveFilter] = useState<'all' | 'image' | 'video'>('video');
+    const [activeFilter, setActiveFilter] = useState<'all' | 'image' | 'video'>('image');
 
     // Fine Tuning State
     const [seed] = useState<number>(-1);
     const [steps] = useState<number>(30);
-    const [cfgScale] = useState<number>(3.0);
+    const [cfg] = useState<number>(3.0);
     // const [rawPromptMode] = useState(false);
     const [selectedVoice] = useState<string>('Ana de Armas - demo.MP3');
 
@@ -211,7 +212,7 @@ const VideoGenerator: React.FC = () => {
 
 
     const handleTimeUpdate = () => {
-        if (videoRef.current) {
+        if (videoRef.current && Number.isFinite(videoRef.current.duration)) {
             setVideoProgress((videoRef.current.currentTime / videoRef.current.duration) * 100);
         }
     };
@@ -330,60 +331,11 @@ const VideoGenerator: React.FC = () => {
             query = query.contains('metadata', { guest_id: guestId });
         }
 
-        // Default Assets Definition
-        const DEFAULT_ASSETS = [
-            // 9 Photos requested by User (Preserved at top)
-            { id: 'def_p_1234', type: 'image', url: '/1234_dop.png', result_url: '/1234_dop.png', label: 'Studio Light', status: 'completed' },
-            { id: 'def_p_semi1', type: 'image', url: '/base_2026-01-13T15-34-37 SEMI_00001_.png', result_url: '/base_2026-01-13T15-34-37 SEMI_00001_.png', label: 'Evening Silk', status: 'completed' },
-            { id: 'def_p_nsfw1', type: 'image', url: '/base_2026-01-13T15-37-59 NSFW_00001_.png', result_url: '/base_2026-01-13T15-37-59 NSFW_00001_.png', label: 'Midnight Mood', status: 'completed' },
-            { id: 'def_p_nsfw2', type: 'image', url: '/base_2026-01-19T02-05-34 NSFW_00001_.png', result_url: '/base_2026-01-19T02-05-34 NSFW_00001_.png', label: 'Lace Noir', status: 'completed' },
-            { id: 'def_p_semi2', type: 'image', url: '/base_2026-01-19T06-04-24 SEMI_00001_.png', result_url: '/base_2026-01-19T06-04-24 SEMI_00001_.png', label: 'Morning Glow', status: 'completed' },
-            { id: 'def_p_nsfw3', type: 'image', url: '/base_2026-01-23T03-19-48 NSFW_00001_.png', result_url: '/base_2026-01-23T03-19-48 NSFW_00001_.png', label: 'Sheer Elegance', status: 'completed' },
-            { id: 'def_p_dress1', type: 'image', url: '/base_2026-01-24T01-10-32 DRESS_00001_.png', result_url: '/base_2026-01-24T01-10-32 DRESS_00001_.png', label: 'Urban Chic', status: 'completed' },
-            { id: 'def_p_nsfw4', type: 'image', url: '/base_2026-01-24T18-27-14 NSFW_00001_.png', result_url: '/base_2026-01-24T18-27-14 NSFW_00001_.png', label: 'Velvet Touch', status: 'completed' },
-            { id: 'def_p_wan', type: 'image', url: '/wan22_2026-01-23T11_40_52 FALSE_00001.png', result_url: '/wan22_2026-01-23T11_40_52 FALSE_00001.png', label: 'Beach Day', status: 'completed' },
-
-            // New Video Defaults (Interleaved to separate specific files)
-            // Target 1: infinity_video_1769367318527 (Placed early)
-            { id: 'def_v_inf1', type: 'video', video_url: '/videos/infinity_video_1769367318527.mp4', result_url: '/videos/infinity_video_1769367318527.mp4', label: 'Cinematic Void', status: 'completed' },
-
-            // Filler Videos
-            { id: 'def_v_wan1', type: 'video', video_url: '/videos/wan22_2026-01-25T17_06_14 NSFW_00001.mp4', result_url: '/videos/wan22_2026-01-25T17_06_14 NSFW_00001.mp4', label: 'Red Velvet', status: 'completed' },
-            { id: 'def_v_inf2', type: 'video', video_url: '/videos/infinity_video_1769366317342.mp4', result_url: '/videos/infinity_video_1769366317342.mp4', label: 'Timeless', status: 'completed' },
-            { id: 'def_v_wan2', type: 'video', video_url: '/videos/wan22_2026-01-25T17_42_28 FALSE_00001.mp4', result_url: '/videos/wan22_2026-01-25T17_42_28 FALSE_00001.mp4', label: 'Ethereal', status: 'completed' },
-            { id: 'def_v_inf3', type: 'video', video_url: '/videos/infinity_video_1769364473440.mp4', result_url: '/videos/infinity_video_1769364473440.mp4', label: 'Dreamscape', status: 'completed' },
-            { id: 'def_v_wan3', type: 'video', video_url: '/videos/wan22_2026-01-25T17_33_42 FALSE_00001.mp4', result_url: '/videos/wan22_2026-01-25T17_33_42 FALSE_00001.mp4', label: 'Soft Focus', status: 'completed' },
-            { id: 'def_v_inf4', type: 'video', video_url: '/videos/infinity_video_1769366467855.mp4', result_url: '/videos/infinity_video_1769366467855.mp4', label: 'Noir Motion', status: 'completed' },
-            { id: 'def_v_wan5', type: 'video', video_url: '/videos/wan22_2026-01-25T17-24-22 FALSE_00001 (1).mp4', result_url: '/videos/wan22_2026-01-25T17-24-22 FALSE_00001 (1).mp4', label: 'Golden Era', status: 'completed' },
-
-            // Target 2: wan22_2026-01-25T18_39_40 NSFW_00001 (Placed late, far from Target 1)
-            { id: 'def_v_wan4', type: 'video', video_url: '/videos/wan22_2026-01-25T18_39_40 NSFW_00001.mp4', result_url: '/videos/wan22_2026-01-25T18_39_40 NSFW_00001.mp4', label: 'Deep Desire', status: 'completed' },
-
-            // Existing Premium Defaults (Kept for variety)
-            { id: 'def_v1', type: 'video', video_url: '/videos/wan22_2026-01-22T15_36_40 FALSE_00001.mp4', result_url: '/videos/wan22_2026-01-22T15_36_40 FALSE_00001.mp4', label: 'Elegance Redefined', status: 'completed' },
-            { id: 'def_v2', type: 'video', video_url: '/videos/infinity_video_1769098200041.mp4', result_url: '/videos/infinity_video_1769098200041.mp4', label: 'Shadow Bloom', status: 'completed' },
-            { id: 'def_v3', type: 'video', video_url: '/videos/infinity_video_1769099816091.mp4', result_url: '/videos/infinity_video_1769099816091.mp4', label: 'Dark Angel', status: 'completed' },
-        ];
-
         const { data } = await query;
-        let finalItems = data || [];
 
-        // Filter out locally deleted defaults
-        const deletedDefaults = JSON.parse(localStorage.getItem('deleted_defaults') || '[]');
-        const visibleDefaults = DEFAULT_ASSETS.filter(item => !deletedDefaults.includes(item.id));
-
-        // Merge defaults if user items are few, OR always merge if that's the desired "gift" behavior.
-        // The user asked for them to "remain there forever even when new ones load".
-        // So we append them to the end, or beginning? 
-        // "put these ... where the empty cells are". implies filling up space.
-        // We will append them to the list. 
-
-        // Avoid duplicates if somehow IDs clash (though they shouldn't)
-        const existingIds = new Set(finalItems.map((i: any) => i.id));
-        const defaultsToAdd = visibleDefaults.filter(d => !existingIds.has(d.id));
-
-        // Update state with combined list
-        setGalleryItems([...finalItems, ...defaultsToAdd]);
+        if (data) {
+            setGalleryItems(data);
+        }
     };
 
     const handleDeleteItem = async (e: React.MouseEvent, id: string) => {
@@ -649,6 +601,8 @@ const VideoGenerator: React.FC = () => {
     };
 
     const handleGenerate = async (eventOrId?: React.MouseEvent<HTMLButtonElement> | string) => {
+        console.log("🚀 [GEN] Starting Generation. Webhook:", WEBHOOK_URL);
+
         // Determine if this is an extension or a fresh generation
         const extendFromId = typeof eventOrId === 'string' ? eventOrId : undefined;
 
@@ -679,10 +633,16 @@ const VideoGenerator: React.FC = () => {
                 .select()
                 .single();
 
-            if (dbError) throw new Error(`Database Error: ${dbError.message}`);
-            if (!generation) throw new Error('Failed to init generation');
+            if (dbError) {
+                console.error("❌ [GEN] Supabase Insert Error:", dbError);
+                throw new Error(`Database Error: ${dbError.message}`);
+            }
+            if (!generation) {
+                console.error("❌ [GEN] No generation returned after Supabase insert.");
+                throw new Error('Failed to init generation');
+            }
 
-            console.log("Generation started, ID:", generation.id, extendFromId ? `(Extending ${extendFromId})` : '');
+            console.log("✅ [GEN] Generation started, ID:", generation.id, extendFromId ? `(Extending ${extendFromId})` : '');
 
             localStorage.setItem('active_generation', JSON.stringify({
                 id: generation.id,
@@ -693,20 +653,34 @@ const VideoGenerator: React.FC = () => {
 
             setStartTime(Date.now());
 
-            axios.post(WEBHOOK_URL, {
+            const payload = {
                 generation_id: generation.id,
                 imageUrl,
-                filename: fileName,
                 textPrompt,
-                safeMode,
-                seed,
-                steps,
-                cfg_scale: cfgScale,
+                safeMode: safeMode, // Match workflow expected name
+                seed: seed === -1 ? Math.floor(Math.random() * 2147483647) : seed,
+                steps: steps,
+                cfg: cfg,
                 voice: selectedVoice,
-                extend_from: extendFromId // <--- Pass to N8n
-            }).catch(err => {
-                console.warn("Webhook triggered (async path)", err);
-            });
+                extend_from: extendFromId
+            };
+
+            console.log("🚀 [WEBHOOK] Sending request to:", WEBHOOK_URL);
+            console.log("📦 [WEBHOOK] Payload:", JSON.stringify(payload, null, 2));
+
+            try {
+                const response = await axios.post(WEBHOOK_URL, payload, {
+                    headers: { 'Content-Type': 'application/json' },
+                    timeout: 60000
+                });
+                console.log("✅ [WEBHOOK] Response Status:", response.status);
+            } catch (postErr: any) {
+                if (postErr.code === 'ECONNABORTED' || postErr.message?.includes('timeout')) {
+                    console.log("⏳ POST timed out, but monitoring is active.");
+                } else {
+                    console.warn("⚠️ Webhook response error:", postErr);
+                }
+            }
 
             startMonitoring(generation.id);
 
@@ -763,7 +737,32 @@ const VideoGenerator: React.FC = () => {
 
                     <div className="grid grid-cols-2 xl:grid-cols-3 gap-3 pb-20">
                         {(() => {
-                            const filteredItems = galleryItems.filter(item => {
+                            // Define Visual Reference Defaults (Photos 1-8, Videos 1-17) strictly for this Left Gallery
+                            const VISUAL_REFERENCE_DEFAULTS = [
+                                // Photos from photo_gallery_left
+                                ...Array.from({ length: 8 }, (_, i) => ({
+                                    id: `ref_p_${i + 1}`,
+                                    type: 'image',
+                                    url: `/photo_gallery_left/${i + 1}.png`,
+                                    result_url: `/photo_gallery_left/${i + 1}.png`,
+                                    label: `Reference ${i + 1}`,
+                                    status: 'completed'
+                                })),
+                                // Videos from videos folder
+                                ...Array.from({ length: 17 }, (_, i) => ({
+                                    id: `ref_v_${i + 1}`,
+                                    type: 'video',
+                                    video_url: `/videos/${i + 1}.mp4`,
+                                    result_url: `/videos/${i + 1}.mp4`,
+                                    label: `Video ${i + 1}`,
+                                    status: 'completed'
+                                }))
+                            ];
+
+                            // Combine User History + Defaults
+                            const allVisualItems = [...galleryItems, ...VISUAL_REFERENCE_DEFAULTS];
+
+                            const filteredItems = allVisualItems.filter(item => {
                                 const url = item.result_url || item.video_url || item.url || '';
                                 const isVideo = url.toLowerCase().endsWith('.mp4') || item.type === 'video';
                                 if (activeFilter === 'image') return !isVideo;
@@ -771,7 +770,7 @@ const VideoGenerator: React.FC = () => {
                                 return true;
                             });
 
-                            const MIN_ITEMS = 9; // Show at least 9 slots for a full grid feel
+                            const MIN_ITEMS = 9;
                             const itemsToRender = [...filteredItems];
                             const placeholdersNeeded = Math.max(0, MIN_ITEMS - filteredItems.length);
 
@@ -921,7 +920,11 @@ const VideoGenerator: React.FC = () => {
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                setVideoUrl(url);
+                                                                if (isVideo) {
+                                                                    setVideoUrl(url);
+                                                                } else {
+                                                                    setImageUrl(url);
+                                                                }
                                                                 window.scrollTo({ top: 300, behavior: 'smooth' });
                                                             }}
                                                             className="relative w-fit mx-auto px-3 py-1.5 bg-black/40 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)]/80 hover:text-black text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-lg flex items-center justify-center gap-1 shadow-lg transform translate-y-4 group-hover/item:translate-y-0 transition-all hover:bg-[#d2ac47] hover:scale-[1.02] active:scale-95 pointer-events-auto z-40 cursor-pointer"
@@ -1067,12 +1070,33 @@ const VideoGenerator: React.FC = () => {
                                                 placeholder={t('vid_click_drag_main')}
                                                 className="h-full w-full border-none bg-transparent"
                                             />
-                                            {imageUrl && (
-                                                <div className="absolute top-2 right-2 z-30">
-                                                    <button onClick={(e) => { e.stopPropagation(); setImageUrl(''); setFileName(''); }} className="bg-black/50 p-1 rounded-full text-white hover:text-red-500 transition-colors">
-                                                        <XCircle size={16} />
-                                                    </button>
+
+                                            {/* Inactive Voice Icon (Empty State) */}
+                                            {!imageUrl && (
+                                                <div className="absolute bottom-2 right-2 z-20 opacity-20 pointer-events-none grayscale">
+                                                    <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-black/40 border border-white/5 backdrop-blur-sm">
+                                                        <Mic size={16} className="text-[var(--text-secondary)]" />
+                                                    </div>
                                                 </div>
+                                            )}
+
+                                            {imageUrl && (
+                                                <>
+                                                    <div className="absolute top-2 right-2 z-30">
+                                                        <button onClick={(e) => { e.stopPropagation(); setImageUrl(''); setFileName(''); }} className="bg-black/50 p-1 rounded-full text-white hover:text-red-500 transition-colors">
+                                                            <XCircle size={16} />
+                                                        </button>
+                                                    </div>
+                                                    {/* Voice Button (Duplicate functionality) */}
+                                                    <div className="absolute bottom-2 right-2 z-30">
+                                                        <button
+                                                            className="flex flex-col items-center justify-center p-2 rounded-xl bg-black/40 hover:bg-[#d2ac47] border border-white/10 hover:border-[#d2ac47] backdrop-blur-md group/mic transition-all duration-300 hover:shadow-[0_0_15px_rgba(210,172,71,0.4)]"
+                                                            title="Voice Avatar"
+                                                        >
+                                                            <Mic size={16} className="text-[var(--text-secondary)] group-hover/mic:text-black transition-colors" />
+                                                        </button>
+                                                    </div>
+                                                </>
                                             )}
                                         </div>
                                     </div>
@@ -1265,6 +1289,7 @@ const VideoGenerator: React.FC = () => {
                                                 src={videoUrl}
                                                 autoPlay
                                                 loop
+                                                playsInline
                                                 className="w-full h-full object-contain rounded-lg shadow-2xl"
                                                 onTimeUpdate={handleTimeUpdate}
                                                 onLoadedMetadata={handleLoadedMetadata}
@@ -1280,73 +1305,113 @@ const VideoGenerator: React.FC = () => {
                                         />
                                     )}
 
-                                    {/* Premium Control Overlay Bar - Moved lower to save space */}
-                                    {videoUrl?.toLowerCase().endsWith('.mp4') && (
-                                        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[90%] md:w-[80%] h-10 bg-black/40 backdrop-blur-2xl border border-[#d2ac47]/10 rounded-2xl flex items-center px-4 gap-3 shadow-2xl transition-all pointer-events-auto opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0">
-                                            <button
-                                                className="w-8 h-8 shrink-0 rounded-full bg-[#d2ac47]/10 flex items-center justify-center hover:bg-[#d2ac47] group/play transition-all duration-300"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (videoRef.current) {
-                                                        if (videoRef.current.paused) videoRef.current.play();
-                                                        else videoRef.current.pause();
-                                                    }
-                                                }}
-                                            >
-                                                {isPlaying ? (
-                                                    <div className="w-2.5 h-2.5 bg-[#d2ac47] group-hover/play:bg-black rounded-sm shadow-[0_0_10px_rgba(210,172,71,0.5)]" />
-                                                ) : (
-                                                    <Play size={12} className="text-[var(--text-secondary)] fill-[#d2ac47] group-hover/play:text-black group-hover/play:fill-black shadow-[0_0_10px_rgba(210,172,71,0.5)]" />
+                                    {/* Infinity Action Deck - Slide Up Menu (Visible for BOTH Video & Image) */}
+                                    {videoUrl && (
+                                        <div
+                                            className="absolute bottom-0 left-0 w-full p-6 pt-20 flex flex-col justify-end bg-gradient-to-t from-black/95 via-black/60 to-transparent translate-y-[10px] opacity-10 hover:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 active:opacity-100 focus-within:opacity-100 transition-all duration-500 z-40"
+                                            onClick={(e) => e.stopPropagation()} // Prevent closing if clicking deck
+                                        >
+
+                                            {/* 1. Infinity Actions Row */}
+                                            <div className="flex items-center justify-center gap-2 mb-4">
+                                                {/* Extend (Video Only) */}
+                                                {videoUrl.toLowerCase().endsWith('.mp4') && (
+                                                    <button
+                                                        onClick={handleExtend}
+                                                        className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white/5 hover:bg-[#d2ac47] border border-white/10 hover:border-[#d2ac47] backdrop-blur-md group/btn transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(210,172,71,0.4)] w-16"
+                                                        title={t('vid_extend')}
+                                                    >
+                                                        <Layers size={14} className="text-[var(--text-secondary)] group-hover/btn:text-black transition-colors" />
+                                                        <span className="text-[7px] font-bold uppercase tracking-widest text-[var(--text-primary)] group-hover/btn:text-black">Extend</span>
+                                                    </button>
                                                 )}
-                                            </button>
 
-                                            {/* Scrubber - Unified Golden Glow */}
-                                            <div
-                                                className="flex-1 h-full flex items-center justify-center cursor-ew-resize group/scrub touch-none"
-                                                onClick={(e) => {
-                                                    if (videoRef.current) {
-                                                        const rect = e.currentTarget.getBoundingClientRect();
-                                                        const x = e.clientX - rect.left;
-                                                        const percentage = Math.max(0, Math.min(1, x / rect.width));
-                                                        videoRef.current.currentTime = percentage * videoRef.current.duration;
-                                                    }
-                                                }}
-                                                onMouseMove={(e) => {
-                                                    if (e.buttons === 1 && videoRef.current) {
-                                                        const rect = e.currentTarget.getBoundingClientRect();
-                                                        const x = e.clientX - rect.left;
-                                                        const percentage = Math.max(0, Math.min(1, x / rect.width));
-                                                        videoRef.current.currentTime = percentage * videoRef.current.duration;
-                                                    }
-                                                }}
-                                                onTouchMove={(e) => {
-                                                    if (videoRef.current) {
-                                                        const rect = e.currentTarget.getBoundingClientRect();
-                                                        const x = e.touches[0].clientX - rect.left;
-                                                        const percentage = Math.max(0, Math.min(1, x / rect.width));
-                                                        videoRef.current.currentTime = percentage * videoRef.current.duration;
-                                                    }
-                                                }}
-                                            >
-                                                <div className="w-full h-1.5 bg-white/10 rounded-full relative overflow-visible pointer-events-none">
+                                                {/* Upscale (Video Only) */}
+                                                {videoUrl.toLowerCase().endsWith('.mp4') && (
+                                                    <button className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white/5 hover:bg-[#d2ac47] border border-white/10 hover:border-[#d2ac47] backdrop-blur-md group/btn transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(210,172,71,0.4)] w-16">
+                                                        <Wand2 size={14} className="text-[var(--text-secondary)] group-hover/btn:text-black transition-colors" />
+                                                        <span className="text-[7px] font-bold uppercase tracking-widest text-[var(--text-primary)] group-hover/btn:text-black">Upscale</span>
+                                                    </button>
+                                                )}
+
+                                                {/* Voice (Image Only) */}
+                                                {!videoUrl.toLowerCase().endsWith('.mp4') && (
+                                                    <button className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white/5 hover:bg-[#d2ac47] border border-white/10 hover:border-[#d2ac47] backdrop-blur-md group/btn transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(210,172,71,0.4)] w-16">
+                                                        <Mic size={14} className="text-[var(--text-secondary)] group-hover/btn:text-black transition-colors" />
+                                                        <span className="text-[7px] font-bold uppercase tracking-widest text-[var(--text-primary)] group-hover/btn:text-black">Lip Sync</span>
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            {/* 2. Playback Scrubber Bar (VIDEO ONLY) */}
+                                            {videoUrl.toLowerCase().endsWith('.mp4') && (
+                                                <div className="w-full h-12 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-2xl flex items-center px-4 gap-4 shadow-2xl">
+                                                    <button
+                                                        className="w-8 h-8 shrink-0 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#d2ac47] group/play transition-all duration-300"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (videoRef.current) {
+                                                                if (videoRef.current.paused) videoRef.current.play();
+                                                                else videoRef.current.pause();
+                                                            }
+                                                        }}
+                                                    >
+                                                        {isPlaying ? (
+                                                            <div className="w-2.5 h-2.5 bg-white group-hover/play:bg-black rounded-sm" />
+                                                        ) : (
+                                                            <Play size={12} className="text-white fill-white group-hover/play:text-black group-hover/play:fill-black" />
+                                                        )}
+                                                    </button>
+
+                                                    {/* Scrubber */}
                                                     <div
-                                                        className="absolute inset-y-0 left-0 bg-gold-gradient rounded-full shadow-[0_0_15px_rgba(210,172,71,0.6)] transition-all duration-100 ease-linear"
-                                                        style={{ width: `${videoProgress}%` }}
-                                                    ></div>
-                                                    <div
-                                                        className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover/scrub:opacity-100 transition-opacity shadow-[0_0_10px_white]"
-                                                        style={{ left: `${videoProgress}%` }}
-                                                    ></div>
+                                                        className="flex-1 h-full flex items-center justify-center cursor-ew-resize group/scrub touch-none"
+                                                        onClick={(e) => {
+                                                            if (videoRef.current && Number.isFinite(videoRef.current.duration)) {
+                                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                                const x = e.clientX - rect.left;
+                                                                const percentage = Math.max(0, Math.min(1, x / rect.width));
+                                                                videoRef.current.currentTime = percentage * videoRef.current.duration;
+                                                            }
+                                                        }}
+                                                        onMouseMove={(e) => {
+                                                            if (e.buttons === 1 && videoRef.current && Number.isFinite(videoRef.current.duration)) {
+                                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                                const x = e.clientX - rect.left;
+                                                                const percentage = Math.max(0, Math.min(1, x / rect.width));
+                                                                videoRef.current.currentTime = percentage * videoRef.current.duration;
+                                                            }
+                                                        }}
+                                                        onTouchStart={(e) => e.stopPropagation()}
+                                                        onTouchMove={(e) => {
+                                                            if (videoRef.current && Number.isFinite(videoRef.current.duration)) {
+                                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                                const x = e.touches[0].clientX - rect.left;
+                                                                const percentage = Math.max(0, Math.min(1, x / rect.width));
+                                                                videoRef.current.currentTime = percentage * videoRef.current.duration;
+                                                            }
+                                                        }}
+                                                    >
+                                                        <div className="w-full h-1 bg-white/20 rounded-full relative overflow-visible pointer-events-none group-hover/scrub:h-1.5 transition-all">
+                                                            <div
+                                                                className="absolute inset-y-0 left-0 bg-[#d2ac47] rounded-full shadow-[0_0_15px_rgba(210,172,71,0.8)]"
+                                                                style={{ width: `${videoProgress}%` }}
+                                                            ></div>
+                                                            <div
+                                                                className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-[0_0_10px_black] opacity-0 group-hover/scrub:opacity-100 transition-opacity"
+                                                                style={{ left: `${videoProgress}%` }}
+                                                            ></div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-3 text-[9px] text-[var(--text-secondary)] font-mono uppercase tracking-widest shrink-0 opacity-60">
+                                                        <span>HD</span>
+                                                        <button onClick={toggleFullscreen} className="hover:text-white transition-colors">
+                                                            <Maximize2 size={12} />
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-
-                                            <div className="flex items-center gap-3 text-[10px] text-[var(--text-secondary)]/60 font-mono uppercase tracking-widest shrink-0">
-                                                <span>4K</span>
-                                                <div className="w-1.5 h-1.5 rounded-full bg-[#d2ac47]/10"></div>
-                                                <button onClick={toggleFullscreen} className="hover:text-white transition-colors">
-                                                    <Maximize2 size={12} className="opacity-50 hover:opacity-100" />
-                                                </button>
-                                            </div>
+                                            )}
                                         </div>
                                     )}
 
@@ -1413,6 +1478,9 @@ const VideoGenerator: React.FC = () => {
                                     <div className="flex flex-col items-center gap-2 mt-8 transform group-hover:scale-110 transition-transform duration-500">
                                         <VideoIcon size={48} strokeWidth={1} />
                                         <span className="text-[8px] tracking-[0.4em] uppercase font-bold opacity-50">{t('vid_active_workspace')}</span>
+                                        <p className="text-[var(--text-secondary)]/70 text-[9px] font-sans font-light tracking-[0.2em] mt-2 opacity-80 uppercase text-center max-w-xs">
+                                            Upload or Select Media to Animate
+                                        </p>
                                     </div>
                                 </div>
                             )}
@@ -1439,77 +1507,17 @@ const VideoGenerator: React.FC = () => {
                     </div>
 
                     {/* Infinity Actions Panel - Moved Below Output */}
-                    <div className="mt-4 border border-[var(--border-color)] bg-[var(--bg-primary)] p-5 relative overflow-hidden group rounded-3xl shadow-2xl mx-2 md:mx-0 block xl:hidden">
-                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47]/50 to-transparent"></div>
-                        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47]/50 to-transparent"></div>
 
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="h-[1px] flex-1 bg-[#d2ac47]/20"></div>
-                            <span className="text-[var(--text-secondary)] text-[9px] font-bold uppercase tracking-[0.3em]">Infinity Studio</span>
-                            <div className="h-[1px] flex-1 bg-[#d2ac47]/20"></div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            {/* Extend Button */}
-                            <button
-                                onClick={handleExtend}
-                                className="flex items-center gap-4 p-3 border border-[#d2ac47]/10 hover:border-[#d2ac47]/60 bg-[var(--bg-input)] transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl"
-                            >
-                                <div className="p-2 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
-                                    <Layers size={16} />
-                                </div>
-                                <div className="text-left">
-                                    <div className="text-[var(--text-primary)] text-[9px] font-bold uppercase tracking-widest leading-tight mb-1"> {t('vid_extend')}</div>
-                                    <div className="text-[var(--text-secondary)]/50 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_extend')}</div>
-                                </div>
-                            </button>
-
-                            {/* Upscale Button */}
-                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/10 hover:border-[#d2ac47]/60 bg-[var(--bg-input)] transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl">
-                                <div className="p-2 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
-                                    <Wand2 size={16} />
-                                </div>
-                                <div className="text-left">
-                                    <div className="text-[var(--text-primary)] text-[9px] font-bold uppercase tracking-widest leading-tight mb-1"> {t('vid_upscale')}</div>
-                                    <div className="text-[var(--text-secondary)]/50 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_enhance')}</div>
-                                </div>
-                            </button>
-
-                            {/* Download Button */}
-                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/10 hover:border-[#d2ac47]/60 bg-[var(--bg-input)] transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl">
-                                <div className="p-2 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
-                                    <Download size={16} />
-                                </div>
-                                <div className="text-left">
-                                    <div className="text-[var(--text-primary)] text-[9px] font-bold uppercase tracking-widest leading-tight mb-1"> {t('vid_save')}</div>
-                                    <div className="text-[var(--text-secondary)]/50 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_original')}</div>
-                                </div>
-                            </button>
-
-                            {/* Voice Avatar Button */}
-                            <button
-                                className="flex items-center gap-4 p-3 border border-[#d2ac47]/10 hover:border-[#d2ac47]/60 bg-[var(--bg-input)] transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl"
-                            >
-                                <div className="p-2 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
-                                    <Mic size={16} />
-                                </div>
-                                <div className="text-left">
-                                    <div className="text-[var(--text-primary)] text-[9px] font-bold uppercase tracking-widest leading-tight mb-1"> {t('vid_voice')}</div>
-                                    <div className="text-[var(--text-secondary)]/50 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_voice')}</div>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
 
 
                 </div>
 
 
                 {/* Right Col: Output & Stats & Coins - Mobile: Middle (Order 2) */}
-                <div className="order-2 xl:order-none w-full xl:w-auto xl:col-span-3 flex flex-col gap-4 xl:h-[calc(100vh-120px)]">
+                <div className="order-2 xl:order-none w-full xl:w-auto xl:col-span-3 flex flex-col gap-4 lg:h-[calc(85vh-150px)]">
 
                     {/* 3. History / Gallery - Taller on Mobile, Elastic & Stable on PC */}
-                    <div className="bg-[var(--bg-input)] border border-[var(--border-color)] rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden flex-1 min-h-[650px] lg:min-h-0 overflow-y-auto custom-scrollbar mx-2 md:mx-0">
+                    <div className="bg-[var(--bg-input)] border border-[var(--border-color)] rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-y-auto overflow-x-hidden flex-1 min-h-[500px] lg:min-h-0 mx-2 md:mx-0">
                         <div className="flex items-center justify-between h-10 px-0">
                             <span className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-[0.2em] pl-4">{t('vid_history')}</span>
                         </div>
@@ -1537,67 +1545,7 @@ const VideoGenerator: React.FC = () => {
 
 
                     {/* Infinity Actions Panel - Moved to Right Column on Desktop */}
-                    <div className="mt-0 border border-[var(--border-color)] bg-[var(--bg-primary)] p-5 relative overflow-hidden group rounded-3xl shadow-2xl mx-2 md:mx-0 hidden xl:block shrink-0">
-                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47]/50 to-transparent"></div>
-                        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d2ac47]/50 to-transparent"></div>
 
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="h-[1px] flex-1 bg-[#d2ac47]/20"></div>
-                            <span className="text-[var(--text-secondary)] text-[9px] font-bold uppercase tracking-[0.3em]">Infinity Studio</span>
-                            <div className="h-[1px] flex-1 bg-[#d2ac47]/20"></div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-1 gap-3">
-                            {/* Extend Button */}
-                            <button
-                                onClick={handleExtend}
-                                className="flex items-center gap-4 p-3 border border-[#d2ac47]/60 hover:border-[#d2ac47] bg-[var(--bg-primary)] backdrop-blur-sm transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl shadow-[0_4px_12px_rgba(210,172,71,0.08)]"
-                            >
-                                <div className="p-2 rounded-xl border border-[#d2ac47]/50 bg-[#d2ac47]/10 text-[#d2ac47] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
-                                    <Layers size={16} />
-                                </div>
-                                <div className="text-left">
-                                    <div className="text-[var(--text-primary)] text-[9px] font-black uppercase tracking-widest leading-tight mb-1"> {t('vid_extend')}</div>
-                                    <div className="text-[var(--text-secondary)]/60 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_extend')}</div>
-                                </div>
-                            </button>
-
-                            {/* Upscale Button */}
-                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/60 hover:border-[#d2ac47] bg-[var(--bg-primary)] backdrop-blur-sm transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl shadow-[0_4px_12px_rgba(210,172,71,0.08)]">
-                                <div className="p-2 rounded-xl border border-[#d2ac47]/50 bg-[#d2ac47]/10 text-[#d2ac47] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
-                                    <Wand2 size={16} />
-                                </div>
-                                <div className="text-left">
-                                    <div className="text-[var(--text-primary)] text-[9px] font-black uppercase tracking-widest leading-tight mb-1"> {t('vid_upscale')}</div>
-                                    <div className="text-[var(--text-secondary)]/60 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_enhance')}</div>
-                                </div>
-                            </button>
-
-                            {/* Download Button */}
-                            <button className="flex items-center gap-4 p-3 border border-[#d2ac47]/60 hover:border-[#d2ac47] bg-[var(--bg-primary)] backdrop-blur-sm transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl shadow-[0_4px_12px_rgba(210,172,71,0.08)]">
-                                <div className="p-2 rounded-xl border border-[#d2ac47]/50 bg-[#d2ac47]/10 text-[#d2ac47] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
-                                    <Download size={16} />
-                                </div>
-                                <div className="text-left">
-                                    <div className="text-[var(--text-primary)] text-[9px] font-black uppercase tracking-widest leading-tight mb-1"> {t('vid_save')}</div>
-                                    <div className="text-[var(--text-secondary)]/60 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_original')}</div>
-                                </div>
-                            </button>
-
-                            {/* Voice Avatar Button */}
-                            <button
-                                className="flex items-center gap-4 p-3 border border-[#d2ac47]/60 hover:border-[#d2ac47] bg-[var(--bg-primary)] backdrop-blur-sm transition-all group/btn hover:bg-[#d2ac47]/5 rounded-2xl shadow-[0_4px_12px_rgba(210,172,71,0.08)]"
-                            >
-                                <div className="p-2 rounded-xl border border-[#d2ac47]/50 bg-[#d2ac47]/10 text-[#d2ac47] group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black transition-colors shrink-0">
-                                    <Mic size={16} />
-                                </div>
-                                <div className="text-left">
-                                    <div className="text-[var(--text-primary)] text-[9px] font-black uppercase tracking-widest leading-tight mb-1"> {t('vid_voice')}</div>
-                                    <div className="text-[var(--text-secondary)]/60 text-[7px] uppercase tracking-wider leading-none"> {t('vid_sub_voice')}</div>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
 
 
                 </div>

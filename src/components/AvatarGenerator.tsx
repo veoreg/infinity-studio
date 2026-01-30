@@ -10,7 +10,8 @@ import { supabase } from '../lib/supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
 
 // Webhook URL - Direct n8n endpoint for Avatar Generation
-const WEBHOOK_URL = "/api/avatar";
+// Webhook URL - Direct n8n endpoint for Avatar Generation
+const WEBHOOK_URL = "https://n8n.develotex.io/webhook/Flux_Image_Generator_Advanced_Upscl_3+SB";
 
 interface CustomSelectProps {
     label: string;
@@ -37,7 +38,7 @@ const CustomSelect: React.FC<CustomSelectProps & { centerLabel?: boolean }> = ({
     }, []);
 
     return (
-        <div className="relative group" ref={dropdownRef}>
+        <div className="relative group w-full" ref={dropdownRef}>
             <label className={`text-[var(--text-secondary)] text-[8px] md:text-[9px] font-bold tracking-[0.2em] uppercase mb-1.5 block ${centerLabel ? 'text-center' : ''} truncate`}>{label}</label>
             <div
                 className={`w-full bg-[var(--bg-input)] border ${isOpen ? 'border-[#d2ac47]' : 'border-[var(--border-color)]'} text-[var(--text-primary)] p-2 md:p-2.5 rounded-lg flex justify-between items-center transition-all 
@@ -75,7 +76,7 @@ const CustomSelect: React.FC<CustomSelectProps & { centerLabel?: boolean }> = ({
     );
 };
 
-const AvatarLogger = ({ status, error }: { status: string; error: string | null }) => {
+const AvatarLogger = ({ status, error, startTime }: { status: string; error: string | null; startTime?: number | null }) => {
     const [log, setLog] = useState("Initializing Neural Network...");
 
     React.useEffect(() => {
@@ -96,19 +97,30 @@ const AvatarLogger = ({ status, error }: { status: string; error: string | null 
             { msg: "Studio: Finalizing digital masterpiece...", delay: 105000 }
         ];
 
+        // Calculate elapsed time if restoring
+        const elapsed = startTime ? Date.now() - startTime : 0;
+
+        // Find the last log that should have shown
+        if (elapsed > 0) {
+            const currentStep = [...steps].reverse().find(s => s.delay <= elapsed);
+            if (currentStep) setLog(currentStep.msg);
+        }
+
         let timeouts: any[] = [];
 
         steps.forEach(({ msg, delay }) => {
-            const timeout = setTimeout(() => {
-                setLog(msg);
-            }, delay);
-            timeouts.push(timeout);
+            if (delay > elapsed) {
+                const timeout = setTimeout(() => {
+                    setLog(msg);
+                }, delay - elapsed);
+                timeouts.push(timeout);
+            }
         });
 
         return () => {
             timeouts.forEach(clearTimeout);
         };
-    }, [status]);
+    }, [status, startTime]);
 
     return (
         <div className="absolute inset-0 bg-[var(--bg-primary)]/95 backdrop-blur-sm flex flex-col items-center justify-center p-8 text-center space-y-6 z-50">
@@ -129,7 +141,8 @@ const AvatarLogger = ({ status, error }: { status: string; error: string | null 
                         className={`h-full bg-[#d2ac47] ${status === 'queued' ? 'opacity-30 animated-pulse w-full' : ''}`}
                         style={{
                             width: status === 'queued' ? '100%' : '0%',
-                            animation: (status === 'processing' || status === 'pending') ? 'growWidth 105s linear forwards' : 'none'
+                            animation: (status === 'processing' || status === 'pending') ? 'growWidth 105s linear forwards' : 'none',
+                            animationDelay: startTime ? `-${Date.now() - startTime}ms` : '0ms'
                         }}
                     ></div>
                 </div>
@@ -254,6 +267,8 @@ const ImageComparisonSlider = ({ before, after }: { before: string; after: strin
 
 // EditPhotoModal Component Removed (Inline Editing Implemented)
 
+
+
 const AvatarGenerator: React.FC = () => {
     const { t } = useTranslation(); // i18n hook
     const [loading, setLoading] = useState(false);
@@ -287,15 +302,18 @@ const AvatarGenerator: React.FC = () => {
 
     // Fine Tuning
     const [instantIdWeight, setInstantIdWeight] = useState(0.85);
-    const [userPrompt, setUserPrompt] = useState('beautiful woman, detailed skin texture, cinematic lighting');
+    const [userPrompt, setUserPrompt] = useState('dynamic angles, cinematic shot, diverse poses, detailed skin texture, cinematic lighting, 8k, ultra realistic, detailed background, depth of field, sharp focus, masterpiece, best quality');
 
     // Advanced Controls
     const [seed, setSeed] = useState<number>(-1); // -1 = Random
     const [seedMode, setSeedMode] = useState<'random' | 'fixed'>('random');
-    const [steps, setSteps] = useState<number>(30); // Default 30 as per user audio hint
-    const [cfg, setCfg] = useState<number>(3.5); // Default Quality
+    // Default to strict Flux portrait optimization
+
+    const [steps, setSteps] = useState<number>(80); // Default Steps
+    const [cfg, setCfg] = useState<number>(2.5); // Default Guidance
     const [rawPromptMode, setRawPromptMode] = useState(false);
     const [upscale, setUpscale] = useState(false);
+    const [startTime, setStartTime] = useState<number | null>(null);
 
     // Generate or retrieve Guest ID for isolation
     const [guestId] = useState(() => {
@@ -312,14 +330,46 @@ const AvatarGenerator: React.FC = () => {
 
     // Monitoring Refs
     const controllerRef = React.useRef<AbortController | null>(null);
+
+    // Data Source for Left Sidebar (Source Frames)
+    // As per user request: "photo_gallery_left" assets first (Colorful 1-8.png)
+    const LEFT_GALLERY_DEFAULTS = Array.from({ length: 8 }, (_, i) => ({
+        id: `src_frame_${i + 1}`,
+        type: 'photo',
+        url: `/photo_gallery_left/${i + 1}.png`,
+        thumb: `/photo_gallery_left/${i + 1}.png`,
+        label: `Ref ${i + 1}`,
+        status: 'completed',
+        privacy: 'public'
+    }));
+
+    // Merge Defaults + User History
+    const sidebarItems = [...LEFT_GALLERY_DEFAULTS, ...galleryItems];
     const pollingInterval = React.useRef<any>(null);
     const realtimeChannel = React.useRef<any>(null);
     const lastTrackingId = React.useRef<string | null>(null);
     const generationStartTime = React.useRef<number>(0);
 
-    // Initial fetch
+    // Initial fetch & Session Restore
     useEffect(() => {
         fetchHistory();
+
+        // Restore session if exists
+        const savedId = localStorage.getItem('active_avatar_id');
+        if (savedId) {
+            console.log("Resuming active session:", savedId);
+            setActiveGenerationId(savedId);
+            setLoading(true);
+            setCurrentStatus('processing');
+            startMonitoring(savedId);
+
+            // Restore start time for progress bar
+            const savedTime = localStorage.getItem('avatar_gen_start_time');
+            if (savedTime) {
+                setStartTime(Number(savedTime));
+            }
+        }
+
         return () => cleanupMonitoring();
     }, []);
 
@@ -339,6 +389,8 @@ const AvatarGenerator: React.FC = () => {
                 .limit(50); // Increased limit to ensure we catch the user's videos
 
             if (dbError) throw dbError;
+
+            // Update state with fetched history
             if (data) setGalleryItems(data);
         } catch (err) {
             console.error("Failed to fetch gallery history:", err);
@@ -571,7 +623,10 @@ const AvatarGenerator: React.FC = () => {
         setError(null);
         setIsEditMode(false); // This is a new generation, not an edit
         setOriginalImageForCompare(null); // Clear any previous comparison
-        generationStartTime.current = Date.now(); // рџ•’ TIME MARKER for Deep Scan
+        const now = Date.now();
+        generationStartTime.current = now; // рџ•’ TIME MARKER for Deep Scan
+        setStartTime(now);
+        localStorage.setItem('avatar_gen_start_time', now.toString());
 
         try {
             // 1. Create a unique Generation ID (UUID)
@@ -594,6 +649,11 @@ const AvatarGenerator: React.FC = () => {
                 // We proceed anyway, but warn
             }
 
+            // Calculate final seed: ONLY randomize if in 'random' mode.
+            // If mode is 'fixed', we send EXACTLY what is in the seed state (even if it is -1, 0, or empty)
+            // This grants full control to the user ("Fixed means Fixed")
+
+
             const payload = {
                 generation_id: generationId,
                 gender,
@@ -610,12 +670,15 @@ const AvatarGenerator: React.FC = () => {
                 grab_body_from_image: grabBody,
                 grab_composition: grabComposition,
                 instantid_weight: instantIdWeight,
+                // CRITICAL: job_type is required for Switch node routing
+                job_type: "generate",
                 style_token: rawPromptMode ? userPrompt : `Style: ${artStyle}. Role: ${role}. Body: ${bodyType}. Clothing: ${clothing}. ${userPrompt} `,
                 user_prompt: userPrompt,
-                seed: seed,
+                seeds: seed === -1 ? Math.floor(Math.random() * 2147483647) : seed,
                 steps: steps,
-                guidance_scale: cfg,
+                cfg: cfg,
                 upscale: upscale,
+                best_max: 3, // Per screenshot "best_max" might be relevant? Screenshot didn't explicitly show it but it's safe to keep if likely used, but strict match to screenshot is safer. Screenshot didn't show best_max.
                 safe_mode: 3 // Strictly 3 as requested
             };
 
@@ -731,6 +794,7 @@ const AvatarGenerator: React.FC = () => {
 
             if (dbError) console.error("Database initialization failed for edit:", dbError);
 
+
             const payload = {
                 generation_id: generationId,
                 job_type: "edit",
@@ -738,14 +802,14 @@ const AvatarGenerator: React.FC = () => {
                 clothing: "edit",
                 face_image_url: generatedImage,
                 user_prompt: editPrompt,
-                // We no longer send steps/seed for edit jobs to avoid 'messing up' 
-                // the fast Qwen model. It uses values pre-set in the backend (n8n JSON).
                 instantid_weight: 0.85,
                 style_token: "realistic",
-                guest_id: guestId
+                seeds: seed === -1 ? Math.floor(Math.random() * 2147483647) : seed,
+                steps: steps,
+                cfg: cfg
             };
 
-            const response = await fetch('/api/edit', {
+            const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -895,7 +959,7 @@ const AvatarGenerator: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                        {galleryItems
+                        {sidebarItems
                             .filter(item => {
                                 const url = item.result_url || item.video_url || item.url || '';
                                 return !url.toLowerCase().endsWith('.mp4') && item.type !== 'video';
@@ -972,7 +1036,7 @@ const AvatarGenerator: React.FC = () => {
                 <div className="order-1 lg:order-2 w-full lg:col-span-6 flex flex-col gap-6 relative z-50">
 
                     {/* NEW: Compact Identity Toolbar (Above Canvas) */}
-                    <div className="bg-[var(--glass-bg)] backdrop-blur-md border border-[var(--border-color)] rounded-xl px-2 py-1 flex flex-col md:flex-row gap-2 items-center justify-between shadow-lg relative z-[200]">
+                    <div className="bg-[var(--glass-bg)] backdrop-blur-md border border-[var(--border-color)] rounded-xl px-2 py-1 flex flex-col md:flex-row gap-2 items-center justify-between shadow-lg relative z-[200] mx-2 md:mx-0">
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-1.5 w-full">
                             <CustomSelect
                                 label={t('opt_gender')}
@@ -1038,7 +1102,7 @@ const AvatarGenerator: React.FC = () => {
                     {/* Visual Source (Moved from Input Block) - Acts as "Canvas" if editing */}
 
                     {/* Main Output / Active Workspace */}
-                    <div className="bg-[var(--bg-primary)] dark:bg-black border border-[var(--border-color)] rounded-3xl relative flex items-center justify-center overflow-hidden shadow-2xl group flex-col w-full transition-all duration-700 h-[500px] md:h-[580px] shrink-0 mx-2 md:mx-0">
+                    <div className="bg-[var(--bg-primary)] dark:bg-black border border-[var(--border-color)] rounded-3xl relative flex items-center justify-center overflow-hidden shadow-2xl group flex-col w-auto md:w-full transition-all duration-700 h-[500px] md:h-[580px] shrink-0 mx-2 md:mx-0">
                         {generatedImage ? (
                             <img src={generatedImage} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40 blur-3xl scale-150 saturate-150" />
                         ) : (
@@ -1052,14 +1116,13 @@ const AvatarGenerator: React.FC = () => {
                         {generatedImage ? (
                             <>
                                 {/* Image Wrapper with Overlay */}
-                                <div className="absolute inset-0 z-10 group cursor-pointer">
+                                <div id="avatar-canvas-wrapper" className="absolute inset-0 z-10 group cursor-pointer">
                                     {/* Top Right Controls */}
                                     <div className="absolute top-4 right-4 z-50 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                         <button
                                             onClick={(e) => {
-                                                e.stopPropagation();
-                                                // Try both possible elements (single image or slider container)
-                                                const elem = document.getElementById('canvas-content') || document.getElementById('generated-avatar-image');
+                                                // toggle fullscreen on wrapper
+                                                const elem = document.getElementById('avatar-canvas-wrapper');
                                                 if (elem) {
                                                     if (document.fullscreenElement) {
                                                         document.exitFullscreen();
@@ -1078,15 +1141,17 @@ const AvatarGenerator: React.FC = () => {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (window.confirm(t('msg_clear_workspace'))) {
-
-                                                    setGeneratedImage(null);
-                                                    setIsEditMode(false);
-                                                    setOriginalImageForCompare(null);
+                                                // Instant close - removed blocking confirm for smoother UX
+                                                setGeneratedImage(null);
+                                                setIsEditMode(false);
+                                                setOriginalImageForCompare(null);
+                                                // Exit fullscreen if active
+                                                if (document.fullscreenElement) {
+                                                    document.exitFullscreen();
                                                 }
                                             }}
                                             className="p-2 bg-[var(--bg-input)]/80 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)] rounded-full hover:bg-red-500 hover:text-white hover:border-red-500 transition-all hover:scale-110 shadow-lg dark:bg-black/40"
-                                            title="Clear Workspace"
+                                            title="Close / Clear"
                                         >
                                             <XCircle size={16} />
                                         </button>
@@ -1266,8 +1331,8 @@ const AvatarGenerator: React.FC = () => {
                             </>
                         ) : (
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
-                                {/* Gradient Overlay for readability */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent z-0"></div>
+                                {/* Gradient Overlay for readability - Light/Dark Aware - Fixed Conflict */}
+                                <div className="absolute inset-0 bg-gradient-to-t z-0 from-[#F9F1D8]/90 via-[#F9F1D8]/40 to-transparent dark:from-black/80 dark:via-black/10 dark:to-transparent"></div>
 
                                 {/* Brand Header */}
                                 <div className="mb-8 text-center transform -translate-y-4 relative z-10">
@@ -1291,17 +1356,21 @@ const AvatarGenerator: React.FC = () => {
                                     title={t('tooltip_upload_edit')}
 
                                 >
-                                    <Camera size={42} className="text-[var(--text-secondary)]/30 mb-4 animate-pulse group-hover:text-[var(--text-secondary)] transition-colors" />
-                                    <span className="text-[var(--text-secondary)]/40 text-[10px] font-bold uppercase tracking-[0.3em] text-center group-hover:text-[var(--text-secondary)] transition-colors">{t('ph_click_upload')}</span>
+                                    <Camera size={42} className="text-[var(--text-secondary)]/30 mb-4 animate-pulse group-hover:text-[#d2ac47] transition-colors dark:text-[var(--text-secondary)]/80" />
+                                    <span className="text-[var(--text-secondary)]/60 text-[10px] font-bold uppercase tracking-[0.3em] text-center group-hover:text-[#d2ac47] transition-colors dark:text-[var(--text-secondary)]/80">{t('ph_click_upload')}</span>
                                 </div>
                             </div>
                         )}
 
-                        {(loading || error) && (
-                            <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center cursor-pointer" onClick={() => setError(null)}>
-                                <AvatarLogger status={currentStatus} error={error} />
-                                {error && <div className="absolute bottom-10 text-[var(--text-secondary)]/50 text-[10px] uppercase tracking-widest animate-pulse">{t('btn_close_edit')}</div>}
-
+                        {(loading || (error && !error.includes("Face Image"))) && (
+                            <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center cursor-pointer" onClick={() => setError(null)}>
+                                {loading && <AvatarLogger status={currentStatus} error={error} startTime={startTime} />}
+                                {error && (
+                                    <div className="mt-8 px-6 py-2 bg-red-500/10 border border-red-500/50 rounded-full animate-pulse flex items-center gap-2 z-[60] hover:bg-red-500/20 transition-colors">
+                                        <XCircle size={14} className="text-red-500" />
+                                        <span className="text-red-500 text-[10px] uppercase tracking-[0.2em] font-bold">{t('btn_close_edit')}</span>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -1338,7 +1407,7 @@ const AvatarGenerator: React.FC = () => {
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                                 {/* 1. Main Face Input */}
-                                <div className="border rounded-2xl p-4 md:p-6 border-[#d2ac47] bg-[var(--bg-input)] flex flex-col group overflow-hidden hover:border-[#d2ac47]/60 h-[340px] md:h-[480px]">
+                                <div className="border rounded-2xl p-4 md:p-6 border-[#d2ac47] bg-[var(--bg-input)] flex flex-col group overflow-hidden hover:border-[#d2ac47]/60 h-[450px] md:h-[480px]">
                                     <div className="flex items-center gap-3 mb-4 h-8 shrink-0">
                                         <div className="w-8 h-8 border border-[#d2ac47] rounded-full flex items-center justify-center bg-[#d2ac47]/10 text-[var(--text-secondary)]">
                                             <User size={16} />
@@ -1408,9 +1477,21 @@ const AvatarGenerator: React.FC = () => {
                                     </div>
 
                                     {/* Main Interaction Area */}
-                                    <div className="flex-1 relative rounded-xl overflow-hidden mb-3 bg-black/5">
+                                    <div className="flex-1 relative rounded-xl overflow-hidden mb-3 bg-black/5 group/image">
+                                        {/* Inactive Overlay - Visible when Body Structure is selected */}
+                                        <div
+                                            onClick={() => setBodyType('')}
+                                            className={`absolute inset-0 bg-black/60 z-20 flex flex-col items-center justify-center transition-all duration-300 cursor-pointer backdrop-blur-[1px] ${bodyType ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                                        >
+                                            <div className="bg-black/50 p-2 rounded-full border border-white/10 mb-2">
+                                                <div className="w-2 h-2 rounded-full bg-white/20"></div>
+                                            </div>
+                                            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">Inactive</span>
+                                            <span className="text-[7px] uppercase tracking-wider text-white/20 mt-1">Tap to Activate</span>
+                                        </div>
+
                                         {grabBody ? (
-                                            <div className="animate-fade-in w-full h-full">
+                                            <div className={`animate-fade-in w-full h-full transition-all duration-500 ${bodyType ? 'scale-95 opacity-40 grayscale blur-[1px]' : 'scale-100 opacity-100'}`}>
                                                 <ImageUploadZone
                                                     onImageUpload={({ url }) => {
                                                         setBodyRefUrl(url);
@@ -1443,12 +1524,12 @@ const AvatarGenerator: React.FC = () => {
                                     </div>
 
                                     {/* Dropdown Controls - Centered vertically */}
-                                    <div className="h-16 flex flex-col justify-center shrink-0">
+                                    <div className={`h-16 flex flex-col justify-center shrink-0 relative group/text transition-all duration-300 ${(grabBody && !bodyType) ? 'opacity-50 grayscale' : 'opacity-100'}`}>
                                         <CustomSelect
                                             label={t('label_body_structure')}
                                             value={bodyType}
                                             onChange={(val) => setBodyType(val)}
-                                            disabled={grabBody}
+                                            disabled={false}
                                             centerLabel={true}
                                             options={[
                                                 { label: 'Any', value: '' },
@@ -1462,6 +1543,15 @@ const AvatarGenerator: React.FC = () => {
                                                 { label: 'Muscular', value: 'muscular' }
                                             ]}
                                         />
+
+                                        {/* Inactive Text Overlay */}
+                                        {(grabBody && !bodyType) && (
+                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover/text:opacity-0 transition-opacity z-10">
+                                                <span className="bg-black/80 text-[7px] font-bold uppercase tracking-[0.2em] text-white/40 px-2 py-1 rounded border border-white/5 backdrop-blur-sm">
+                                                    Inactive
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -1539,7 +1629,7 @@ const AvatarGenerator: React.FC = () => {
                 <div className="order-2 xl:order-3 w-full xl:col-span-3 h-auto xl:h-[1300px] flex flex-col gap-4 relative z-10">
 
                     {/* 1. Gallery (Styled like VideoGenerator) */}
-                    <div className="order-2 xl:order-1 flex-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden mx-2 md:mx-0 min-h-[650px] lg:min-h-0">
+                    <div className="order-2 xl:order-1 flex-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden mx-2 md:mx-0 min-h-[800px] lg:min-h-0">
                         <div className="flex items-center justify-between h-10 px-0">
                             <span className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-[0.2em] pl-4">{t('vid_history')}</span>
                         </div>
@@ -1558,12 +1648,12 @@ const AvatarGenerator: React.FC = () => {
                     </div >
 
                     {/* 2. Fine Tuning Block (Moved Here - Compacted) */}
-                    <div className="order-1 xl:order-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl p-5 relative z-[100] shadow-2xl transition-all hover:border-[#d2ac47]/40 shrink-0">
-                        <div className="absolute top-0 left-0 px-4 py-1.5 bg-[#d2ac47] text-black text-[9px] font-bold tracking-[0.2em] uppercase rounded-tl-3xl rounded-br-2xl shadow-lg">
+                    <div className="order-1 xl:order-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl p-3 md:p-4 relative z-[100] shadow-2xl transition-all hover:border-[#d2ac47]/40 shrink-0">
+                        <div className="absolute top-0 left-0 px-4 py-1 bg-[#d2ac47] text-black text-[8px] font-bold tracking-[0.2em] uppercase rounded-tl-2xl rounded-br-xl shadow-lg">
                             {t('section_fine_tuning')}
                         </div>
 
-                        <div className="mt-4 space-y-4">
+                        <div className="mt-3 space-y-3">
                             {/* Art Style */}
                             <CustomSelect
                                 label={t('label_art_style')}
@@ -1581,9 +1671,9 @@ const AvatarGenerator: React.FC = () => {
                                     { label: 'Gothic Noir', value: 'Gothic Noir' }
                                 ]}
                             />
-                            <div className="bg-[var(--bg-card)] p-4 md:p-6 rounded-3xl border border-[var(--border-color)]">
-                                <div className="flex items-center justify-between mb-3">
-                                    <label className="text-[var(--text-secondary)] text-[10px] font-bold tracking-[0.2em] uppercase">{t('label_prompt')}</label>
+                            <div className="bg-[var(--bg-card)] p-3 md:p-4 rounded-2xl border border-[var(--border-color)]">
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-[var(--text-secondary)] text-[9px] font-bold tracking-[0.2em] uppercase">{t('label_prompt')}</label>
                                 </div>
 
                                 {/* Prompt Input Container with Integrated Toggles */}
@@ -1592,26 +1682,37 @@ const AvatarGenerator: React.FC = () => {
                                         value={userPrompt}
                                         onChange={(e) => setUserPrompt(e.target.value)}
                                         placeholder={t('ph_prompt')}
-                                        className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-[var(--text-primary)] p-4 pb-12 rounded-xl h-32 focus:outline-none focus:border-[#d2ac47] focus:shadow-[0_0_15px_rgba(210,172,71,0.1)] transition-all resize-none text-[11px] md:text-xs leading-relaxed"
+                                        className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-[var(--text-primary)] p-3 pb-8 rounded-xl h-20 focus:outline-none focus:border-[#d2ac47] focus:shadow-[0_0_15px_rgba(210,172,71,0.1)] transition-all resize-none text-[10px] md:text-[11px] leading-relaxed custom-scrollbar"
                                     />
 
                                     <div className="absolute bottom-3 right-3 flex items-center gap-2">
                                         {/* RAW Toggle */}
-                                        <button
-                                            onClick={() => setRawPromptMode(!rawPromptMode)}
-                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[9px] font-bold uppercase tracking-wider transition-all ${rawPromptMode
-                                                ? 'bg-[#d2ac47] text-black border-[#d2ac47] shadow-[0_0_10px_rgba(210,172,71,0.3)]'
-                                                : 'bg-black/40 text-[var(--text-secondary)] border-[var(--border-color)] hover:border-[#d2ac47]/50'
-                                                }`}
-                                        >
-                                            <div className={`w-1.5 h-1.5 rounded-full ${rawPromptMode ? 'bg-black animate-pulse' : 'bg-[var(--text-secondary)]/50'}`}></div>
-                                            {t('label_raw')}
-                                        </button>
+                                        <div className="relative group/raw cursor-help">
+                                            <button
+                                                onClick={() => setRawPromptMode(!rawPromptMode)}
+                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[9px] font-bold uppercase tracking-wider transition-all ${rawPromptMode
+                                                    ? 'bg-[#d2ac47] text-black border-[#d2ac47] shadow-[0_0_10px_rgba(210,172,71,0.3)]'
+                                                    : 'bg-transparent text-[var(--text-secondary)] border-[var(--border-color)] hover:border-[#d2ac47]/50'
+                                                    }`}
+                                            >
+                                                <div className={`w-1.5 h-1.5 rounded-full ${rawPromptMode ? 'bg-black animate-pulse' : 'bg-[var(--text-secondary)]/50'}`}></div>
+                                                {t('label_raw')}
+                                            </button>
+                                            {/* Tooltip for RAW */}
+                                            <div className="absolute bottom-full right-0 mb-2 w-48 bg-black/90 border border-[#d2ac47]/30 text-[var(--text-primary)] text-[9px] p-2 rounded-lg opacity-0 group-hover/raw:opacity-100 transition-opacity pointer-events-none z-50 backdrop-blur-md shadow-xl text-right">
+                                                Active = USES ONLY YOUR TEXT<br />
+                                                <span className="opacity-50">Ignores internal style & defaults</span>
+                                                <div className="absolute -bottom-1 right-4 w-2 h-2 bg-black/90 border-r border-b border-[#d2ac47]/30 transform rotate-45"></div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="flex flex-col gap-2 mt-2">
+
+
+
                                 <div className="flex flex-col gap-2 p-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)]">
                                     <div className="flex justify-between items-center h-6">
                                         <span className="text-[var(--text-secondary)] text-[9px] uppercase tracking-wider font-bold">{t('label_seed')}</span>
@@ -1623,7 +1724,7 @@ const AvatarGenerator: React.FC = () => {
                                                 {t('ph_random')}
                                             </button>
                                             <button
-                                                onClick={() => { setSeedMode('fixed'); setSeed((prev) => prev === -1 ? Math.floor(Math.random() * 1000000) : prev); }}
+                                                onClick={() => { setSeedMode('fixed'); setSeed((prev) => prev === -1 ? Math.floor(Math.random() * 999999999999999) : prev); }}
                                                 className={`px-3 py-0.5 text-[8px] font-bold uppercase rounded-md transition-all ${seedMode === 'fixed' ? 'bg-[#d2ac47] text-black shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
                                             >
                                                 {t('mode_fixed')}
@@ -1642,7 +1743,7 @@ const AvatarGenerator: React.FC = () => {
                                             disabled={seedMode === 'random'}
                                         />
                                         <button
-                                            onClick={() => setSeed(Math.floor(Math.random() * 2147483647))}
+                                            onClick={() => setSeed(Math.floor(Math.random() * 999999999999999))}
                                             className="p-1.5 border border-[var(--border-color)] rounded-lg hover:border-[#d2ac47] text-[var(--text-secondary)] transition-colors bg-[var(--bg-primary)]"
                                             title="New Random Seed"
                                             disabled={seedMode === 'random'}
@@ -1655,7 +1756,15 @@ const AvatarGenerator: React.FC = () => {
                                 {/* Steps Slider (30-100) */}
                                 <div className="w-full flex flex-col gap-1 b bg-[var(--bg-input)] border border-[var(--border-color)] p-2 px-3 rounded-xl">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-[var(--text-secondary)] text-[9px] uppercase tracking-wider">{t('label_steps')}</span>
+                                        <div className="relative group cursor-help">
+                                            <span className="text-[var(--text-secondary)] text-[9px] uppercase tracking-wider border-b border-dashed border-[var(--text-secondary)]/30 group-hover:text-[var(--text-primary)] transition-colors">{t('label_steps')}</span>
+                                            {/* Tooltip */}
+                                            <div className="absolute bottom-full left-0 mb-2 w-32 bg-black/90 border border-[#d2ac47]/30 text-[var(--text-primary)] text-[9px] p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 backdrop-blur-md shadow-xl">
+                                                LOWER steps = FASTER generation<br />
+                                                HIGHER steps = BETTER quality
+                                                <div className="absolute -bottom-1 left-4 w-2 h-2 bg-black/90 border-r border-b border-[#d2ac47]/30 transform rotate-45"></div>
+                                            </div>
+                                        </div>
                                         <span className="text-[#d2ac47] text-[10px] font-mono font-bold">{steps}</span>
                                     </div>
                                     <input
@@ -1669,27 +1778,33 @@ const AvatarGenerator: React.FC = () => {
                                     />
                                 </div>
 
-                                {/* CFG Mode Toggle (Photoreal vs Quality) */}
-                                <div className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] p-1 rounded-xl flex gap-1 h-10 relative overflow-hidden">
-                                    <button
-                                        onClick={() => setCfg(2.5)}
-                                        className={`flex-1 flex items-center justify-center gap-2 z-10 transition-all duration-300 ${cfg === 2.5 ? 'text-black font-black' : 'text-[var(--text-secondary)]/60 hover:text-[var(--text-secondary)]'}`}
-                                    >
-                                        <Camera size={14} />
-                                        <span className="text-[9px] uppercase tracking-widest">{t('cfg_natural')}</span>
-                                    </button>
-                                    <button
-                                        onClick={() => setCfg(3.5)}
-                                        className={`flex-1 flex items-center justify-center gap-2 z-10 transition-all duration-300 ${cfg === 3.5 ? 'text-black font-black' : 'text-[var(--text-secondary)]/60 hover:text-[var(--text-secondary)]'}`}
-                                    >
-                                        <Sparkles size={14} />
-                                        <span className="text-[9px] uppercase tracking-widest">{t('cfg_vivid')}</span>
-                                    </button>
-                                    {/* Sliding Background */}
-                                    <div
-                                        className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-gold-gradient rounded-lg transition-all duration-300 shadow-[0_0_15px_rgba(210,172,71,0.3)]"
-                                        style={{ left: cfg === 2.5 ? '4px' : 'calc(50%)' }}
-                                    ></div>
+                                {/* CFG Slider (2.0 - 5.0) */}
+                                <div className="w-full flex flex-col gap-1 bg-[var(--bg-input)] border border-[var(--border-color)] p-2 px-3 rounded-xl mt-2">
+                                    <div className="flex justify-between items-center">
+                                        <div className="relative group cursor-help">
+                                            <span className="text-[var(--text-secondary)] text-[9px] uppercase tracking-wider border-b border-dashed border-[var(--text-secondary)]/30 group-hover:text-[var(--text-primary)] transition-colors">{t('label_cfg')}</span>
+                                            {/* Tooltip for CFG */}
+                                            <div className="absolute bottom-full left-0 mb-2 w-32 bg-black/90 border border-[#d2ac47]/30 text-[var(--text-primary)] text-[9px] p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 backdrop-blur-md shadow-xl">
+                                                LOWER = Softer / Natural<br />
+                                                HIGHER = Vivid / Intense
+                                                <div className="absolute -bottom-1 left-4 w-2 h-2 bg-black/90 border-r border-b border-[#d2ac47]/30 transform rotate-45"></div>
+                                            </div>
+                                        </div>
+                                        <span className="text-[#d2ac47] text-[10px] font-mono font-bold">{cfg.toFixed(1)}</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="1.0"
+                                        max="6.5"
+                                        step="0.1"
+                                        value={cfg}
+                                        onChange={(e) => setCfg(parseFloat(e.target.value))}
+                                        className="w-full h-1 bg-[#d2ac47]/20 rounded-lg appearance-none cursor-pointer mt-1 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-[#d2ac47] [&::-webkit-slider-thumb]:rounded-full hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
+                                    />
+                                    <div className="flex justify-between px-1">
+                                        <span className="text-[7px] uppercase tracking-widest text-[var(--text-secondary)]/50">Natural</span>
+                                        <span className="text-[7px] uppercase tracking-widest text-[var(--text-secondary)]/50">Vivid</span>
+                                    </div>
                                 </div>
 
                                 {/* Upscale Toggle (Moved here) */}
@@ -1737,10 +1852,9 @@ const AvatarGenerator: React.FC = () => {
                     background: rgba(210, 172, 71, 0.4);
                 }
             `}</style>
-        </div>
+        </div >
     );
 };
 
+
 export default AvatarGenerator;
-
-
