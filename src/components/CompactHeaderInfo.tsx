@@ -40,13 +40,13 @@ const CompactHeaderInfo: React.FC = () => {
 
             {/* Admin Badge / Role Indicator */}
             {isAdmin ? (
-                <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-gold-gradient rounded-full shadow-[0_0_15px_rgba(210,172,71,0.3)]">
-                    <ShieldCheck size={12} className="text-black" />
-                    <span className="text-black text-[10px] font-bold uppercase tracking-widest">Colleague</span>
+                <div className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-gold-gradient rounded-full shadow-[0_0_15px_rgba(210,172,71,0.3)]">
+                    <ShieldCheck size={10} className="text-black md:w-[12px] md:h-[12px]" />
+                    <span className="text-black text-[8px] md:text-[10px] font-bold uppercase tracking-widest">Colleague</span>
                 </div>
             ) : (
-                <div className={`hidden md:flex items-center px-2.5 py-1 border border-[var(--border-color)] rounded-full ${user ? 'border-[#d2ac47]/30' : 'opacity-30'}`}>
-                    <span className="text-[var(--text-secondary)] text-[9px] uppercase tracking-[0.15em] font-black font-serif italic">
+                <div className={`flex items-center px-2 md:px-2.5 py-1 border border-[var(--border-color)] rounded-full ${user ? 'border-[#d2ac47]/30' : 'opacity-30'}`}>
+                    <span className="text-[var(--text-secondary)] text-[8px] md:text-[9px] uppercase tracking-[0.1em] md:tracking-[0.15em] font-black font-serif italic">
                         {user ? 'Identity' : 'Guest'}
                     </span>
                 </div>
