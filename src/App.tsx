@@ -161,7 +161,7 @@ function AppContent() {
         </div>
       </footer>
       {/* Sticky Action Bar for Mobile */}
-      <StickyActionBar activeTab={activeTab} />
+      {/* Sticky Action Bar for Mobile - Removed duplicate */}
     </div>
   )
 }
