@@ -675,7 +675,7 @@ const AvatarGenerator: React.FC = () => {
 
         // 3. Premium Content Gating
         const isPremiumOption = clothing === 'nude' || clothing === 'semi-dressed';
-        if (isPremiumOption && !isAdmin) {
+        if (isPremiumOption && !user) {
             setError("Nude and Semi-dressed modes are for Premium users only.");
             return;
         }

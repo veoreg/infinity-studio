@@ -642,7 +642,7 @@ const VideoGenerator: React.FC = () => {
         }
 
         // 2. Premium Content Gating (Spicy Mode)
-        if (!safeMode && !isAdmin) {
+        if (!safeMode && !user) {
             setError("Spicy Mode is for Premium users only.");
             return;
         }

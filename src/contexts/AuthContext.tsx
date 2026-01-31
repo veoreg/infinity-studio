@@ -30,6 +30,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loading, setLoading] = useState(true);
 
     const fetchProfile = async (userId: string) => {
+        // First, attempt to refresh credits if it's a new day
+        await supabase.rpc('refresh_daily_credits', { user_id: userId });
+
         const { data, error } = await supabase
             .from('profiles')
             .select('*')
