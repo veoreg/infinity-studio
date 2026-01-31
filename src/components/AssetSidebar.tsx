@@ -56,9 +56,8 @@ const AssetSidebar: React.FC<AssetSidebarProps> = ({ onSelectImage }) => {
                 )}
 
                 {activeTab === 'history' && (
-                    <div className="flex flex-col items-center justify-center h-40 text-[#d2ac47]/30">
-                        <Clock size={24} className="mb-2" />
-                        <span className="text-[10px] uppercase tracking-widest">No History Yet</span>
+                    <div className="space-y-4 h-full flex flex-col">
+                        <UserGallery compact={true} onSelect={(item) => onSelectImage(item.url || item.result_url || '')} />
                     </div>
                 )}
             </div>

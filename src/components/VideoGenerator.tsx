@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import axios from 'axios';
-import { Wand2, Download, Sparkles, XCircle, ShieldCheck, Flame, Loader2, Play, Film, Image as ImageIcon, Archive, Layers, Video as VideoIcon, Maximize2, Trash2, Upload, RefreshCw, Eye, Mic, AlertTriangle } from 'lucide-react';
+import { Wand2, Download, Sparkles, XCircle, ShieldCheck, Flame, Loader2, Play, Film, Image as ImageIcon, Archive, Layers, Video as VideoIcon, Maximize2, Trash2, Upload, RefreshCw, Eye, Mic, AlertTriangle, PersonStanding } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
@@ -248,6 +248,25 @@ const VideoGenerator: React.FC = () => {
     // Mobile Interaction State
     const [activeMobileId, setActiveMobileId] = useState<string | null>(null);
     const mobileTimerRef = useRef<any>(null);
+
+    // VIDEO UI FADING STATE
+    const [showUI, setShowUI] = useState(true);
+    const uiTimeoutRef = useRef<any>(null);
+
+    const resetUITimer = () => {
+        setShowUI(true);
+        if (uiTimeoutRef.current) clearTimeout(uiTimeoutRef.current);
+        uiTimeoutRef.current = setTimeout(() => {
+            setShowUI(false);
+        }, 2500); // 2.5s fading delay
+    };
+
+    // Clean up timer on unmount
+    React.useEffect(() => {
+        return () => {
+            if (uiTimeoutRef.current) clearTimeout(uiTimeoutRef.current);
+        };
+    }, []);
 
     // Check for long wait times to prompt user
     React.useEffect(() => {
@@ -913,7 +932,7 @@ const VideoGenerator: React.FC = () => {
                                                     {(item.status === 'processing' || item.status === 'pending') ? (
                                                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none">
                                                             <Loader2 size={24} className="text-[var(--text-secondary)] animate-spin" />
-                                                            <span className="text-[var(--text-secondary)] text-[9px] font-bold tracking-widest uppercase animate-pulse">Forging...</span>
+                                                            <span className="text-[var(--text-secondary)] text-[9px] font-bold tracking-widest uppercase animate-pulse">{t('vid_forging')}</span>
                                                         </div>
                                                     ) : (
                                                         <button
@@ -942,15 +961,13 @@ const VideoGenerator: React.FC = () => {
                                                         </button>
                                                     )}
 
-                                                    {!(item.status === 'processing' || item.status === 'pending') && (
-                                                        <button
-                                                            onClick={(e) => handleDeleteItem(e, item.id)}
-                                                            className="absolute bottom-14 right-2 p-2 bg-red-950/40 backdrop-blur-xl text-red-400 rounded-full hover:bg-red-600 hover:text-white transition-all border border-red-500/10 shadow-lg pointer-events-auto z-40 cursor-pointer"
-                                                            title="Delete"
-                                                        >
-                                                            <Trash2 size={12} />
-                                                        </button>
-                                                    )}
+                                                    <button
+                                                        onClick={(e) => handleDeleteItem(e, item.id)}
+                                                        className="absolute bottom-14 right-2 p-2 bg-red-950/40 backdrop-blur-xl text-red-400 rounded-full hover:bg-red-600 hover:text-white transition-all border border-red-500/10 shadow-lg pointer-events-auto z-40 cursor-pointer"
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 size={12} />
+                                                    </button>
 
                                                     {(item.status === 'processing' || item.status === 'pending') ? (
                                                         <button
@@ -1353,7 +1370,12 @@ const VideoGenerator: React.FC = () => {
                                 // Logger is now full-size overlay in the output box, ensuring visibility
                                 <GenerationLogger status={currentStatus} error={error} startTime={startTime} />
                             ) : videoUrl ? (
-                                <div className="relative w-full h-full flex items-center justify-center group">
+                                <div
+                                    className="relative w-full h-full flex items-center justify-center group cursor-pointer"
+                                    onMouseMove={resetUITimer}
+                                    onClick={resetUITimer}
+                                    onTouchStart={resetUITimer}
+                                >
                                     {/* Use object-contain to preserve natural aspect ratio dynamically */}
                                     {/* Use object-contain to preserve natural aspect ratio dynamically */}
                                     {/* Use object-contain to preserve natural aspect ratio dynamically */}
@@ -1384,6 +1406,10 @@ const VideoGenerator: React.FC = () => {
                                                 onLoadedMetadata={handleLoadedMetadata}
                                                 onPlay={() => setIsPlaying(true)}
                                                 onPause={() => setIsPlaying(false)}
+                                                onError={(e) => {
+                                                    console.error("❌ [VIDEO] Failed to load video:", videoUrl, e);
+                                                    setError("Failed to load video stream. Please check your connection or try again later.");
+                                                }}
                                             />
                                         </div>
                                     ) : (
@@ -1397,7 +1423,7 @@ const VideoGenerator: React.FC = () => {
                                     {/* Infinity Action Deck - Slide Up Menu (Visible for BOTH Video & Image) */}
                                     {videoUrl && (
                                         <div
-                                            className="absolute bottom-0 left-0 w-full p-6 pt-20 flex flex-col justify-end bg-gradient-to-t from-black/95 via-black/60 to-transparent translate-y-0 md:translate-y-[10px] opacity-100 md:opacity-10 md:hover:opacity-100 md:group-hover:translate-y-0 md:group-hover:opacity-100 active:opacity-100 focus-within:opacity-100 transition-all duration-500 z-40"
+                                            className={`absolute bottom-0 left-0 w-full p-6 pt-20 flex flex-col justify-end bg-gradient-to-t from-black/95 via-black/60 to-transparent translate-y-0 text-white transition-all duration-500 z-40 ${showUI ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                                             onClick={(e) => e.stopPropagation()} // Prevent closing if clicking deck
                                         >
 
@@ -1505,7 +1531,7 @@ const VideoGenerator: React.FC = () => {
                                     )}
 
                                     {/* Top Overlay: Download & Meta (Styled like Safe/Spicy) */}
-                                    <div className="absolute top-4 right-4 flex flex-col items-end gap-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-30">
+                                    <div className={`absolute top-4 right-4 flex flex-col items-end gap-3 transition-opacity duration-500 z-30 ${showUI ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
                                         {/* Use as Reference Button - Only for Images */}
                                         {videoUrl && !videoUrl.toLowerCase().endsWith('.mp4') && (
                                             <button
@@ -1513,7 +1539,7 @@ const VideoGenerator: React.FC = () => {
                                                 className="px-6 py-2 border border-[#d2ac47]/50 bg-black/60 backdrop-blur-xl text-[var(--text-secondary)] hover:bg-[#d2ac47] hover:text-black transition-all text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 rounded-xl shadow-[0_0_20px_rgba(210,172,71,0.3)] hover:shadow-[0_0_30px_rgba(210,172,71,0.6)] z-50 overflow-hidden group/ref pointer-events-auto"
                                             >
                                                 <span className="relative z-10 flex items-center gap-2">
-                                                    <Layers size={14} className="group-hover/ref:scale-120 transition-transform" />
+                                                    <PersonStanding size={14} className="group-hover/ref:scale-120 transition-transform" />
                                                     Use as Reference
                                                 </span>
                                                 <div className="absolute inset-0 bg-gold-gradient opacity-0 group-hover/ref:opacity-20 transition-opacity"></div>
