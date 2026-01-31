@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Play, Globe, Lock, Heart, Share2, Maximize2, Image as ImageIcon, Video as VideoIcon, Layers } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Globe, Lock, Heart, Share2, Maximize2, Image as ImageIcon, Video as VideoIcon, Download, PersonStanding } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
+import { useAuth } from '../contexts/AuthContext';
 
 const PLACEHOLDERS = [
     { id: 'lib_1', type: 'video', url: '/assets/my_library/1.mp4', thumb: '/assets/my_library/1.mp4', label: 'Library 1', privacy: 'private' },
@@ -27,6 +29,7 @@ export interface GalleryItem {
     thumb: string;
     label: string;
     privacy?: string;
+    is_public?: boolean;
     date?: string;
     author?: string;
     likes?: number;
@@ -46,7 +49,23 @@ interface UserGalleryProps {
 // -----------------------------------------------------------------------------------------
 // Helper Sub-Component: Handles video state & Premium Apple-Glass Aesthetics
 // -----------------------------------------------------------------------------------------
-const VideoGalleryItem = ({ item, isActive, onDelete, onSelect, onReference, onToVideo }: { item: any; isActive: boolean; onDelete?: (id: string | number) => void; onSelect?: (item: any) => void; onReference?: (item: any) => void; onToVideo?: (item: any) => void }) => {
+const VideoGalleryItem = ({
+    item,
+    isActive,
+    onDelete,
+    onSelect,
+    onReference,
+    onToVideo,
+    onTogglePrivacy
+}: {
+    item: any;
+    isActive: boolean;
+    onDelete?: (id: string | number) => void;
+    onSelect?: (item: any) => void;
+    onReference?: (item: any) => void;
+    onToVideo?: (item: any) => void;
+    onTogglePrivacy?: (item: any) => void;
+}) => {
     const { t } = useTranslation();
     const videoRef = React.useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -66,6 +85,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect, onReference, onT
                 videoRef.current.pause();
                 videoRef.current.currentTime = 0;
             }
+            setShowUI(true); // Reset UI visibility when inactive/switching
         } else {
             // Auto-play active slide
             if (videoRef.current && isVideoFile) {
@@ -74,6 +94,8 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect, onReference, onT
                     promise.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
                 }
             }
+            // Reset timer on slide change
+            resetUITimer();
         }
     }, [isActive, item.id, isVideoFile]);
 
@@ -83,54 +105,51 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect, onReference, onT
         }
     };
 
-    const togglePlay = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (!videoRef.current) return;
-
-        if (isPlaying) {
-            if (!showUI) {
-                // If playing and UI is hidden, show UI first
-                setShowUI(true);
-            } else {
-                // If playing and UI is visible, pause
-                videoRef.current.pause();
-                setIsPlaying(false);
-            }
-        } else {
-            // If paused, start playing and hide UI
-            videoRef.current.play();
-            setIsPlaying(true);
+    const resetUITimer = () => {
+        setShowUI(true);
+        if (uiTimeoutRef.current) clearTimeout(uiTimeoutRef.current);
+        // Fade out to 10% after 2.0 seconds (User requested 2.0s delay)
+        uiTimeoutRef.current = setTimeout(() => {
             setShowUI(false);
-        }
+        }, 2000);
     };
 
-    // Auto-hide UI when playing
+    const handleInteraction = () => {
+        // Any interaction resets the timer and shows UI
+        resetUITimer();
+    };
+
+    // Initial timer on mount/active
     useEffect(() => {
-        if (isPlaying && showUI) {
-            if (uiTimeoutRef.current) clearTimeout(uiTimeoutRef.current);
-            uiTimeoutRef.current = setTimeout(() => {
-                setShowUI(false);
-            }, 3000); // 3 seconds
-        }
+        if (isActive) resetUITimer();
         return () => {
             if (uiTimeoutRef.current) clearTimeout(uiTimeoutRef.current);
         };
-    }, [isPlaying, showUI]);
+    }, [isActive]);
+
+    const togglePlay = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        handleInteraction();
+
+        if (!videoRef.current) return;
+
+        if (isPlaying) {
+            videoRef.current.pause();
+            setIsPlaying(false);
+        } else {
+            videoRef.current.play();
+            setIsPlaying(true);
+        }
+    };
 
     const handleSeek = (e: React.MouseEvent) => {
         e.stopPropagation();
+        handleInteraction();
         if (!videoRef.current || !videoRef.current.duration) return;
 
-        // Use currentTarget to get the full progress bar dimensions
         const rect = e.currentTarget.getBoundingClientRect();
-
-        // Calculate X relative to the LEFT edge of the progress bar
         const offsetX = e.clientX - rect.left;
-
-        // Ensure we are within bounds [0, width]
-        // This handles cases where dragging might go slightly outside
         const validX = Math.max(0, Math.min(offsetX, rect.width));
-
         const percentage = validX / rect.width;
         const newTime = percentage * videoRef.current.duration;
 
@@ -138,11 +157,12 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect, onReference, onT
         setProgress(percentage * 100);
     };
 
-    // const isVideo = item.type === 'video' || item.url?.includes('.mp4') || item.url?.includes('video');
-    // Replaced by isVideoFile defined above
-
     return (
-        <div className="relative min-w-full h-full flex flex-col">
+        <div
+            className="relative min-w-full h-full flex flex-col"
+            onClick={handleInteraction} // Global touch handler to restore UI
+            onMouseMove={handleInteraction} // Mouse move also restores UI
+        >
             {/* Background Blur Fill */}
             <div className="absolute inset-0 bg-[var(--bg-input)] overflow-hidden pointer-events-none transition-colors duration-500">
                 {item.thumb !== '/placeholder-luxury.png' ? (
@@ -150,13 +170,11 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect, onReference, onT
                 ) : (
                     <div className="w-full h-full opacity-50"></div>
                 )}
-                {/* Gradient Overlay - Dark in dark mode, light/transparent in light mode */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 dark:from-black/80 dark:to-black/20 opacity-20 dark:opacity-100 transition-opacity duration-500"></div>
             </div>
 
-            {/* Main Content Area - Blur Fill Layout */}
+            {/* Main Content Area */}
             <div className="relative flex-1 flex items-center justify-center p-0 overflow-hidden bg-[var(--bg-input)] transition-colors duration-500">
-                {/* 1. Blur Fill Layer */}
                 <div className="absolute inset-0 pointer-events-none">
                     <img src={item.thumb} alt="" className="w-full h-full object-cover opacity-30 blur-2xl scale-125 saturate-150" />
                     <div className="absolute inset-0 bg-[var(--bg-input)]/40"></div>
@@ -179,53 +197,112 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect, onReference, onT
                             onTimeUpdate={handleTimeUpdate}
                             onPlay={() => setIsPlaying(true)}
                             onPause={() => setIsPlaying(false)}
+                            onError={(e) => console.error("❌ [GALLERY] Video failed:", mediaUrl, e)}
                         />
                     ) : (
                         <img
                             src={mediaUrl || item.thumb}
                             alt={item.label}
-                            className="w-full h-full object-contain drop-shadow-[0_0_30px_rgba(0,0,0,0.8)] group-hover:scale-105 transition-transform duration-1000"
+                            className="w-full h-full object-contain drop-shadow-[0_0_30px_rgba(0,0,0,0.8)]"
                         />
                     )}
 
-                    {/* Interactive Overlay - Visible only on hover (PC) or tap/playing (Mobile) */}
+                    {/* Interactive Overlay - Fades to 10% opacity, does NOT hide completely */}
                     <div
-                        data-visible={showUI}
-                        className="absolute inset-0 z-20 pointer-events-none opacity-100 md:opacity-0 md:[@media(hover:hover)]:group-hover/item:opacity-100 md:[@media(hover:none)]:data-[visible=true]:opacity-100 transition-all duration-300"
+                        className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-500 delay-500"
+                        style={{ opacity: showUI ? 1 : 0.1 }}
                     >
-                        {/* Type Indicator - Top Right (Below Delete) */}
+                        {/* Type Indicator */}
                         <div className="absolute top-16 right-3 flex flex-col gap-2">
-                            <div className="p-2 bg-transparent backdrop-blur-md border border-[var(--border-color)] rounded-lg text-[var(--text-secondary)]/60 shadow-lg animate-in zoom-in duration-300">
+                            <div className="p-2 bg-transparent backdrop-blur-md border border-[var(--border-color)] rounded-lg text-[var(--text-secondary)]/60 shadow-lg">
                                 {isVideoFile ? <VideoIcon size={14} /> : <ImageIcon size={14} />}
                             </div>
                         </div>
 
                         <div className="absolute top-3 left-3 flex gap-2 pointer-events-auto">
-                            <button className="group/btn relative p-2.5 bg-transparent backdrop-blur-xl border border-[var(--border-color)] rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] hover:border-red-500/50">
-                                <Heart size={18} className="text-[var(--text-secondary)]/60 group-hover/btn:text-red-500 transition-colors" />
-                            </button>
-                            <button className="group/btn relative p-2.5 bg-transparent backdrop-blur-xl border border-[var(--border-color)] rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg hover:shadow-[0_0_20px_rgba(96,165,250,0.4)] hover:border-blue-400/50">
-                                <Share2 size={18} className="text-[var(--text-secondary)]/60 group-hover/btn:text-blue-400 transition-colors" />
-                            </button>
-                            {/* NEW: Use as Reference Button (Round) - Photos Only */}
-                            {!isVideoFile && onReference && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onReference(item);
-                                    }}
-                                    className="group/btn relative p-2.5 bg-transparent backdrop-blur-xl border border-[var(--border-color)] rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg hover:shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:border-[#d2ac47]/50"
-                                    title={t('btn_use_ref')}
-                                >
-                                    <Layers size={18} className="text-[var(--text-secondary)]/60 group-hover/btn:text-[#d2ac47] transition-colors" />
-                                </button>
-                            )}
+                            {/* Standardized Button Style */}
+                            {(() => {
+                                // Premium Golden Glass Style
+                                const baseBtnClass = "group/btn relative p-2.5 bg-black/60 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)] rounded-full transition-all hover:bg-[#d2ac47] hover:text-black hover:border-[#d2ac47] hover:scale-110 active:scale-95 shadow-lg z-30";
+
+                                return (
+                                    <>
+                                        {/* LIKE BUTTON */}
+                                        <button className={`${baseBtnClass} hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] hover:!bg-red-500 hover:!border-red-500 hover:!text-white`}>
+                                            <Heart size={18} className="text-[var(--text-secondary)] group-hover/btn:text-white transition-colors" />
+                                        </button>
+
+                                        {/* SHARE BUTTON */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleInteraction();
+                                                if (onTogglePrivacy) onTogglePrivacy(item);
+                                            }}
+                                            className={`${baseBtnClass} ${item.is_public
+                                                ? 'bg-blue-500/20 !border-blue-400 !text-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.3)] hover:!bg-blue-500 hover:!text-white'
+                                                : 'hover:shadow-[0_0_20px_rgba(96,165,250,0.4)] hover:!bg-blue-500 hover:!border-blue-500 hover:!text-white'
+                                                }`}
+                                        >
+                                            <Share2
+                                                size={18}
+                                                className={`transition-colors ${item.is_public
+                                                    ? 'text-blue-400 group-hover/btn:text-white'
+                                                    : 'text-[var(--text-secondary)] group-hover/btn:text-white'
+                                                    }`}
+                                            />
+                                        </button>
+
+                                        {/* Download Button */}
+                                        <button
+                                            onClick={async (e) => {
+                                                e.stopPropagation();
+                                                handleInteraction();
+                                                try {
+                                                    const response = await fetch(mediaUrl);
+                                                    const blob = await response.blob();
+                                                    const url = window.URL.createObjectURL(blob);
+                                                    const link = document.createElement('a');
+                                                    link.href = url;
+                                                    link.download = `infinity_${isVideoFile ? 'video' : 'photo'}_${Date.now()}.${isVideoFile ? 'mp4' : 'png'}`;
+                                                    document.body.appendChild(link);
+                                                    link.click();
+                                                    document.body.removeChild(link);
+                                                    window.URL.revokeObjectURL(url);
+                                                } catch (err) {
+                                                    console.error("Download failed", err);
+                                                    window.open(mediaUrl, '_blank');
+                                                }
+                                            }}
+                                            className={`${baseBtnClass} hover:shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:!bg-green-600 hover:!border-green-500 hover:!text-white`}
+                                            title={t('tooltip_download')}
+                                        >
+                                            <Download size={18} className="text-[var(--text-secondary)] group-hover/btn:text-white transition-colors" />
+                                        </button>
+
+                                        {/* Reference Button */}
+                                        {!isVideoFile && onReference && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleInteraction();
+                                                    onReference(item);
+                                                }}
+                                                className={`${baseBtnClass} hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:!bg-orange-500 hover:!border-orange-500 hover:!text-white`}
+                                                title={t('btn_use_ref')}
+                                            >
+                                                <PersonStanding size={18} className="text-[var(--text-secondary)] group-hover/btn:text-white transition-colors" />
+                                            </button>
+                                        )}
+                                    </>
+                                );
+                            })()}
                         </div>
 
                         {/* Bottom Control Bar - Only for Videos */}
                         {isVideoFile && (
                             <div
-                                className="absolute bottom-10 left-4 right-4 h-12 bg-black/40 backdrop-blur-2xl border border-[var(--border-color)] rounded-2xl overflow-hidden flex items-center px-4 gap-3 group-hover/item:border-[var(--border-color)] transition-all pointer-events-auto shadow-2xl animate-in fade-in duration-500"
+                                className="absolute bottom-10 left-4 right-4 h-12 bg-black/40 backdrop-blur-2xl border border-[var(--border-color)] rounded-2xl overflow-hidden flex items-center px-4 gap-3 group-hover/item:border-[var(--border-color)] transition-all pointer-events-auto shadow-2xl"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 {/* Play Button */}
@@ -240,25 +317,22 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect, onReference, onT
                                     )}
                                 </button>
 
-                                {/* Scrubber - Golden Glow with Drag Support */}
+                                {/* Scrubber */}
                                 <div
                                     className="flex-1 h-full flex items-center justify-center cursor-ew-resize group/scrub touch-none"
                                     onClick={handleSeek}
                                     onMouseMove={(e) => {
-                                        if (e.buttons === 1) handleSeek(e); // Allow drag seeking
+                                        if (e.buttons === 1) handleSeek(e);
                                     }}
-                                    onTouchStart={(e) => e.stopPropagation()} // Stop swipe propagation
+                                    onTouchStart={(e) => e.stopPropagation()}
                                     onTouchMove={(e) => {
-                                        e.stopPropagation(); // Prevent swipes
+                                        e.stopPropagation();
                                         if (!videoRef.current || !videoRef.current.duration) return;
-
                                         const rect = e.currentTarget.getBoundingClientRect();
                                         const offsetX = e.touches[0].clientX - rect.left;
                                         const validX = Math.max(0, Math.min(offsetX, rect.width));
-
                                         const percentage = validX / rect.width;
                                         const newTime = percentage * videoRef.current.duration;
-
                                         if (!isNaN(newTime) && isFinite(newTime)) {
                                             videoRef.current.currentTime = newTime;
                                             setProgress(percentage * 100);
@@ -277,21 +351,20 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect, onReference, onT
                                     </div>
                                 </div>
 
-                                {/* Meta Info */}
                                 <div className="flex items-center gap-2 text-[8px] text-[var(--text-secondary)]/60 font-mono uppercase tracking-tighter shrink-0 pointer-events-auto">
                                     <Maximize2 size={12} className="opacity-50 hover:text-white cursor-pointer transition-colors" />
                                 </div>
                             </div>
                         )}
 
-
-                        {/* Full View Button for Images (Replacement for Scrubber) */}
+                        {/* Full View Button for Images */}
                         {!isVideoFile && (
                             <div className="absolute inset-0 flex flex-col gap-1.5 items-center justify-center pointer-events-none">
                                 <button
                                     className="px-3 py-1.5 bg-white/5 backdrop-blur-[2px] border border-white/10 text-white/90 text-[8px] font-bold uppercase tracking-[0.2em] rounded-full shadow-sm pointer-events-auto hover:bg-black/40 hover:border-white/30 hover:text-white transition-all hover:scale-105"
                                     onClick={(e) => {
                                         e.stopPropagation();
+                                        handleInteraction();
                                         if (onSelect) onSelect(item);
                                     }}
                                 >
@@ -303,6 +376,7 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect, onReference, onT
                                         className="px-3 py-1.5 bg-[var(--bg-card)]/80 backdrop-blur-md border border-[#d2ac47]/50 text-[#d2ac47] text-[8px] font-bold uppercase tracking-[0.2em] rounded-full shadow-lg pointer-events-auto hover:bg-[#d2ac47] hover:text-black transition-all hover:scale-105 flex items-center gap-1.5"
                                         onClick={(e) => {
                                             e.stopPropagation();
+                                            handleInteraction();
                                             onToVideo(item);
                                         }}
                                     >
@@ -312,36 +386,38 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect, onReference, onT
                                 )}
                             </div>
                         )}
-
-                        {/* Delete Button - Glass + Red Glow */}
-                        {onDelete && item.id !== 'p1' && (
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (window.confirm(t('tooltip_delete') + '?')) onDelete(item.id);
-                                }}
-                                className="absolute top-3 right-3 p-2.5 bg-red-950/40 backdrop-blur-xl text-red-200/60 rounded-full hover:bg-red-600 hover:text-white transition-all border border-red-500/10 shadow-lg hover:shadow-[0_0_20px_rgba(220,38,38,0.5)] pointer-events-auto opacity-0 group-hover/item:opacity-100"
-                                title={t('tooltip_delete')}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
-                            </button>
-                        )}
                     </div>
+
+                    {/* Delete Button - Always Visible but fades with others */}
+                    {onDelete && item.id !== 'p1' && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleInteraction();
+                                if (window.confirm(t('tooltip_delete') + '?')) onDelete(item.id);
+                            }}
+                            className={`absolute top-3 right-3 p-2.5 bg-red-950/40 backdrop-blur-xl text-red-200/60 rounded-full hover:bg-red-600 hover:text-white transition-all border border-red-500/10 shadow-lg hover:shadow-[0_0_20px_rgba(220,38,38,0.5)] pointer-events-auto z-30 duration-1000 ${showUI ? 'opacity-100' : 'opacity-10'}`}
+                            title={t('tooltip_delete')}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
+                        </button>
+                    )}
                 </div>
             </div>
 
             {/* Footer Info */}
-            <div className="relative px-4 pb-4 pt-1 text-center shrink-0">
+            <div className={`relative px-4 pb-4 pt-1 text-center shrink-0 transition-opacity duration-1000 ${showUI ? 'opacity-100' : 'opacity-20'}`}>
                 <p className="text-[var(--text-primary)] text-[11px] font-serif italic mb-0.5 truncate">{item.label}</p>
                 <div className="flex items-center justify-center gap-2 text-[7px] uppercase tracking-widest text-[var(--text-secondary)]/40 font-bold">
                     <span>{item.date || t('lbl_just_now')}</span>
                     <div className="w-1 h-1 rounded-full bg-[var(--text-secondary)]/10"></div>
-                    {item.privacy === 'public' ? <Globe size={8} /> : <Lock size={8} />}
+                    {item.is_public ? <Globe size={8} className="text-blue-400" /> : <Lock size={8} />}
                     <div className="w-1 h-1 rounded-full bg-[var(--text-secondary)]/10"></div>
                     <button
                         className="hover:text-[var(--text-secondary)] transition-colors uppercase"
                         onClick={(e) => {
                             e.stopPropagation();
+                            handleInteraction();
                             if (onSelect) onSelect(item);
                         }}
                     >
@@ -353,21 +429,92 @@ const VideoGalleryItem = ({ item, isActive, onDelete, onSelect, onReference, onT
     );
 };
 
-const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSelect, onReference, onToVideo, onRefresh }) => {
+const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSelect, onReference, onToVideo, onRefresh, compact = false }) => {
     const { t } = useTranslation();
+    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState<'my' | 'community'>('my');
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [isAutoHistory, setIsAutoHistory] = useState<any[]>([]);
+
+    // Generate or retrieve Guest ID for isolation (Self-contained)
+    const [guestId] = useState(() => {
+        let id = localStorage.getItem('endless_guest_id');
+        if (!id) {
+            id = crypto.randomUUID();
+            localStorage.setItem('endless_guest_id', id);
+        }
+        return id;
+    });
+
+    useEffect(() => {
+        if (!newItems || newItems.length === 0) {
+            const fetchHistory = async () => {
+                let query = supabase
+                    .from('generations')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(20);
+
+                if (user) {
+                    query = query.eq('user_id', user.id);
+                } else {
+                    query = query.contains('metadata', { guest_id: guestId });
+                }
+
+                const { data, error } = await query;
+                if (data && !error) {
+                    setIsAutoHistory(data);
+                }
+            };
+            fetchHistory();
+        }
+    }, [user, guestId, newItems]);
+
+    // Handle Privacy Toggle (Share to Trending)
+    const handleTogglePrivacy = async (item: GalleryItem) => {
+        console.log("Toggle Privacy Triggered for:", item.id, item.is_public);
+        if (!user && !guestId) return; // Basic guard
+
+        const newIsPublic = !item.is_public;
+
+        // Optimistic Update
+        const updateList = (list: any[]) => list.map(i => i.id === item.id ? { ...i, is_public: newIsPublic } : i);
+        if (newItems && newItems.length > 0) {
+            // ...
+        }
+        setIsAutoHistory(prev => updateList(prev));
+
+        // Actual Supabase call
+        try {
+            const { error } = await supabase
+                .from('generations')
+                .update({ is_public: newIsPublic })
+                .eq('id', item.id);
+
+            if (error) throw error;
+
+            // If successfully shared to public, maybe trigger a refresh of community feed?
+            if (activeTab === 'community' && onRefresh) onRefresh();
+
+        } catch (err) {
+            console.error("Failed to toggle privacy:", err);
+            // Revert on error
+            setIsAutoHistory(prev => prev.map(i => i.id === item.id ? { ...i, privacy: item.privacy } : i));
+            alert(t('error_share_failed') || "Failed to update privacy");
+        }
+    };
+
 
     // Mobile Swipe Logic
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
     const minSwipeDistance = 50;
 
-    const rawItems = React.useMemo(() => (
-        activeTab === 'my'
-            ? [...(newItems || []), ...PLACEHOLDERS]
-            : COMMUNITY_FEED
-    ), [activeTab, newItems]);
+    const rawItems = React.useMemo(() => {
+        if (activeTab === 'community') return COMMUNITY_FEED;
+        const historyData = (newItems && newItems.length > 0) ? newItems : isAutoHistory;
+        return [...(historyData || []), ...PLACEHOLDERS];
+    }, [activeTab, newItems, isAutoHistory]);
 
     // Normalize items to handle Supabase schema - Memoized to prevent flickering
     const items = React.useMemo(() => (
@@ -411,37 +558,39 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSe
     };
 
     return (
-        <div className="w-full relative group mt-4 flex-1 flex flex-col min-h-0 bg-[var(--bg-primary)] rounded-2xl overflow-hidden border border-[var(--border-color)]">
+        <div className={`w-full relative group mt-4 flex-1 flex flex-col min-h-0 bg-[var(--bg-primary)] rounded-2xl overflow-hidden border border-[var(--border-color)] ${compact ? 'border-none bg-transparent mt-0' : ''}`}>
             {/* Header / Tabs */}
-            <div className="flex items-center justify-between px-4 py-3 bg-[var(--bg-input)] border-b border-[var(--border-color)] sticky top-0 z-40">
-                <div className="flex gap-4">
-                    <button
-                        onClick={() => {
-                            setActiveTab('my');
-                            setCurrentIndex(0);
-                            if (onRefresh) onRefresh();
-                        }}
-                        className={`text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'my' ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]/30 hover:text-[var(--text-secondary)]/60'}`}
-                    >
-                        {t('vid_lib')}
-                    </button>
-                    <button
-                        onClick={() => {
-                            setActiveTab('community');
-                            setCurrentIndex(0);
-                        }}
-                        className={`text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'community' ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]/30 hover:text-[var(--text-secondary)]/60'}`}
-                    >
-                        {t('vid_trending')}
-                    </button>
-                </div>
+            {!compact && (
+                <div className="flex items-center justify-between px-4 py-3 bg-[var(--bg-input)] border-b border-[var(--border-color)] sticky top-0 z-40">
+                    <div className="flex gap-4">
+                        <button
+                            onClick={() => {
+                                setActiveTab('my');
+                                setCurrentIndex(0);
+                                if (onRefresh) onRefresh();
+                            }}
+                            className={`text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'my' ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]/30 hover:text-[var(--text-secondary)]/60'}`}
+                        >
+                            {t('vid_lib')}
+                        </button>
+                        <button
+                            onClick={() => {
+                                setActiveTab('community');
+                                setCurrentIndex(0);
+                            }}
+                            className={`text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'community' ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]/30 hover:text-[var(--text-secondary)]/60'}`}
+                        >
+                            {t('vid_trending')}
+                        </button>
+                    </div>
 
-                {/* Navigation Arrows */}
-                <div className="flex gap-1.5">
-                    <button onClick={prevSlide} className="p-1 hover:text-[var(--text-secondary)] transition-colors border border-[var(--border-color)] rounded-lg bg-transparent"><ChevronLeft size={12} /></button>
-                    <button onClick={nextSlide} className="p-1 hover:text-[var(--text-secondary)] transition-colors border border-[var(--border-color)] rounded-lg bg-transparent"><ChevronRight size={12} /></button>
+                    {/* Navigation Arrows */}
+                    <div className="flex gap-1.5">
+                        <button onClick={prevSlide} className="p-1 hover:text-[var(--text-secondary)] transition-colors border border-[var(--border-color)] rounded-lg bg-transparent"><ChevronLeft size={12} /></button>
+                        <button onClick={nextSlide} className="p-1 hover:text-[var(--text-secondary)] transition-colors border border-[var(--border-color)] rounded-lg bg-transparent"><ChevronRight size={12} /></button>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Gallery Window */}
             <div
@@ -465,6 +614,7 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSe
                             onSelect={onSelect}
                             onReference={onReference}
                             onToVideo={onToVideo}
+                            onTogglePrivacy={handleTogglePrivacy}
                         />
                     ))}
                 </div>
