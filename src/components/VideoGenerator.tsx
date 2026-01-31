@@ -781,8 +781,8 @@ const VideoGenerator: React.FC = () => {
             <div className="flex flex-col xl:grid xl:grid-cols-12 gap-8 items-stretch min-h-[450px]">
 
                 {/* Left Panel: Visual References (Mixed Gallery) - Mobile: Bottom (Order 3) */}
-                <div className="order-3 xl:order-none xl:col-span-4 xl:h-[calc(100vh-120px)] overflow-y-scroll custom-scrollbar pr-2 min-h-[500px] lg:min-h-0" style={{ scrollbarGutter: 'stable' }}>
-                    <div className="flex items-center justify-between mb-6 sticky top-0 bg-[var(--bg-primary)]/95 backdrop-blur-md z-[60] py-4 border-b border-[var(--border-color)] shadow-sm -mx-2 px-2 transition-all">
+                <div className="order-3 xl:order-none xl:col-span-4 xl:h-[calc(100vh-120px)] overflow-y-auto overflow-x-hidden custom-scrollbar pr-1 min-h-[500px] lg:min-h-0" style={{ scrollbarGutter: 'stable' }}>
+                    <div className="flex items-center justify-between mb-6 sticky top-0 bg-[var(--bg-primary)]/95 backdrop-blur-md z-[60] py-4 border-b border-[var(--border-color)] shadow-sm px-2 transition-all">
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-2 text-[var(--text-secondary)]">
                                 <Sparkles size={16} />
