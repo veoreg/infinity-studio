@@ -291,6 +291,7 @@ const VideoGenerator: React.FC = () => {
             if (pending) {
                 // 1. Set as Active Source
                 setImageUrl(pending);
+                if (!textPrompt) setTextPrompt("Cinematic portrait, detailed features, 8k, masterpiece");
 
                 // 2. Add to Gallery (First Item)
                 setGalleryItems(prev => {
@@ -316,7 +317,7 @@ const VideoGenerator: React.FC = () => {
 
         const handleTabSwitch = (e: CustomEvent) => {
             if (e.detail === 'video') {
-                setTimeout(checkPending, 100);
+                setTimeout(checkPending, 500);
             }
         };
         window.addEventListener('switch-tab', handleTabSwitch as EventListener);
@@ -671,8 +672,12 @@ const VideoGenerator: React.FC = () => {
         // Determine if this is an extension or a fresh generation
         const extendFromId = typeof eventOrId === 'string' ? eventOrId : undefined;
 
-        if (!imageUrl || !textPrompt) {
-            setError('Please provide both an image URL and a text prompt.');
+        if (!imageUrl) {
+            setError(t('vid_err_no_image') || 'Please provide an image URL.');
+            return;
+        }
+        if (!textPrompt) {
+            setError(t('vid_err_no_prompt') || 'Please provide a text prompt.');
             return;
         }
 
@@ -779,7 +784,7 @@ const VideoGenerator: React.FC = () => {
             <div className="flex flex-col xl:grid xl:grid-cols-12 gap-8 items-stretch min-h-[450px]">
 
                 {/* Left Panel: Visual References (Mixed Gallery) - Mobile: Bottom (Order 3) */}
-                <div className="order-3 xl:order-none xl:col-span-4 xl:h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar pr-2 min-h-[500px] lg:min-h-0">
+                <div className="order-3 xl:order-none xl:col-span-4 xl:h-[calc(100vh-120px)] overflow-y-scroll custom-scrollbar pr-2 min-h-[500px] lg:min-h-0" style={{ scrollbarGutter: 'stable' }}>
                     <div className="flex items-center justify-between mb-6 sticky top-0 bg-[var(--bg-primary)]/95 backdrop-blur-md z-[60] py-4 border-b border-[var(--border-color)] shadow-sm -mx-2 px-2 transition-all">
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-2 text-[var(--text-secondary)]">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Play, Globe, Lock, Heart, Share2, Maximize2, Image as ImageIcon, Video as VideoIcon, Download, PersonStanding } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, Share2, Maximize2, Image as ImageIcon, Video as VideoIcon, PersonStanding } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -33,6 +33,7 @@ export interface GalleryItem {
     date?: string;
     author?: string;
     likes?: number;
+    image_url?: string; // For compatibility with legacy generation objects
 }
 
 interface UserGalleryProps {
@@ -42,6 +43,7 @@ interface UserGalleryProps {
     onSelect?: (item: GalleryItem) => void;
     onReference?: (item: GalleryItem) => void;
     onToVideo?: (item: GalleryItem) => void;
+    onUseAsBody?: (item: GalleryItem) => void;
     onRefresh?: () => void;
     compact?: boolean;
 }
@@ -55,6 +57,7 @@ const VideoGalleryItem = ({
     onDelete,
     onSelect,
     onReference,
+    onUseAsBody,
     onToVideo,
     onTogglePrivacy
 }: {
@@ -63,6 +66,7 @@ const VideoGalleryItem = ({
     onDelete?: (id: string | number) => void;
     onSelect?: (item: any) => void;
     onReference?: (item: any) => void;
+    onUseAsBody?: (item: any) => void;
     onToVideo?: (item: any) => void;
     onTogglePrivacy?: (item: any) => void;
 }) => {
@@ -157,6 +161,8 @@ const VideoGalleryItem = ({
         setProgress(percentage * 100);
     };
 
+    const baseBtnClass = "group/btn relative p-2.5 bg-black/60 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)] rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg z-30";
+
     return (
         <div
             className="relative min-w-full h-full flex flex-col"
@@ -207,183 +213,104 @@ const VideoGalleryItem = ({
                         />
                     )}
 
-                    {/* Interactive Overlay - Fades to 10% opacity, does NOT hide completely */}
+                    {/* Interactive Overlay - Fades to 10% opacity */}
                     <div
                         className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-500 delay-500"
                         style={{ opacity: showUI ? 1 : 0.1 }}
                     >
-                        {/* Type Indicator */}
-                        <div className="absolute top-16 right-3 flex flex-col gap-2">
-                            <div className="p-2 bg-transparent backdrop-blur-md border border-[var(--border-color)] rounded-lg text-[var(--text-secondary)]/60 shadow-lg">
-                                {isVideoFile ? <VideoIcon size={14} /> : <ImageIcon size={14} />}
+                        {/* Type Indicator (Top Right, below delete) */}
+                        <div className="absolute top-12 right-3 flex flex-col gap-2 pointer-events-none">
+                            <div className="p-1.5 bg-black/40 backdrop-blur-md border border-white/10 rounded-md text-white/40 shadow-sm">
+                                {isVideoFile ? <VideoIcon size={12} /> : <ImageIcon size={12} />}
                             </div>
                         </div>
 
+                        {/* TOP LEFT: Like & Share (2 Buttons) */}
                         <div className="absolute top-3 left-3 flex gap-2 pointer-events-auto">
-                            {/* Standardized Button Style */}
-                            {(() => {
-                                // Premium Golden Glass Style
-                                const baseBtnClass = "group/btn relative p-2.5 bg-black/60 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)] rounded-full transition-all hover:bg-[#d2ac47] hover:text-black hover:border-[#d2ac47] hover:scale-110 active:scale-95 shadow-lg z-30";
+                            {/* LIKE BUTTON */}
+                            <button className={`${baseBtnClass} hover:shadow-[0_0_20px_rgba(239,68,68,0.6)] hover:!bg-red-500/20 hover:!border-red-500 hover:!text-white`}>
+                                <Heart size={16} className="text-[var(--text-secondary)] group-hover/btn:text-white transition-colors" />
+                            </button>
 
-                                return (
-                                    <>
-                                        {/* LIKE BUTTON */}
-                                        <button className={`${baseBtnClass} hover:shadow-[0_0_20px_rgba(239,68,68,0.6)] hover:!bg-red-500/20 hover:!border-red-500 hover:!text-white`}>
-                                            <Heart size={18} className="text-[var(--text-secondary)] group-hover/btn:text-white transition-colors" />
-                                        </button>
-
-                                        {/* SHARE BUTTON */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleInteraction();
-                                                if (onTogglePrivacy) onTogglePrivacy(item);
-                                            }}
-                                            className={`${baseBtnClass} ${item.is_public
-                                                ? 'bg-blue-500/20 !border-blue-400 !text-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.3)] hover:!bg-blue-500/30 hover:!text-white'
-                                                : 'hover:shadow-[0_0_20px_rgba(96,165,250,0.6)] hover:!bg-blue-500/20 hover:!border-blue-500 hover:!text-white'
-                                                }`}
-                                        >
-                                            <Share2
-                                                size={18}
-                                                className={`transition-colors ${item.is_public
-                                                    ? 'text-blue-400 group-hover/btn:text-white'
-                                                    : 'text-[var(--text-secondary)] group-hover/btn:text-white'
-                                                    }`}
-                                            />
-                                        </button>
-
-                                        {/* Download Button */}
-                                        <button
-                                            onClick={async (e) => {
-                                                e.stopPropagation();
-                                                handleInteraction();
-                                                try {
-                                                    const response = await fetch(mediaUrl);
-                                                    const blob = await response.blob();
-                                                    const url = window.URL.createObjectURL(blob);
-                                                    const link = document.createElement('a');
-                                                    link.href = url;
-                                                    link.download = `infinity_${isVideoFile ? 'video' : 'photo'}_${Date.now()}.${isVideoFile ? 'mp4' : 'png'}`;
-                                                    document.body.appendChild(link);
-                                                    link.click();
-                                                    document.body.removeChild(link);
-                                                    window.URL.revokeObjectURL(url);
-                                                } catch (err) {
-                                                    console.error("Download failed", err);
-                                                    window.open(mediaUrl, '_blank');
-                                                }
-                                            }}
-                                            className={`${baseBtnClass} hover:shadow-[0_0_20px_rgba(34,197,94,0.6)] hover:!bg-green-500/20 hover:!border-green-500 hover:!text-white`}
-                                            title={t('tooltip_download')}
-                                        >
-                                            <Download size={18} className="text-[var(--text-secondary)] group-hover/btn:text-white transition-colors" />
-                                        </button>
-
-                                        {/* Reference Button (NOW EDIT) */}
-                                        {!isVideoFile && onReference && (
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleInteraction();
-                                                    onReference(item);
-                                                }}
-                                                className={`${baseBtnClass} hover:shadow-[0_0_20px_rgba(249,115,22,0.6)] hover:!bg-orange-500/20 hover:!border-orange-500 hover:!text-white`}
-                                                title={t('btn_use_ref')}
-                                            >
-                                                <PersonStanding size={18} className="text-[var(--text-secondary)] group-hover/btn:text-white transition-colors" />
-                                            </button>
-                                        )}
-                                    </>
-                                );
-                            })()}
+                            {/* SHARE BUTTON */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleInteraction();
+                                    if (onTogglePrivacy) onTogglePrivacy(item);
+                                }}
+                                className={`${baseBtnClass} ${item.is_public
+                                    ? 'bg-blue-500/20 !border-blue-400 !text-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.3)] hover:!bg-blue-500/30 hover:!text-white'
+                                    : 'hover:shadow-[0_0_20px_rgba(96,165,250,0.6)] hover:!bg-blue-500/20 hover:!border-blue-500 hover:!text-white'
+                                    }`}
+                            >
+                                <Share2
+                                    size={16}
+                                    className={`transition-colors ${item.is_public
+                                        ? 'text-blue-400 group-hover/btn:text-white'
+                                        : 'text-[var(--text-secondary)] group-hover/btn:text-white'
+                                        }`}
+                                />
+                            </button>
                         </div>
 
-                        {/* Bottom Control Bar - Only for Videos */}
-                        {isVideoFile && (
-                            <div
-                                className="absolute bottom-10 left-4 right-4 h-12 bg-black/40 backdrop-blur-2xl border border-[var(--border-color)] rounded-2xl overflow-hidden flex items-center px-4 gap-3 group-hover/item:border-[var(--border-color)] transition-all pointer-events-auto shadow-2xl"
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                {/* Play Button */}
+                        {/* BOTTOM ROW: Edit, Body, Video (3 Buttons) */}
+                        <div className="absolute bottom-3 left-3 right-3 flex justify-between items-center pointer-events-auto px-1">
+
+                            {/* LEFT: Edit/Ref */}
+                            {!isVideoFile && onReference && (
                                 <button
-                                    className="w-8 h-8 shrink-0 rounded-full bg-[var(--text-secondary)]/10 flex items-center justify-center hover:bg-[var(--text-secondary)] group/play transition-colors"
-                                    onClick={togglePlay}
-                                >
-                                    {isPlaying ? (
-                                        <div className="w-2.5 h-2.5 bg-[#d2ac47] group-hover/play:bg-black rounded-sm shadow-[0_0_10px_var(--border-color)]" />
-                                    ) : (
-                                        <Play size={12} className="text-[var(--text-secondary)] fill-[var(--text-secondary)] group-hover/play:text-black group-hover/play:fill-black shadow-[0_0_10px_var(--border-color)]" />
-                                    )}
-                                </button>
-
-                                {/* Scrubber */}
-                                <div
-                                    className="flex-1 h-full flex items-center justify-center cursor-ew-resize group/scrub touch-none"
-                                    onClick={handleSeek}
-                                    onMouseMove={(e) => {
-                                        if (e.buttons === 1) handleSeek(e);
-                                    }}
-                                    onTouchStart={(e) => e.stopPropagation()}
-                                    onTouchMove={(e) => {
-                                        e.stopPropagation();
-                                        if (!videoRef.current || !videoRef.current.duration) return;
-                                        const rect = e.currentTarget.getBoundingClientRect();
-                                        const offsetX = e.touches[0].clientX - rect.left;
-                                        const validX = Math.max(0, Math.min(offsetX, rect.width));
-                                        const percentage = validX / rect.width;
-                                        const newTime = percentage * videoRef.current.duration;
-                                        if (!isNaN(newTime) && isFinite(newTime)) {
-                                            videoRef.current.currentTime = newTime;
-                                            setProgress(percentage * 100);
-                                        }
-                                    }}
-                                >
-                                    <div className="w-full h-1.5 bg-white/10 rounded-full relative overflow-visible pointer-events-none">
-                                        <div
-                                            className="absolute inset-y-0 left-0 bg-gold-gradient rounded-full shadow-[0_0_15px_var(--border-color)] transition-all duration-100 ease-linear"
-                                            style={{ width: `${progress}%` }}
-                                        ></div>
-                                        <div
-                                            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover/scrub:opacity-100 transition-opacity shadow-[0_0_10px_white]"
-                                            style={{ left: `${progress}%` }}
-                                        ></div>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 text-[8px] text-[var(--text-secondary)]/60 font-mono uppercase tracking-tighter shrink-0 pointer-events-auto">
-                                    <Maximize2 size={12} className="opacity-50 hover:text-white cursor-pointer transition-colors" />
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Full View Button for Images */}
-                        {!isVideoFile && (
-                            <div className="absolute inset-0 flex flex-col gap-1.5 items-center justify-center pointer-events-none">
-                                <button
-                                    className="px-3 py-1.5 bg-white/5 backdrop-blur-[2px] border border-white/10 text-white/90 text-[8px] font-bold uppercase tracking-[0.2em] rounded-full shadow-sm pointer-events-auto hover:bg-black/40 hover:border-white/30 hover:text-white transition-all hover:scale-105"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleInteraction();
-                                        if (onSelect) onSelect(item);
+                                        onReference(item);
                                     }}
+                                    className={`${baseBtnClass} hover:shadow-[0_0_20px_rgba(234,179,8,0.6)] hover:!bg-yellow-500/20 hover:!border-yellow-500 hover:!text-white`}
+                                    title={t('btn_use_ref')}
                                 >
-                                    {t('btn_use_ref')}
+                                    <Maximize2 size={16} className="text-[var(--text-secondary)] group-hover/btn:text-white transition-colors" />
                                 </button>
+                            )}
 
-                                {onToVideo && (
-                                    <button
-                                        className="px-3 py-1.5 bg-[var(--bg-card)]/80 backdrop-blur-md border border-[#d2ac47]/50 text-[#d2ac47] text-[8px] font-bold uppercase tracking-[0.2em] rounded-full shadow-lg pointer-events-auto hover:bg-[#d2ac47] hover:text-black transition-all hover:scale-105 flex items-center gap-1.5"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleInteraction();
-                                            onToVideo(item);
-                                        }}
-                                    >
-                                        <VideoIcon size={10} />
-                                        {t('btn_to_video')}
-                                    </button>
-                                )}
+                            {/* CENTER: Body Ref (Orange/Human) */}
+                            {!isVideoFile && onUseAsBody && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleInteraction();
+                                        onUseAsBody(item);
+                                    }}
+                                    className={`${baseBtnClass} hover:shadow-[0_0_20px_rgba(249,115,22,0.6)] hover:!bg-orange-500/20 hover:!border-orange-500 hover:!text-white scale-110`} // Slightly larger center
+                                    title={t('label_body_ref')}
+                                >
+                                    <PersonStanding size={18} className="text-[var(--text-secondary)] group-hover/btn:text-white transition-colors" />
+                                </button>
+                            )}
+
+                            {/* RIGHT: To Video */}
+                            {(isVideoFile || onToVideo) && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleInteraction();
+                                        if (onToVideo) onToVideo(item);
+                                    }}
+                                    className={`${baseBtnClass} hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] hover:!bg-purple-500/20 hover:!border-purple-500 hover:!text-white`}
+                                    title={t('btn_to_video')}
+                                >
+                                    <VideoIcon size={16} className="text-[var(--text-secondary)] group-hover/btn:text-white transition-colors" />
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Bottom Control Bar - Only for Videos (Now positioned higher to avoid buttons) */}
+                        {isVideoFile && (
+                            <div
+                                className="absolute bottom-16 left-4 right-4 h-10 bg-black/40 backdrop-blur-2xl border border-[var(--border-color)] rounded-2xl overflow-hidden flex items-center px-4 gap-3 group-hover/item:border-[var(--border-color)] transition-all pointer-events-auto shadow-2xl opacity-0 group-hover/item:opacity-100"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                {/* Scrubber Logic (Keep as is but simpler) */}
+                                <div className="flex-1 h-full flex items-center"><div className="w-full h-1 bg-white/20 rounded-full"><div className="h-full bg-white w-0" style={{ width: `${progress}%` }}></div></div></div>
                             </div>
                         )}
                     </div>
@@ -408,28 +335,23 @@ const VideoGalleryItem = ({
             {/* Footer Info */}
             <div className={`relative px-4 pb-4 pt-1 text-center shrink-0 transition-opacity duration-1000 ${showUI ? 'opacity-100' : 'opacity-20'}`}>
                 <p className="text-[var(--text-primary)] text-[11px] font-serif italic mb-0.5 truncate">{item.label}</p>
-                <div className="flex items-center justify-center gap-2 text-[7px] uppercase tracking-widest text-[var(--text-secondary)]/40 font-bold">
-                    <span>{item.date || t('lbl_just_now')}</span>
-                    <div className="w-1 h-1 rounded-full bg-[var(--text-secondary)]/10"></div>
-                    {item.is_public ? <Globe size={8} className="text-blue-400" /> : <Lock size={8} />}
-                    <div className="w-1 h-1 rounded-full bg-[var(--text-secondary)]/10"></div>
-                    <button
-                        className="hover:text-[var(--text-secondary)] transition-colors uppercase"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleInteraction();
-                            if (onSelect) onSelect(item);
-                        }}
-                    >
-                        {t('label_details')}
-                    </button>
-                </div>
+                {/* Footer metadata simplified */}
             </div>
         </div>
     );
 };
 
-const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSelect, onReference, onToVideo, onRefresh, compact = false }) => {
+const UserGallery: React.FC<UserGalleryProps> = ({
+    newItems,
+    columns = 1,
+    onDelete,
+    onSelect,
+    onReference,
+    onUseAsBody,
+    onToVideo,
+    onRefresh,
+    compact = false
+}) => {
     const { t } = useTranslation();
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState<'my' | 'community'>('my');
@@ -613,6 +535,7 @@ const UserGallery: React.FC<UserGalleryProps> = ({ newItems = [], onDelete, onSe
                             onDelete={onDelete}
                             onSelect={onSelect}
                             onReference={onReference}
+                            onUseAsBody={onUseAsBody}
                             onToVideo={onToVideo}
                             onTogglePrivacy={handleTogglePrivacy}
                         />

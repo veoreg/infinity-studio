@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next'; // i18n
 import axios from 'axios';
-import { Wand2, Download, RefreshCw, Sparkles, XCircle, Camera, User, X, Maximize2, Minimize2, Upload, Trash2, Plus, Video as VideoIcon, AlertTriangle } from 'lucide-react';
+import { Wand2, Download, RefreshCw, Sparkles, XCircle, Camera, User, X, Maximize2, Minimize2, Upload, Plus, Video as VideoIcon, AlertTriangle } from 'lucide-react';
 
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
@@ -387,10 +387,6 @@ const AvatarGenerator: React.FC = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [originalImageForCompare, setOriginalImageForCompare] = useState<string | null>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(null); // For Lightbox Review
-
-    // Mobile Interaction State
-    const [activeMobileId, setActiveMobileId] = useState<string | null>(null);
-    const mobileTimerRef = useRef<any>(null);
 
     // Identity Specs
     const [gender, setGender] = useState('female');
@@ -1171,128 +1167,54 @@ const AvatarGenerator: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                        {sidebarItems
-                            .filter(item => {
+                    {/* Replaced Manual Sidebar with UserGallery Component */}
+                    <div className="h-full relative px-1">
+                        <UserGallery
+                            compact={true}
+                            newItems={sidebarItems.filter(item => {
+                                // Filter out actual video files for this sidebar
                                 const url = item.result_url || item.video_url || item.url || '';
                                 return !url.toLowerCase().endsWith('.mp4') && item.type !== 'video';
-                            })
-                            .map((item) => (
-                                <div
-                                    key={item.id}
-                                    className="group/item relative bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl overflow-hidden aspect-[9/16] shrink-0 cursor-pointer transition-all hover:border-[#d2ac47] hover:shadow-[0_0_20px_rgba(210,172,71,0.2)]"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        // Mobile: Toggle visibility on tap
-                                        if (window.innerWidth < 768) {
-                                            if (activeMobileId === item.id) {
-                                                // If already active, treat as selection
-                                                setGeneratedImage(item.result_url || item.image_url || item.url);
-                                                document.getElementById('avatar-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                            } else {
-                                                // Retrieve/Set active ID
-                                                setActiveMobileId(item.id);
-                                                // Clear existing timer if any
-                                                if (mobileTimerRef.current) clearTimeout(mobileTimerRef.current);
-                                                // Auto-hide after 3s
-                                                mobileTimerRef.current = setTimeout(() => setActiveMobileId(null), 3000);
-                                            }
-                                        } else {
-                                            // Desktop: Immediate selection
-                                            setGeneratedImage(item.result_url || item.image_url || item.url);
-                                            document.getElementById('avatar-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                        }
-                                    }}
-                                >
-                                    <img
-                                        src={item.result_url || item.image_url || item.url}
-                                        alt={item.label}
-                                        className="w-full h-full object-cover transition-all duration-700 group-hover/item:scale-110"
-                                    />
-
-                                    {/* Hover Overlay - Bottom Actions Toolbar */}
-                                    {/* Hover Overlay - Bottom Actions Toolbar */}
-                                    {/* Hover Overlay - Bottom Actions Toolbar */}
-                                    <div className={`absolute inset-0 flex flex-col justify-end items-center p-3 gap-3 transition-opacity duration-300 ${activeMobileId === item.id ? 'opacity-100' : 'opacity-0 md:group-hover/item:opacity-100'}`}>
-
-                                        {/* Floating Action Buttons (Download & Delete) */}
-                                        <div className="flex gap-4 transform translate-y-4 group-hover/item:translate-y-0 transition-transform duration-300">
-
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setPreviewImage(item.result_url || item.image_url || item.url);
-                                                }}
-                                                className="w-9 h-9 rounded-full bg-black/20 backdrop-blur-xl border border-white/20 text-white flex items-center justify-center hover:bg-[#d2ac47]/60 hover:text-black hover:scale-110 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(210,172,71,0.4)]"
-                                                title="Open Preview"
-                                            >
-                                                <Maximize2 size={14} />
-                                            </button>
-
-                                            <button
-                                                onClick={(e) => handleDeleteSidebarItem(e, item.id)}
-                                                className="w-9 h-9 rounded-full bg-black/20 backdrop-blur-xl border border-white/20 text-red-400 flex items-center justify-center hover:bg-red-500 hover:text-white hover:scale-110 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(239,68,68,0.4)]"
-                                                title="Delete"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        </div>
-
-                                        {/* 'Send to Editor' Button (Flat) */}
-                                        <div className="w-full flex gap-2 transform translate-y-4 group-hover/item:translate-y-0 transition-transform duration-300 delay-75">
-                                            {/* USE AS REF */}
-                                            <div
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setGeneratedImage(item.result_url || item.image_url || item.url);
-                                                    document.getElementById('avatar-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                                }}
-                                                className="flex-1 py-2.5 bg-black/20 backdrop-blur-xl border border-white/20 text-white text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-xl cursor-pointer hover:bg-[#d2ac47]/60 hover:text-black transition-all shadow-lg hover:shadow-[0_0_20px_rgba(210,172,71,0.4)] flex items-center justify-center gap-1"
-                                                title={t('btn_use_ref')}
-                                            >
-                                                {t('btn_use_ref')}
-                                            </div>
-
-                                            {/* TO VIDEO */}
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    const url = item.result_url || item.image_url || item.url;
-                                                    if (url) {
-                                                        localStorage.setItem('pendingVideoSource', url);
-                                                        window.dispatchEvent(new CustomEvent('switch-tab', { detail: 'video' }));
-                                                    }
-                                                }}
-                                                className="flex-1 py-2.5 bg-black/20 backdrop-blur-xl border border-white/20 text-white text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-xl cursor-pointer hover:bg-[#d2ac47]/60 hover:text-black transition-all shadow-lg hover:shadow-[0_0_20px_rgba(210,172,71,0.4)] flex items-center justify-center gap-2"
-                                                title={t('btn_to_video')}
-                                            >
-                                                <VideoIcon size={10} />
-                                                <span className="hidden sm:inline">{t('btn_to_video')}</span>
-                                                <span className="sm:hidden">VID</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                    </div>
-
-                    {
-                        galleryItems.filter(item => {
+                            })}
+                            onDelete={(id) => handleDeleteSidebarItem({ stopPropagation: () => { } } as any, String(id))}
+                            onSelect={(item) => {
+                                const url = item.result_url || item.image_url || item.url || '';
+                                setGeneratedImage(url);
+                                // Also scroll to workspace
+                                document.getElementById('avatar-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }}
+                            onReference={(item) => {
+                                const url = item.result_url || item.image_url || item.url || '';
+                                setFaceImageUrl(url); // Set as Face Ref
+                            }}
+                            onUseAsBody={(item) => {
+                                const url = item.result_url || item.image_url || item.url || '';
+                                setBodyRefUrl(url); // Set as Body Ref
+                            }}
+                            onToVideo={(item) => {
+                                const url = item.result_url || item.image_url || item.url || '';
+                                if (url) {
+                                    localStorage.setItem('pendingVideoSource', url);
+                                    window.dispatchEvent(new CustomEvent('switch-tab', { detail: 'video' }));
+                                }
+                            }}
+                        />
+                        {sidebarItems.filter(item => {
                             const url = item.result_url || item.video_url || item.url || '';
                             return !url.toLowerCase().endsWith('.mp4') && item.type !== 'video';
                         }).length === 0 && (
-                            <div className="text-[var(--text-secondary)]/30 text-xs text-center py-10 font-mono text-[10px] uppercase tracking-widest border border-dashed border-[#d2ac47]/10 rounded-xl mt-4">
-                                NO SOURCE IMAGES
-                            </div>
-                        )
-                    }
-                </div>
+                                <div className="text-[var(--text-secondary)]/30 text-xs text-center py-10 font-mono text-[10px] uppercase tracking-widest border border-dashed border-[#d2ac47]/10 rounded-xl mt-4">
+                                    NO HISTORY
+                                </div>
+                            )}
+                    </div>
+                </div >
 
                 {/* Center COLUMN: Canvas / Preview (Span 6) */}
-                <div id="avatar-workspace" className={`order-1 xl:order-2 w-full xl:col-span-6 flex flex-col gap-6 relative z-50 ${isGalleryExpanded ? 'xl:opacity-50 xl:scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}>
+                < div id="avatar-workspace" className={`order-1 xl:order-2 w-full xl:col-span-6 flex flex-col gap-6 relative z-50 ${isGalleryExpanded ? 'xl:opacity-50 xl:scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}>
 
                     {/* NEW: Compact Identity Toolbar (Above Canvas) */}
-                    <div className="bg-[var(--glass-bg)] backdrop-blur-md border border-[var(--border-color)] rounded-xl px-2 py-1 flex flex-col md:flex-row gap-2 items-center justify-between shadow-lg relative z-[200] mx-2 md:mx-0">
+                    < div className="bg-[var(--glass-bg)] backdrop-blur-md border border-[var(--border-color)] rounded-xl px-2 py-1 flex flex-col md:flex-row gap-2 items-center justify-between shadow-lg relative z-[200] mx-2 md:mx-0" >
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 w-full">
                             <CustomSelect
                                 label={t('opt_gender')}
@@ -1354,7 +1276,7 @@ const AvatarGenerator: React.FC = () => {
                                 ]}
                             />
                         </div>
-                    </div>
+                    </div >
                     {/* Visual Source (Moved from Input Block) - Acts as "Canvas" if editing */}
 
                     {/* Main Output / Active Workspace */}
@@ -1897,10 +1819,10 @@ const AvatarGenerator: React.FC = () => {
                     </div>
                 </div >
                 {/* Right Panel: Gallery + Fine Tuning (Stacked) - Moved to middle on mobile (order-2) */}
-                <div className="order-2 xl:order-3 w-full xl:col-span-3 h-auto xl:h-[1300px] flex flex-col gap-4 relative z-10">
+                < div className="order-2 xl:order-3 w-full xl:col-span-3 h-auto xl:h-[1300px] flex flex-col gap-4 relative z-10" >
 
                     {/* 1. Gallery (Styled like VideoGenerator) */}
-                    <div className="order-2 xl:order-1 flex-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden mx-2 md:mx-0 min-h-[800px] lg:min-h-0">
+                    < div className="order-2 xl:order-1 flex-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-3xl p-2 shadow-2xl relative flex flex-col overflow-hidden mx-2 md:mx-0 min-h-[800px] lg:min-h-0" >
                         <div className="flex items-center justify-between h-10 px-0">
                             <span className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-[0.2em] pl-4">{t('vid_history')}</span>
                         </div>
@@ -1937,7 +1859,7 @@ const AvatarGenerator: React.FC = () => {
                     </div >
 
                     {/* 2. Fine Tuning Block (Moved Here - Compacted) */}
-                    <div className="order-1 xl:order-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl p-3 md:p-4 relative z-[100] shadow-2xl transition-all hover:border-[#d2ac47]/40 shrink-0">
+                    < div className="order-1 xl:order-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl p-3 md:p-4 relative z-[100] shadow-2xl transition-all hover:border-[#d2ac47]/40 shrink-0" >
                         <div className="absolute top-0 left-0 px-4 py-1 bg-[#d2ac47] text-black text-[8px] font-bold tracking-[0.2em] uppercase rounded-tl-2xl rounded-br-xl shadow-lg">
                             {t('section_fine_tuning')}
                         </div>
@@ -2142,41 +2064,43 @@ const AvatarGenerator: React.FC = () => {
                 }
             `}</style >
             {/* Preview Lightbox */}
-            {previewImage && (
-                <PreviewModal
-                    url={previewImage}
-                    onClose={() => setPreviewImage(null)}
-                    onToVideo={(url) => {
-                        localStorage.setItem('pendingVideoSource', url);
-                        window.dispatchEvent(new CustomEvent('switch-tab', { detail: 'video' }));
-                        setPreviewImage(null);
-                    }}
-                    onUseRef={(url) => {
-                        setGeneratedImage(url);
-                        document.getElementById('avatar-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        setPreviewImage(null);
-                    }}
-                    onDownload={async (url) => {
-                        try {
-                            const response = await fetch(url);
-                            const blob = await response.blob();
-                            const blobUrl = window.URL.createObjectURL(blob);
+            {
+                previewImage && (
+                    <PreviewModal
+                        url={previewImage}
+                        onClose={() => setPreviewImage(null)}
+                        onToVideo={(url) => {
+                            localStorage.setItem('pendingVideoSource', url);
+                            window.dispatchEvent(new CustomEvent('switch-tab', { detail: 'video' }));
+                            setPreviewImage(null);
+                        }}
+                        onUseRef={(url) => {
+                            setGeneratedImage(url);
+                            document.getElementById('avatar-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            setPreviewImage(null);
+                        }}
+                        onDownload={async (url) => {
+                            try {
+                                const response = await fetch(url);
+                                const blob = await response.blob();
+                                const blobUrl = window.URL.createObjectURL(blob);
 
-                            const link = document.createElement('a');
-                            link.href = blobUrl;
-                            link.download = `avatar-${Date.now()}.png`;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            window.URL.revokeObjectURL(blobUrl);
-                        } catch (error) {
-                            console.error('Download failed:', error);
-                            // Fallback
-                            window.open(url, '_blank');
-                        }
-                    }}
-                />
-            )}
+                                const link = document.createElement('a');
+                                link.href = blobUrl;
+                                link.download = `avatar-${Date.now()}.png`;
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                window.URL.revokeObjectURL(blobUrl);
+                            } catch (error) {
+                                console.error('Download failed:', error);
+                                // Fallback
+                                window.open(url, '_blank');
+                            }
+                        }}
+                    />
+                )
+            }
         </div >
     );
 };
