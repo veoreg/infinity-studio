@@ -1369,21 +1369,12 @@ const AvatarGenerator: React.FC = () => {
                                     {/* Top Right Controls - Always visible on Mobile, Hover on Desktop */}
                                     <div className={`absolute top-4 right-4 z-50 flex gap-2 transition-opacity duration-500 ${showUI ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
                                         <button
-                                            onClick={() => {
-                                                // toggle fullscreen on wrapper
-                                                const elem = document.getElementById('avatar-canvas-wrapper');
-                                                if (elem) {
-                                                    if (document.fullscreenElement) {
-                                                        document.exitFullscreen();
-                                                    } else {
-                                                        elem.requestFullscreen().catch(err => {
-                                                            console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-                                                        });
-                                                    }
-                                                }
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setPreviewImage(generatedImage);
                                             }}
                                             className="p-2.5 bg-black/20 backdrop-blur-xl border border-white/20 text-white drop-shadow-md rounded-full hover:shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:border-[#d2ac47]/50 hover:text-black transition-all hover:scale-110 shadow-lg"
-                                            title="Full Screen"
+                                            title="View Full Screen (Lightbox)"
                                         >
                                             <Maximize2 size={16} />
                                         </button>
