@@ -270,6 +270,95 @@ const ImageComparisonSlider = ({ before, after }: { before: string; after: strin
 // EditPhotoModal Component Removed (Inline Editing Implemented)
 
 
+// -----------------------------------------------------------------------------------------
+// Helper Component: PreviewModal (Lightbox)
+// -----------------------------------------------------------------------------------------
+import { createPortal } from 'react-dom';
+
+const PreviewModal = ({ url, onClose, onToVideo, onUseRef, onDownload }: {
+    url: string;
+    onClose: () => void;
+    onToVideo: (url: string) => void;
+    onUseRef: (url: string) => void;
+    onDownload: (url: string) => void;
+}) => {
+    // Lock body scroll when open
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = 'unset'; };
+    }, []);
+
+    return createPortal(
+        <div
+            className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 animate-fade-in cursor-zoom-out"
+            onClick={onClose}
+        >
+            {/* Close Button */}
+            <button
+                onClick={onClose}
+                className="absolute top-6 right-6 p-4 rounded-full bg-black/40 border border-white/10 text-white/50 hover:text-white hover:bg-red-500/20 hover:border-red-500/50 transition-all z-50"
+            >
+                <X size={24} />
+            </button>
+
+            {/* Image Container */}
+            <div
+                className="relative max-w-full max-h-[85vh] flex items-center justify-center pointer-events-none"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <img
+                    src={url}
+                    alt="Preview"
+                    className="max-w-full max-h-full object-contain rounded-lg shadow-2xl pointer-events-auto"
+                />
+            </div>
+
+            {/* Floating Toolbar */}
+            <div
+                className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 px-6 py-3 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.5)] pointer-events-auto hover:bg-black/80 transition-all z-50 cursor-default"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* To Video */}
+                <button
+                    onClick={() => onToVideo(url)}
+                    className="flex flex-col items-center gap-1 group/btn min-w-[60px]"
+                >
+                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black group-hover/btn:border-[#d2ac47] transition-all">
+                        <VideoIcon size={16} />
+                    </div>
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-white/60 group-hover/btn:text-[#d2ac47]">To Video</span>
+                </button>
+
+                <div className="w-px h-8 bg-white/10"></div>
+
+                {/* Edit / Use Ref */}
+                <button
+                    onClick={() => onUseRef(url)}
+                    className="flex flex-col items-center gap-1 group/btn min-w-[60px]"
+                >
+                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover/btn:bg-white group-hover/btn:text-black group-hover/btn:border-white transition-all">
+                        <Wand2 size={16} />
+                    </div>
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-white/60 group-hover/btn:text-white">Edit</span>
+                </button>
+
+                <div className="w-px h-8 bg-white/10"></div>
+
+                {/* Download */}
+                <button
+                    onClick={() => onDownload(url)}
+                    className="flex flex-col items-center gap-1 group/btn min-w-[60px]"
+                >
+                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover/btn:bg-white group-hover/btn:text-black group-hover/btn:border-white transition-all">
+                        <Download size={16} />
+                    </div>
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-white/60 group-hover/btn:text-white">Save</span>
+                </button>
+            </div>
+        </div>,
+        document.body // Render at body level to bypass all parent z-index contexts
+    );
+};
 
 const AvatarGenerator: React.FC = () => {
     const { t } = useTranslation(); // i18n hook
@@ -284,6 +373,7 @@ const AvatarGenerator: React.FC = () => {
     // Edit mode tracking - for comparison slider
     const [isEditMode, setIsEditMode] = useState(false);
     const [originalImageForCompare, setOriginalImageForCompare] = useState<string | null>(null);
+    const [previewImage, setPreviewImage] = useState<string | null>(null); // For Lightbox Review
 
     // Mobile Interaction State
     const [activeMobileId, setActiveMobileId] = useState<string | null>(null);
@@ -338,6 +428,25 @@ const AvatarGenerator: React.FC = () => {
 
     // Monitoring Refs
     const controllerRef = React.useRef<AbortController | null>(null);
+
+    // AVATAR UI FADING STATE
+    const [showUI, setShowUI] = useState(true);
+    const uiTimeoutRef = useRef<any>(null);
+
+    const resetUITimer = () => {
+        setShowUI(true);
+        if (uiTimeoutRef.current) clearTimeout(uiTimeoutRef.current);
+        uiTimeoutRef.current = setTimeout(() => {
+            setShowUI(false);
+        }, 2000); // 2.0s fading delay (Cinema Mode)
+    };
+
+    // Clean up timer on unmount
+    React.useEffect(() => {
+        return () => {
+            if (uiTimeoutRef.current) clearTimeout(uiTimeoutRef.current);
+        };
+    }, []);
 
     // Data Source for Left Sidebar (Source Frames)
     // As per user request: "photo_gallery_left" assets first (Colorful 1-8.png)
@@ -1099,17 +1208,17 @@ const AvatarGenerator: React.FC = () => {
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    window.open(item.result_url || item.image_url || item.url, '_blank');
+                                                    setPreviewImage(item.result_url || item.image_url || item.url);
                                                 }}
-                                                className="w-9 h-9 rounded-full bg-[var(--bg-input)]/80 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)] flex items-center justify-center hover:bg-[#d2ac47] hover:text-black hover:scale-110 transition-all shadow-[0_4px_12px_rgba(0,0,0,0.5)] dark:bg-[#1a1a1a]/80"
-                                                title="Open Full Size"
+                                                className="w-9 h-9 rounded-full bg-black/20 backdrop-blur-xl border border-white/20 text-white flex items-center justify-center hover:bg-[#d2ac47]/60 hover:text-black hover:scale-110 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(210,172,71,0.4)]"
+                                                title="Open Preview"
                                             >
                                                 <Maximize2 size={14} />
                                             </button>
 
                                             <button
                                                 onClick={(e) => handleDeleteSidebarItem(e, item.id)}
-                                                className="w-9 h-9 rounded-full bg-[var(--bg-input)]/80 backdrop-blur-md border border-red-500/30 text-red-500/80 flex items-center justify-center hover:bg-red-500 hover:text-white hover:scale-110 transition-all shadow-[0_4px_12px_rgba(0,0,0,0.5)] dark:bg-[#1a1a1a]/80"
+                                                className="w-9 h-9 rounded-full bg-black/20 backdrop-blur-xl border border-white/20 text-red-400 flex items-center justify-center hover:bg-red-500 hover:text-white hover:scale-110 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(239,68,68,0.4)]"
                                                 title="Delete"
                                             >
                                                 <Trash2 size={14} />
@@ -1125,7 +1234,7 @@ const AvatarGenerator: React.FC = () => {
                                                     setGeneratedImage(item.result_url || item.image_url || item.url);
                                                     document.getElementById('avatar-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                                 }}
-                                                className="flex-1 py-2.5 bg-white/10 backdrop-blur-md border border-white/20 text-white text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-xl cursor-pointer hover:bg-white hover:text-black transition-all shadow-lg flex items-center justify-center gap-1"
+                                                className="flex-1 py-2.5 bg-black/20 backdrop-blur-xl border border-white/20 text-white text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-xl cursor-pointer hover:bg-[#d2ac47]/60 hover:text-black transition-all shadow-lg hover:shadow-[0_0_20px_rgba(210,172,71,0.4)] flex items-center justify-center gap-1"
                                                 title={t('btn_use_ref')}
                                             >
                                                 {t('btn_use_ref')}
@@ -1141,7 +1250,7 @@ const AvatarGenerator: React.FC = () => {
                                                         window.dispatchEvent(new CustomEvent('switch-tab', { detail: 'video' }));
                                                     }
                                                 }}
-                                                className="flex-1 py-2.5 bg-[#d2ac47] text-black text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-xl cursor-pointer hover:bg-white hover:text-black transition-all shadow-lg flex items-center justify-center gap-2"
+                                                className="flex-1 py-2.5 bg-black/20 backdrop-blur-xl border border-white/20 text-white text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-xl cursor-pointer hover:bg-[#d2ac47]/60 hover:text-black transition-all shadow-lg hover:shadow-[0_0_20px_rgba(210,172,71,0.4)] flex items-center justify-center gap-2"
                                                 title={t('btn_to_video')}
                                             >
                                                 <VideoIcon size={10} />
@@ -1250,9 +1359,15 @@ const AvatarGenerator: React.FC = () => {
                         {generatedImage ? (
                             <>
                                 {/* Image Wrapper with Overlay */}
-                                <div id="avatar-canvas-wrapper" className="absolute inset-0 z-10 group cursor-pointer">
-                                    {/* Top Right Controls */}
-                                    <div className="absolute top-4 right-4 z-50 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <div
+                                    id="avatar-canvas-wrapper"
+                                    className="absolute inset-0 z-10 group cursor-pointer"
+                                    onMouseMove={resetUITimer}
+                                    onClick={resetUITimer}
+                                    onTouchStart={resetUITimer}
+                                >
+                                    {/* Top Right Controls - Always visible on Mobile, Hover on Desktop */}
+                                    <div className={`absolute top-4 right-4 z-50 flex gap-2 transition-opacity duration-500 ${showUI ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
                                         <button
                                             onClick={() => {
                                                 // toggle fullscreen on wrapper
@@ -1267,7 +1382,7 @@ const AvatarGenerator: React.FC = () => {
                                                     }
                                                 }
                                             }}
-                                            className="p-2 bg-[var(--bg-input)]/80 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)] rounded-full hover:bg-[#d2ac47] hover:text-black transition-all hover:scale-110 shadow-lg dark:bg-black/40"
+                                            className="p-2.5 bg-black/20 backdrop-blur-xl border border-white/20 text-white drop-shadow-md rounded-full hover:shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:border-[#d2ac47]/50 hover:text-black transition-all hover:scale-110 shadow-lg"
                                             title="Full Screen"
                                         >
                                             <Maximize2 size={16} />
@@ -1275,16 +1390,13 @@ const AvatarGenerator: React.FC = () => {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                // Instant close - removed blocking confirm for smoother UX
-                                                setGeneratedImage(null);
-                                                setIsEditMode(false);
-                                                setOriginalImageForCompare(null);
+                                                handleClearWorkspace();
                                                 // Exit fullscreen if active
                                                 if (document.fullscreenElement) {
                                                     document.exitFullscreen();
                                                 }
                                             }}
-                                            className="p-2 bg-[var(--bg-input)]/80 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)] rounded-full hover:bg-red-500 hover:text-white hover:border-red-500 transition-all hover:scale-110 shadow-lg dark:bg-black/40"
+                                            className="p-2.5 bg-black/20 backdrop-blur-xl border border-white/20 text-white drop-shadow-md rounded-full hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] hover:border-red-500/50 hover:text-red-500 transition-all hover:scale-110 shadow-lg"
                                             title="Close / Clear"
                                         >
                                             <XCircle size={16} />
@@ -1407,79 +1519,66 @@ const AvatarGenerator: React.FC = () => {
                                         )}
                                     </div>
 
-                                    {/* Overlay Layer - Removed blur & central button */}
-                                    <div className="absolute inset-0 z-20 pointer-events-none group-hover:bg-transparent transition-all duration-300">
-                                        {/* Top Action Row - Maximize & Clear */}
-                                        <div className="absolute top-4 right-4 z-40 flex gap-2 pointer-events-auto opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
-                                            <button
-                                                onClick={() => window.open(generatedImage!, '_blank')}
-                                                className="p-2 bg-[var(--bg-input)]/80 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)] rounded-lg hover:bg-[#d2ac47] hover:text-black transition-all shadow-lg hover:scale-110 dark:bg-black/40"
-                                                title={t('tooltip_open_full')}
-                                            >
-                                                <Maximize2 size={14} />
-                                            </button>
-                                            <button
-                                                onClick={handleClearWorkspace}
-                                                className="p-2 bg-[var(--bg-input)]/80 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)] rounded-lg hover:bg-red-500 hover:text-white transition-all shadow-lg hover:scale-110 dark:bg-black/40"
-                                                title={t('tooltip_delete')}
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        </div>
 
-                                        <div className="absolute bottom-14 right-4 pointer-events-auto opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 transform translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 flex flex-col gap-2 items-end">
-                                            {/* Animate Button */}
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (generatedImage) {
-                                                        localStorage.setItem('pendingVideoSource', generatedImage);
-                                                        window.dispatchEvent(new CustomEvent('switch-tab', { detail: 'video' }));
-                                                    }
-                                                }}
-                                                className="px-4 py-2 bg-[var(--bg-input)]/80 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)] rounded-xl hover:bg-[#d2ac47] hover:text-black transition-all flex items-center gap-2 shadow-lg hover:scale-105 group/btn dark:bg-black/40"
-                                            >
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover/btn:animate-pulse">
-                                                    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
-                                                    <line x1="7" y1="2" x2="7" y2="22"></line>
-                                                    <line x1="17" y1="2" x2="17" y2="22"></line>
-                                                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                                                    <line x1="2" y1="7" x2="7" y2="7"></line>
-                                                    <line x1="2" y1="17" x2="7" y2="17"></line>
-                                                    <line x1="17" y1="17" x2="22" y2="17"></line>
-                                                    <line x1="17" y1="7" x2="22" y2="7"></line>
-                                                </svg>
-                                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('btn_to_video')}</span>
 
-                                            </button>
+                                    <div className={`absolute bottom-4 right-4 transition-opacity duration-500 transform translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 flex flex-col gap-2 items-end z-50 ${showUI ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+                                        {/* Animate Button */}
 
-                                            {/* Edit Button - Toggles Quick Edit Bar */}
-                                            <button
-                                                onClick={() => {
-                                                    if (!generatedImage) return;
-                                                    setShowQuickEdit(!showQuickEdit);
-                                                }}
-                                                className={`px-4 py-2 backdrop-blur-md border rounded-xl transition-all flex items-center gap-2 shadow-lg hover:scale-105 group/btn ${showQuickEdit ? 'bg-[#d2ac47] text-black border-[#d2ac47]' : 'bg-[var(--bg-input)]/80 border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[#d2ac47] hover:text-black dark:bg-black/40'}`}
-                                            >
-                                                <Sparkles size={14} className="group-hover/btn:animate-spin" />
-                                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{showQuickEdit ? t('btn_close_edit') : t('btn_quick_edit')}</span>
 
-                                            </button>
-                                        </div>
+                                        {/* Edit Button - Toggles Quick Edit Bar */}
+                                        <button
+                                            onClick={() => {
+                                                if (!generatedImage) return;
+                                                setShowQuickEdit(!showQuickEdit);
+                                            }}
+                                            className={`px-4 py-2 backdrop-blur-xl border rounded-xl transition-all flex items-center gap-2 shadow-lg hover:scale-105 group/btn ${showQuickEdit ? 'bg-[#d2ac47] text-black border-[#d2ac47]' : 'bg-black/20 border-white/20 text-white drop-shadow-md hover:shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:border-[#d2ac47]/50 hover:text-black'}`}
+                                        >
+                                            <Sparkles size={14} className="group-hover/btn:animate-spin" />
+                                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{showQuickEdit ? t('btn_close_edit') : t('btn_quick_edit')}</span>
+
+                                        </button>
+                                    </div>
+
+
+
+                                    {/* Bottom Actions - Download & To Video */}
+                                    <div className={`absolute bottom-4 left-4 z-40 flex flex-col gap-2 items-start transition-opacity duration-500 ${showUI ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+                                        {/* To Video Button */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (generatedImage) {
+                                                    localStorage.setItem('pendingVideoSource', generatedImage);
+                                                    window.dispatchEvent(new CustomEvent('switch-tab', { detail: 'video' }));
+                                                }
+                                            }}
+                                            className="px-4 py-2 bg-black/20 backdrop-blur-xl border border-white/20 text-white drop-shadow-md rounded-xl hover:shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:border-[#d2ac47]/50 hover:text-black transition-all flex items-center gap-2 shadow-lg hover:scale-105 group/btn"
+                                        >
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover/btn:animate-pulse">
+                                                <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                                                <line x1="7" y1="2" x2="7" y2="22"></line>
+                                                <line x1="17" y1="2" x2="17" y2="22"></line>
+                                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                                <line x1="2" y1="7" x2="7" y2="7"></line>
+                                                <line x1="2" y1="17" x2="7" y2="17"></line>
+                                                <line x1="17" y1="17" x2="22" y2="17"></line>
+                                                <line x1="17" y1="7" x2="22" y2="7"></line>
+                                            </svg>
+                                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('btn_to_video')}</span>
+                                        </button>
+
+                                        {/* Download Button */}
+                                        <button
+                                            onClick={handleDownload}
+                                            className="px-3 py-1.5 bg-black/20 backdrop-blur-xl border border-white/20 text-white drop-shadow-md rounded-lg hover:shadow-[0_0_20px_rgba(210,172,71,0.4)] hover:border-[#d2ac47]/50 hover:text-black transition-all flex items-center gap-2 shadow-lg hover:scale-105"
+                                        >
+                                            <Download size={12} />
+                                            <span className="text-[9px] font-bold uppercase tracking-widest opacity-80">{t('btn_download')}</span>
+
+                                        </button>
                                     </div>
                                 </div>
 
-                                {/* Bottom Actions - Download Only */}
-                                <div className="absolute bottom-4 right-4 z-40">
-                                    <button
-                                        onClick={handleDownload}
-                                        className="px-3 py-1.5 bg-[var(--bg-input)]/80 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)] rounded-lg hover:bg-[#d2ac47] hover:text-black transition-all flex items-center gap-2 shadow-lg hover:scale-105 dark:bg-black/40"
-                                    >
-                                        <Download size={12} />
-                                        <span className="text-[9px] font-bold uppercase tracking-widest opacity-80">{t('btn_download')}</span>
-
-                                    </button>
-                                </div>
                             </>
                         ) : (
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
@@ -2010,7 +2109,7 @@ const AvatarGenerator: React.FC = () => {
                 </div >
             </div > {/* End of Main Grid */}
 
-            <style>{`
+            < style > {`
                 @keyframes shine {
                     0% { transform: translateX(-100%) skewX(-45deg); opacity: 0; }
                     20% { opacity: 0.5; }
@@ -2037,7 +2136,32 @@ const AvatarGenerator: React.FC = () => {
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
                     background: rgba(210, 172, 71, 0.4);
                 }
-            `}</style>
+            `}</style >
+            {/* Preview Lightbox */}
+            {previewImage && (
+                <PreviewModal
+                    url={previewImage}
+                    onClose={() => setPreviewImage(null)}
+                    onToVideo={(url) => {
+                        localStorage.setItem('pendingVideoSource', url);
+                        window.dispatchEvent(new CustomEvent('switch-tab', { detail: 'video' }));
+                        setPreviewImage(null);
+                    }}
+                    onUseRef={(url) => {
+                        setGeneratedImage(url);
+                        document.getElementById('avatar-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        setPreviewImage(null);
+                    }}
+                    onDownload={(url) => {
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `avatar-${Date.now()}.png`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }}
+                />
+            )}
         </div >
     );
 };
