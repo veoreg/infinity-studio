@@ -289,9 +289,10 @@ const VideoGenerator: React.FC = () => {
         const checkPending = () => {
             const pending = localStorage.getItem('pendingVideoSource');
             if (pending) {
+                console.log("🔄 Importing pending video source:", pending);
                 // 1. Set as Active Source
                 setImageUrl(pending);
-                if (!textPrompt) setTextPrompt("Cinematic portrait, detailed features, 8k, masterpiece");
+                setFileName("Imported_Avatar.png");
 
                 // 2. Add to Gallery (First Item)
                 setGalleryItems(prev => {
@@ -317,7 +318,7 @@ const VideoGenerator: React.FC = () => {
 
         const handleTabSwitch = (e: CustomEvent) => {
             if (e.detail === 'video') {
-                setTimeout(checkPending, 500);
+                setTimeout(checkPending, 100);
             }
         };
         window.addEventListener('switch-tab', handleTabSwitch as EventListener);
@@ -672,12 +673,8 @@ const VideoGenerator: React.FC = () => {
         // Determine if this is an extension or a fresh generation
         const extendFromId = typeof eventOrId === 'string' ? eventOrId : undefined;
 
-        if (!imageUrl) {
-            setError(t('vid_err_no_image') || 'Please provide an image URL.');
-            return;
-        }
-        if (!textPrompt) {
-            setError(t('vid_err_no_prompt') || 'Please provide a text prompt.');
+        if (!imageUrl || !textPrompt) {
+            setError('Please provide both an image URL and a text prompt.');
             return;
         }
 
@@ -845,11 +842,22 @@ const VideoGenerator: React.FC = () => {
                             // Combine User History + Defaults
                             const allVisualItems = [...galleryItems, ...VISUAL_REFERENCE_DEFAULTS];
 
+                            // Filter logic: Type matches AND isn't a stale pending item (>30m)
                             const filteredItems = allVisualItems.filter(item => {
                                 const url = item.result_url || item.video_url || item.url || '';
                                 const isVideo = url.toLowerCase().endsWith('.mp4') || item.type === 'video';
-                                if (activeFilter === 'image') return !isVideo;
-                                if (activeFilter === 'video') return isVideo;
+
+                                // Filter 1: Type Match
+                                if (activeFilter === 'image' && isVideo) return false;
+                                if (activeFilter === 'video' && !isVideo) return false;
+
+                                // Filter 2: Stale Pending Filter (Fix for "Empty Cells")
+                                if ((item.status === 'pending' || item.status === 'processing') && item.created_at) {
+                                    const createdTime = new Date(item.created_at).getTime();
+                                    const thirtyMinutes = 30 * 60 * 1000;
+                                    if (Date.now() - createdTime > thirtyMinutes) return false;
+                                }
+
                                 return true;
                             });
 

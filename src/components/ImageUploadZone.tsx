@@ -19,7 +19,7 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
 
     // Sync external URL changes if needed
     React.useEffect(() => {
-        if (currentUrl) setPreview(currentUrl);
+        setPreview(currentUrl || null);
     }, [currentUrl]);
 
     const handleFile = async (file: File) => {
