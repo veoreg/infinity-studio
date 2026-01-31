@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next'; // i18n
 import axios from 'axios';
-import { Wand2, Download, RefreshCw, Sparkles, XCircle, Camera, User, X, Maximize2, Upload, Trash2, Plus, Video as VideoIcon, AlertTriangle } from 'lucide-react';
+import { Wand2, Download, RefreshCw, Sparkles, XCircle, Camera, User, X, Maximize2, Minimize2, Upload, Trash2, Plus, Video as VideoIcon, AlertTriangle } from 'lucide-react';
 
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
@@ -275,7 +275,13 @@ const ImageComparisonSlider = ({ before, after }: { before: string; after: strin
 // -----------------------------------------------------------------------------------------
 import { createPortal } from 'react-dom';
 
-const PreviewModal = ({ url, onClose }: { url: string; onClose: () => void }) => {
+const PreviewModal = ({ url, onClose, onToVideo, onUseRef, onDownload }: {
+    url: string;
+    onClose: () => void;
+    onToVideo: (url: string) => void;
+    onUseRef: (url: string) => void;
+    onDownload: (url: string) => void;
+}) => {
     // Lock body scroll when open
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -285,20 +291,20 @@ const PreviewModal = ({ url, onClose }: { url: string; onClose: () => void }) =>
     const [isCover, setIsCover] = useState(false); // Toggle between Fit and Fill
 
     return createPortal(
-        <div 
+        <div
             className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-xl flex items-center justify-center animate-fade-in"
             onClick={onClose}
         >
             {/* Close Button - Top Right */}
-            <button 
+            <button
                 onClick={onClose}
                 className="absolute top-6 right-6 p-3 rounded-full bg-black/40 border border-white/10 text-white/50 hover:text-white hover:bg-red-500/20 hover:border-red-500/50 transition-all z-50 group"
             >
                 <X size={24} className="group-hover:rotate-90 transition-transform" />
             </button>
 
-            {/* View Mode Toggle - Top Left */}
-            <button 
+            {/* View Mode Toggle - Top Left (Fit/Fill) */}
+            <button
                 onClick={(e) => { e.stopPropagation(); setIsCover(!isCover); }}
                 className="absolute top-6 left-6 p-3 rounded-full bg-black/40 border border-white/10 text-white/50 hover:text-[#d2ac47] hover:bg-[#d2ac47]/10 hover:border-[#d2ac47]/50 transition-all z-50 flex items-center gap-2 group"
             >
@@ -309,6 +315,25 @@ const PreviewModal = ({ url, onClose }: { url: string; onClose: () => void }) =>
             </button>
 
             {/* Image Container */}
+            <div
+                className={`relative w-full h-full flex items-center justify-center pointer-events-none transition-all duration-500 ${isCover ? '' : 'p-4 md:p-8'}`}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <img
+                    src={url}
+                    alt="Preview"
+                    className={`max-w-full max-h-full transition-all duration-500 shadow-2xl pointer-events-auto ${isCover ? 'w-full h-full object-cover' : 'h-full object-contain'}`}
+                />
+            </div>
+
+            {/* Floating Toolbar - RESTORED */}
+            <div
+                className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 px-6 py-3 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.5)] pointer-events-auto hover:bg-black/80 transition-all z-50 cursor-default"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* To Video */}
+                <button
+                    onClick={() => onToVideo(url)}
                     className="flex flex-col items-center gap-1 group/btn min-w-[60px]"
                 >
                     <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover/btn:bg-[#d2ac47] group-hover/btn:text-black group-hover/btn:border-[#d2ac47] transition-all">
@@ -319,32 +344,32 @@ const PreviewModal = ({ url, onClose }: { url: string; onClose: () => void }) =>
 
                 <div className="w-px h-8 bg-white/10"></div>
 
-                {/* Edit / Use Ref */ }
-        < button
-                    onClick = {() => onUseRef(url)}
-className = "flex flex-col items-center gap-1 group/btn min-w-[60px]"
-    >
+                {/* Edit / Use Ref */}
+                <button
+                    onClick={() => onUseRef(url)}
+                    className="flex flex-col items-center gap-1 group/btn min-w-[60px]"
+                >
                     <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover/btn:bg-white group-hover/btn:text-black group-hover/btn:border-white transition-all">
                         <Wand2 size={16} />
                     </div>
                     <span className="text-[9px] font-bold uppercase tracking-wider text-white/60 group-hover/btn:text-white">Edit</span>
-                </button >
+                </button>
 
-    <div className="w-px h-8 bg-white/10"></div>
+                <div className="w-px h-8 bg-white/10"></div>
 
-{/* Download */ }
-<button
-    onClick={() => onDownload(url)}
-    className="flex flex-col items-center gap-1 group/btn min-w-[60px]"
->
-    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover/btn:bg-white group-hover/btn:text-black group-hover/btn:border-white transition-all">
-        <Download size={16} />
-    </div>
-    <span className="text-[9px] font-bold uppercase tracking-wider text-white/60 group-hover/btn:text-white">Save</span>
-</button>
-            </div >
-        </div >,
-    document.body // Render at body level to bypass all parent z-index contexts
+                {/* Download */}
+                <button
+                    onClick={() => onDownload(url)}
+                    className="flex flex-col items-center gap-1 group/btn min-w-[60px]"
+                >
+                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover/btn:bg-white group-hover/btn:text-black group-hover/btn:border-white transition-all">
+                        <Download size={16} />
+                    </div>
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-white/60 group-hover/btn:text-white">Save</span>
+                </button>
+            </div>
+        </div>,
+        document.body // Render at body level
     );
 };
 
