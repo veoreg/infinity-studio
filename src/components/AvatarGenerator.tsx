@@ -1123,7 +1123,7 @@ const AvatarGenerator: React.FC = () => {
 
                 {/* Left Banner - Restored High-Res & Art Deco Corners to match Video Generator exactly */}
                 {/* Left Panel: Showcase Gallery (Vertical List) - Moved to bottom on mobile (order-3) */}
-                <div className="order-3 lg:order-1 lg:col-span-3 lg:h-[1300px] overflow-y-auto custom-scrollbar pr-2">
+                <div className="order-3 lg:order-1 lg:col-span-3 lg:h-[1300px] overflow-y-auto custom-scrollbar pr-2 bg-[var(--bg-secondary)]/30 border-r border-[var(--border-color)] rounded-l-2xl">
                     <div className="flex items-center justify-between mb-6 px-2">
                         <div className="flex items-center gap-2 text-[var(--text-secondary)]">
                             <Sparkles size={16} />
