@@ -2143,13 +2143,24 @@ const AvatarGenerator: React.FC = () => {
                         document.getElementById('avatar-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         setPreviewImage(null);
                     }}
-                    onDownload={(url) => {
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.download = `avatar-${Date.now()}.png`;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
+                    onDownload={async (url) => {
+                        try {
+                            const response = await fetch(url);
+                            const blob = await response.blob();
+                            const blobUrl = window.URL.createObjectURL(blob);
+
+                            const link = document.createElement('a');
+                            link.href = blobUrl;
+                            link.download = `avatar-${Date.now()}.png`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            window.URL.revokeObjectURL(blobUrl);
+                        } catch (error) {
+                            console.error('Download failed:', error);
+                            // Fallback
+                            window.open(url, '_blank');
+                        }
                     }}
                 />
             )}
