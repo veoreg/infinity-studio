@@ -407,7 +407,7 @@ const AvatarGenerator: React.FC = () => {
     // Default to strict Flux portrait optimization
 
     const [steps, setSteps] = useState<number>(80); // Default Steps
-    const [cfg, setCfg] = useState<number>(2.5); // Default Guidance
+    const [cfg, setCfg] = useState<number>(2.0); // Default Guidance
     const [rawPromptMode, setRawPromptMode] = useState(false);
     const [upscale, setUpscale] = useState(false);
     const [startTime, setStartTime] = useState<number | null>(null);
