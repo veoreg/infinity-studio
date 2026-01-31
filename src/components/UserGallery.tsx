@@ -228,7 +228,7 @@ const VideoGalleryItem = ({
                                 return (
                                     <>
                                         {/* LIKE BUTTON */}
-                                        <button className={`${baseBtnClass} hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] hover:!bg-red-500 hover:!border-red-500 hover:!text-white`}>
+                                        <button className={`${baseBtnClass} hover:shadow-[0_0_20px_rgba(239,68,68,0.6)] hover:!bg-red-500/20 hover:!border-red-500 hover:!text-white`}>
                                             <Heart size={18} className="text-[var(--text-secondary)] group-hover/btn:text-white transition-colors" />
                                         </button>
 
@@ -240,8 +240,8 @@ const VideoGalleryItem = ({
                                                 if (onTogglePrivacy) onTogglePrivacy(item);
                                             }}
                                             className={`${baseBtnClass} ${item.is_public
-                                                ? 'bg-blue-500/20 !border-blue-400 !text-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.3)] hover:!bg-blue-500 hover:!text-white'
-                                                : 'hover:shadow-[0_0_20px_rgba(96,165,250,0.4)] hover:!bg-blue-500 hover:!border-blue-500 hover:!text-white'
+                                                ? 'bg-blue-500/20 !border-blue-400 !text-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.3)] hover:!bg-blue-500/30 hover:!text-white'
+                                                : 'hover:shadow-[0_0_20px_rgba(96,165,250,0.6)] hover:!bg-blue-500/20 hover:!border-blue-500 hover:!text-white'
                                                 }`}
                                         >
                                             <Share2
@@ -274,13 +274,13 @@ const VideoGalleryItem = ({
                                                     window.open(mediaUrl, '_blank');
                                                 }
                                             }}
-                                            className={`${baseBtnClass} hover:shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:!bg-green-600 hover:!border-green-500 hover:!text-white`}
+                                            className={`${baseBtnClass} hover:shadow-[0_0_20px_rgba(34,197,94,0.6)] hover:!bg-green-500/20 hover:!border-green-500 hover:!text-white`}
                                             title={t('tooltip_download')}
                                         >
                                             <Download size={18} className="text-[var(--text-secondary)] group-hover/btn:text-white transition-colors" />
                                         </button>
 
-                                        {/* Reference Button */}
+                                        {/* Reference Button (NOW EDIT) */}
                                         {!isVideoFile && onReference && (
                                             <button
                                                 onClick={(e) => {
@@ -288,7 +288,7 @@ const VideoGalleryItem = ({
                                                     handleInteraction();
                                                     onReference(item);
                                                 }}
-                                                className={`${baseBtnClass} hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:!bg-orange-500 hover:!border-orange-500 hover:!text-white`}
+                                                className={`${baseBtnClass} hover:shadow-[0_0_20px_rgba(249,115,22,0.6)] hover:!bg-orange-500/20 hover:!border-orange-500 hover:!text-white`}
                                                 title={t('btn_use_ref')}
                                             >
                                                 <PersonStanding size={18} className="text-[var(--text-secondary)] group-hover/btn:text-white transition-colors" />

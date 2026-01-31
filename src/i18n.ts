@@ -109,7 +109,7 @@ const resources = {
 
             vid_btn_create: "CREATE VIDEO",
             btn_use_source: "SEND TO EDITOR",
-            btn_use_ref: "USE AS REF",
+            btn_use_ref: "EDIT",
             btn_to_video: "TO VIDEO",
 
             vid_active_workspace: "Active Workspace",
@@ -326,7 +326,7 @@ const resources = {
 
             vid_btn_create: "СОЗДАТЬ ВИДЕО",
             btn_use_source: "В РЕДАКТОР",
-            btn_use_ref: "РЕФЕРЕНС",
+            btn_use_ref: "РЕДАКТИРОВАТЬ",
             btn_to_video: "В ВИДЕО",
 
             vid_active_workspace: "Активная Область",
