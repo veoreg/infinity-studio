@@ -11,6 +11,7 @@ import LanguageSwitcher from './components/LanguageSwitcher' // i18n
 import { PWAInstallPrompt } from './components/PWAInstallPrompt'
 import { Video, Sparkles, User, LogOut, Sun, Moon } from 'lucide-react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import StickyActionBar from './components/StickyActionBar'
 
 
 function AppContent() {
@@ -146,6 +147,8 @@ function AppContent() {
         {/* {activeTab === 'avatar' && <HolidayPromo />} */}
       </div>
 
+      <StickyActionBar activeTab={activeTab} />
+
       {/* Simple Footer */}
       <footer className="bg-[var(--glass-bg)] backdrop-blur-md border-t border-[var(--border-color)] py-12 relative z-10 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
@@ -157,6 +160,8 @@ function AppContent() {
           </div>
         </div>
       </footer>
+      {/* Sticky Action Bar for Mobile */}
+      <StickyActionBar activeTab={activeTab} />
     </div>
   )
 }
