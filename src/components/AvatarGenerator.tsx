@@ -1,7 +1,7 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next'; // i18n
 import axios from 'axios';
-import { Wand2, Download, RefreshCw, Sparkles, XCircle, Camera, User, X, Maximize2, Upload, Trash2, Plus, Video as VideoIcon } from 'lucide-react';
+import { Wand2, Download, RefreshCw, Sparkles, XCircle, Camera, User, X, Maximize2, Upload, Trash2, Plus, Video as VideoIcon, AlertTriangle } from 'lucide-react';
 
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
@@ -284,6 +284,10 @@ const AvatarGenerator: React.FC = () => {
     // Edit mode tracking - for comparison slider
     const [isEditMode, setIsEditMode] = useState(false);
     const [originalImageForCompare, setOriginalImageForCompare] = useState<string | null>(null);
+
+    // Mobile Interaction State
+    const [activeMobileId, setActiveMobileId] = useState<string | null>(null);
+    const mobileTimerRef = useRef<any>(null);
 
     // Identity Specs
     const [gender, setGender] = useState('female');
@@ -574,6 +578,26 @@ const AvatarGenerator: React.FC = () => {
         localStorage.removeItem('active_avatar_id');
     };
 
+    const handleDeleteSidebarItem = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        if (id.toString().startsWith('src_frame_')) return;
+        if (!window.confirm(t('confirm_delete', 'Delete this item?'))) return;
+        const { error } = await supabase.from('generations').delete().eq('id', id);
+        if (!error) {
+            setGalleryItems(prev => prev.filter(i => i.id !== id));
+            fetchHistory();
+        }
+    };
+
+    const handleClearWorkspace = () => {
+        setGeneratedImage(null);
+        setOriginalImageForCompare(null);
+        setIsEditMode(false);
+        setError(null);
+        setActiveGenerationId(null);
+        localStorage.removeItem('active_avatar_id');
+    };
+
     const handleDownload = async () => {
         if (!generatedImage) return;
 
@@ -624,7 +648,7 @@ const AvatarGenerator: React.FC = () => {
                 if (trialError) throw trialError;
 
                 if ((trialCount || 0) > 10) {
-                    setError("Guest trial exceeded (max 10). Please Sign In for more credits!");
+                    setError(t('guest_trial_exceeded'));
                     return;
                 }
                 isGuestTrial = true;
@@ -1035,9 +1059,27 @@ const AvatarGenerator: React.FC = () => {
                                 <div
                                     key={item.id}
                                     className="group/item relative bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl overflow-hidden aspect-[9/16] shrink-0 cursor-pointer transition-all hover:border-[#d2ac47] hover:shadow-[0_0_20px_rgba(210,172,71,0.2)]"
-                                    onClick={() => {
-                                        setGeneratedImage(item.result_url || item.image_url || item.url);
-                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        // Mobile: Toggle visibility on tap
+                                        if (window.innerWidth < 768) {
+                                            if (activeMobileId === item.id) {
+                                                // If already active, treat as selection
+                                                setGeneratedImage(item.result_url || item.image_url || item.url);
+                                                document.getElementById('avatar-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                            } else {
+                                                // Retrieve/Set active ID
+                                                setActiveMobileId(item.id);
+                                                // Clear existing timer if any
+                                                if (mobileTimerRef.current) clearTimeout(mobileTimerRef.current);
+                                                // Auto-hide after 3s
+                                                mobileTimerRef.current = setTimeout(() => setActiveMobileId(null), 3000);
+                                            }
+                                        } else {
+                                            // Desktop: Immediate selection
+                                            setGeneratedImage(item.result_url || item.image_url || item.url);
+                                            document.getElementById('avatar-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                        }
                                     }}
                                 >
                                     <img
@@ -1047,7 +1089,9 @@ const AvatarGenerator: React.FC = () => {
                                     />
 
                                     {/* Hover Overlay - Bottom Actions Toolbar */}
-                                    <div className="absolute inset-0 opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 flex flex-col justify-end items-center p-3 gap-3">
+                                    {/* Hover Overlay - Bottom Actions Toolbar */}
+                                    {/* Hover Overlay - Bottom Actions Toolbar */}
+                                    <div className={`absolute inset-0 flex flex-col justify-end items-center p-3 gap-3 transition-opacity duration-300 ${activeMobileId === item.id ? 'opacity-100' : 'opacity-0 md:group-hover/item:opacity-100'}`}>
 
                                         {/* Floating Action Buttons (Download & Delete) */}
                                         <div className="flex gap-4 transform translate-y-4 group-hover/item:translate-y-0 transition-transform duration-300">
@@ -1064,14 +1108,7 @@ const AvatarGenerator: React.FC = () => {
                                             </button>
 
                                             <button
-                                                onClick={async (e) => {
-                                                    e.stopPropagation();
-                                                    if (!window.confirm('Delete this image?')) return;
-                                                    const { error } = await supabase.from('generations').delete().eq('id', item.id);
-                                                    if (!error) {
-                                                        setGalleryItems(prev => prev.filter(i => i.id !== item.id));
-                                                    }
-                                                }}
+                                                onClick={(e) => handleDeleteSidebarItem(e, item.id)}
                                                 className="w-9 h-9 rounded-full bg-[var(--bg-input)]/80 backdrop-blur-md border border-red-500/30 text-red-500/80 flex items-center justify-center hover:bg-red-500 hover:text-white hover:scale-110 transition-all shadow-[0_4px_12px_rgba(0,0,0,0.5)] dark:bg-[#1a1a1a]/80"
                                                 title="Delete"
                                             >
@@ -1086,7 +1123,7 @@ const AvatarGenerator: React.FC = () => {
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setGeneratedImage(item.result_url || item.image_url || item.url);
-                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                    document.getElementById('avatar-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                                 }}
                                                 className="flex-1 py-2.5 bg-white/10 backdrop-blur-md border border-white/20 text-white text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-xl cursor-pointer hover:bg-white hover:text-black transition-all shadow-lg flex items-center justify-center gap-1"
                                                 title={t('btn_use_ref')}
@@ -1134,7 +1171,7 @@ const AvatarGenerator: React.FC = () => {
 
                     {/* NEW: Compact Identity Toolbar (Above Canvas) */}
                     <div className="bg-[var(--glass-bg)] backdrop-blur-md border border-[var(--border-color)] rounded-xl px-2 py-1 flex flex-col md:flex-row gap-2 items-center justify-between shadow-lg relative z-[200] mx-2 md:mx-0">
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-1.5 w-full">
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 w-full">
                             <CustomSelect
                                 label={t('opt_gender')}
                                 value={gender}
@@ -1199,7 +1236,7 @@ const AvatarGenerator: React.FC = () => {
                     {/* Visual Source (Moved from Input Block) - Acts as "Canvas" if editing */}
 
                     {/* Main Output / Active Workspace */}
-                    <div className="bg-[var(--bg-primary)] dark:bg-black border border-[var(--border-color)] rounded-3xl relative flex items-center justify-center overflow-hidden shadow-2xl group flex-col w-auto md:w-full transition-all duration-700 h-[500px] md:h-[580px] shrink-0 mx-2 md:mx-0">
+                    <div id="avatar-workspace" className="bg-[var(--bg-primary)] dark:bg-black border border-[var(--border-color)] rounded-3xl relative flex items-center justify-center overflow-hidden shadow-2xl group flex-col w-auto md:w-full transition-all duration-700 h-[500px] md:h-[580px] shrink-0 mx-2 md:mx-0">
                         {generatedImage ? (
                             <img src={generatedImage} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40 blur-3xl scale-150 saturate-150" />
                         ) : (
@@ -1372,6 +1409,24 @@ const AvatarGenerator: React.FC = () => {
 
                                     {/* Overlay Layer - Removed blur & central button */}
                                     <div className="absolute inset-0 z-20 pointer-events-none group-hover:bg-transparent transition-all duration-300">
+                                        {/* Top Action Row - Maximize & Clear */}
+                                        <div className="absolute top-4 right-4 z-40 flex gap-2 pointer-events-auto opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
+                                            <button
+                                                onClick={() => window.open(generatedImage!, '_blank')}
+                                                className="p-2 bg-[var(--bg-input)]/80 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)] rounded-lg hover:bg-[#d2ac47] hover:text-black transition-all shadow-lg hover:scale-110 dark:bg-black/40"
+                                                title={t('tooltip_open_full')}
+                                            >
+                                                <Maximize2 size={14} />
+                                            </button>
+                                            <button
+                                                onClick={handleClearWorkspace}
+                                                className="p-2 bg-[var(--bg-input)]/80 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)] rounded-lg hover:bg-red-500 hover:text-white transition-all shadow-lg hover:scale-110 dark:bg-black/40"
+                                                title={t('tooltip_delete')}
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+
                                         <div className="absolute bottom-14 right-4 pointer-events-auto opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 transform translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 flex flex-col gap-2 items-end">
                                             {/* Animate Button */}
                                             <button
@@ -1429,7 +1484,7 @@ const AvatarGenerator: React.FC = () => {
                         ) : (
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
                                 {/* Gradient Overlay for readability - Light/Dark Aware - Fixed Conflict */}
-                                <div className="absolute inset-0 bg-gradient-to-t z-0 from-[#F9F1D8] via-[#F9F1D8]/40 to-transparent dark:from-black/80 dark:via-black/10 dark:to-transparent"></div>
+                                <div className="absolute inset-0 bg-gradient-to-t z-0 from-[#F9F9F5] via-[#F9F9F5]/40 to-transparent dark:from-black/80 dark:via-black/10 dark:to-transparent"></div>
 
                                 {/* Brand Header */}
                                 <div className="mb-8 text-center transform -translate-y-4 relative z-10">
@@ -1447,7 +1502,7 @@ const AvatarGenerator: React.FC = () => {
                                     {!user && (
                                         <div className="mt-6 px-4 py-2 bg-[#d2ac47]/10 border border-[#d2ac47]/30 rounded-xl animate-pulse">
                                             <p className="text-[#d2ac47] text-[10px] font-bold uppercase tracking-widest">
-                                                вљ пёЏ Public Trial: 10 avatars total. Sign In for privacy.
+                                                <AlertTriangle size={14} className="inline-block mr-1.5 mb-0.5" /> {t('guest_trial_notice')}
                                             </p>
                                         </div>
                                     )}
@@ -1460,8 +1515,8 @@ const AvatarGenerator: React.FC = () => {
                                     title={t('tooltip_upload_edit')}
 
                                 >
-                                    <Camera size={42} className="text-[var(--text-secondary)]/30 mb-4 animate-pulse group-hover:text-[#d2ac47] transition-colors dark:text-[var(--text-secondary)]/80" />
-                                    <span className="text-[var(--text-secondary)]/60 text-[10px] font-bold uppercase tracking-[0.3em] text-center group-hover:text-[#d2ac47] transition-colors dark:text-[var(--text-secondary)]/80">{t('ph_click_upload')}</span>
+                                    <Camera size={42} className="text-[var(--text-secondary)]/60 mb-4 animate-pulse group-hover:text-[#d2ac47] transition-colors dark:text-[var(--text-secondary)]/80" />
+                                    <span className="text-[var(--text-secondary)]/80 text-[10px] font-bold uppercase tracking-[0.3em] text-center group-hover:text-[#d2ac47] transition-colors dark:text-[var(--text-secondary)]/80">{t('ph_click_upload')}</span>
                                 </div>
                             </div>
                         )}
@@ -1521,7 +1576,7 @@ const AvatarGenerator: React.FC = () => {
                                         </span>
                                     </div>
                                     {/* Drag & Drop Zone */}
-                                    <div className="flex-1 relative overflow-hidden rounded-xl mb-3 bg-black/5">
+                                    <div className="flex-1 relative overflow-hidden rounded-xl mb-3 bg-black/40">
                                         <ImageUploadZone
                                             onImageUpload={({ url }) => {
                                                 setFaceImageUrl(url);
@@ -1752,7 +1807,7 @@ const AvatarGenerator: React.FC = () => {
                             onSelect={(item) => {
                                 const url = item.result_url || item.video_url || item.url;
                                 if (url) setGeneratedImage(url);
-                                // Optional: Scroll to result?
+                                document.getElementById('avatar-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                             }}
                             onDelete={async (id) => {
                                 const { error } = await supabase.from('generations').delete().eq('id', id);

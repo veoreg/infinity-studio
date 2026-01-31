@@ -218,6 +218,8 @@ const resources = {
             section_fine_tuning: "FINE TUNING",
             label_seed: "VARIANCE (SEED)",
             label_steps: "QUALITY (STEPS)",
+            guest_trial_notice: "Public Trial: 10 AVATARS total. Sign In for privacy.",
+            guest_trial_exceeded: "Guest trial exceeded (max 10). Please Sign In for more credits!",
 
         }
     },
@@ -431,6 +433,8 @@ const resources = {
             opt_voice: "ГОЛОС / АУДИО",
             voice_ana: "Ана де Армас",
             section_fine_tuning: "НАСТРОЙКИ",
+            guest_trial_notice: "Пробный режим: 10 генераций. Войдите для приватности.",
+            guest_trial_exceeded: "Лимит пробных генераций исчерпан (макс. 10). Пожалуйста, войдите в аккаунт!",
 
         }
     },
@@ -641,6 +645,8 @@ const resources = {
             ph_random: "Zufällig",
             opt_voice: "STIMME / AUDIO",
             voice_ana: "Ana de Armas",
+            guest_trial_notice: "Testmodus: 10 Generationen. Für Privatsphäre anmelden.",
+            guest_trial_exceeded: "Gast-Limit erreicht (max. 10). Bitte anmelden für mehr Credits!",
 
         }
     },
@@ -848,6 +854,8 @@ const resources = {
             ph_random: "Aleatorio",
             opt_voice: "VOZ / AUDIO",
             voice_ana: "Ana de Armas",
+            guest_trial_notice: "Modo de prueba: 10 generaciones. Inicia sesión para privacidad.",
+            guest_trial_exceeded: "Límite de prueba excedido (máx. 10). ¡Inicia sesión para más créditos!",
 
         }
     },
@@ -1038,6 +1046,8 @@ const resources = {
             tooltip_upload_edit: "อัปโหลดรูปภาพเพื่อแก้ไข",
             label_or: "หรือ",
             ph_random: "สุ่ม",
+            guest_trial_notice: "โหมดทดลอง: 10 การสร้าง ลงชื่อเข้าใช้เพื่อความเป็นส่วนตัว",
+            guest_trial_exceeded: "เกินขีดจำกัดการทดลอง (สูงสุด 10) โปรดลงชื่อเข้าใช้เพื่อรับเครดิตเพิ่ม!",
 
         }
     },
@@ -1228,6 +1238,8 @@ const resources = {
             ph_random: "随机",
             face_library: "面部库",
             mode_fixed: "固定",
+            guest_trial_notice: "试用模式：共 10 次生成。登录以保护隐私。",
+            guest_trial_exceeded: "试用次数已达上限（最多 10 次）。请登录以获取更多次数！",
 
         }
     }

@@ -93,7 +93,7 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({ onImageUpload, curren
     return (
         <div
             className={`relative group w-full transition-all duration-300 rounded-xl overflow-hidden border-2 border-dashed 
-                ${isDragging ? 'border-[#d2ac47] bg-[#d2ac47]/10' : 'border-[var(--border-color)]/30 bg-[var(--bg-secondary)]/50'}
+                ${isDragging ? 'border-[#d2ac47] bg-[#d2ac47]/10' : 'border-[var(--border-color)]/30 bg-black/20'}
                 ${preview ? 'border-none' : 'hover:border-[#d2ac47]/60'}
                 ${className}
             `}

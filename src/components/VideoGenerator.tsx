@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import axios from 'axios';
-import { Wand2, Download, Sparkles, XCircle, ShieldCheck, Flame, Loader2, Play, Film, Image as ImageIcon, Archive, Layers, Video as VideoIcon, Maximize2, Trash2, Upload, RefreshCw, Eye, Mic } from 'lucide-react';
+import { Wand2, Download, Sparkles, XCircle, ShieldCheck, Flame, Loader2, Play, Film, Image as ImageIcon, Archive, Layers, Video as VideoIcon, Maximize2, Trash2, Upload, RefreshCw, Eye, Mic, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import UserGallery from './UserGallery';
 import ImageUploadZone from './ImageUploadZone';
@@ -244,6 +244,10 @@ const VideoGenerator: React.FC = () => {
     const [startTime, setStartTime] = useState<number | undefined>(undefined);
     const [longWait, setLongWait] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
+
+    // Mobile Interaction State
+    const [activeMobileId, setActiveMobileId] = useState<string | null>(null);
+    const mobileTimerRef = useRef<any>(null);
 
     // Check for long wait times to prompt user
     React.useEffect(() => {
@@ -617,7 +621,7 @@ const VideoGenerator: React.FC = () => {
                 if (trialError) throw trialError;
 
                 if ((trialCount || 0) > 10) {
-                    setError("Guest trial exceeded (max 10). Please Sign In for more credits!");
+                    setError(t('guest_trial_exceeded'));
                     return;
                 }
                 isGuestTrial = true;
@@ -843,6 +847,15 @@ const VideoGenerator: React.FC = () => {
                                                 ${isActive ? 'border-[#d2ac47] shadow-[0_0_15px_rgba(210,172,71,0.3)]' : 'border-[var(--border-color)] hover:border-[#d2ac47] hover:shadow-[0_0_20px_rgba(210,172,71,0.2)]'}
                                             `}
                                                 onClick={(e) => {
+                                                    // Mobile: Toggle visibility on tap
+                                                    if (window.innerWidth < 768) {
+                                                        if (activeMobileId !== item.id) {
+                                                            setActiveMobileId(item.id);
+                                                            if (mobileTimerRef.current) clearTimeout(mobileTimerRef.current);
+                                                            mobileTimerRef.current = setTimeout(() => setActiveMobileId(null), 3000);
+                                                        }
+                                                    }
+
                                                     const v = e.currentTarget.querySelector('video');
                                                     if (v) {
                                                         if (v.paused) v.play().catch(() => { });
@@ -977,13 +990,13 @@ const VideoGenerator: React.FC = () => {
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (isVideo) {
-                                                                        setVideoUrl(url);
+                                                                        setVideoUrl(url); // Main canvas
                                                                     } else {
-                                                                        setVideoUrl(url); // Editor now targets Main Canvas (Video Url slot)
+                                                                        setVideoUrl(url); // Main canvas
                                                                     }
-                                                                    window.scrollTo({ top: 300, behavior: 'smooth' });
+                                                                    document.getElementById('video-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                                                 }}
-                                                                className="relative px-3 py-1.5 bg-black/40 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)]/80 hover:text-black text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-lg flex items-center justify-center gap-1 shadow-lg transform translate-y-4 group-hover/item:translate-y-0 transition-all hover:bg-[#d2ac47] hover:scale-[1.02] active:scale-95 pointer-events-auto z-40 cursor-pointer"
+                                                                className={`relative px-3 py-1.5 bg-black/40 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)]/80 hover:text-black text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-lg flex items-center justify-center gap-1 shadow-lg transform transition-all hover:bg-[#d2ac47] hover:scale-[1.02] active:scale-95 pointer-events-auto z-40 cursor-pointer duration-300 ${activeMobileId === item.id ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 md:group-hover/item:translate-y-0 md:group-hover/item:opacity-100'}`}
                                                             >
                                                                 {t('btn_use_source')}
                                                             </button>
@@ -992,9 +1005,9 @@ const VideoGenerator: React.FC = () => {
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
                                                                         setImageUrl(url); // Ref now targets Source Image (Top slot)
-                                                                        window.scrollTo({ top: 300, behavior: 'smooth' });
+                                                                        document.getElementById('video-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                                                     }}
-                                                                    className="relative px-3 py-1.5 bg-black/40 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)]/80 hover:text-black text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-lg flex items-center justify-center gap-1 shadow-lg transform translate-y-4 group-hover/item:translate-y-0 transition-all hover:bg-[#d2ac47] hover:scale-[1.02] active:scale-95 pointer-events-auto z-40 cursor-pointer"
+                                                                    className={`relative px-3 py-1.5 bg-black/40 backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)]/80 hover:text-black text-[8px] font-bold uppercase tracking-[0.2em] text-center rounded-lg flex items-center justify-center gap-1 shadow-lg transform transition-all hover:bg-[#d2ac47] hover:scale-[1.02] active:scale-95 pointer-events-auto z-40 cursor-pointer duration-300 ${activeMobileId === item.id ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 md:group-hover/item:translate-y-0 md:group-hover/item:opacity-100'}`}
                                                                 >
                                                                     {t('btn_use_ref')}
                                                                 </button>
@@ -1002,7 +1015,7 @@ const VideoGenerator: React.FC = () => {
                                                         </div>
                                                     )}
                                                 </div>
-                                            </div>
+                                            </div >
                                         );
                                     })}
 
@@ -1313,7 +1326,7 @@ const VideoGenerator: React.FC = () => {
                         {!user && (
                             <div className="mt-3 px-4 py-2 bg-[#d2ac47]/10 border border-[#d2ac47]/30 rounded-xl text-center">
                                 <p className="text-[#d2ac47] text-[9px] font-bold uppercase tracking-widest">
-                                    вљ пёЏ Public Trial: 10 videos total. Sign In for privacy.
+                                    <AlertTriangle size={12} className="inline-block mr-1.5 mb-0.5" /> {t('guest_trial_notice')}
                                 </p>
                             </div>
                         )}
@@ -1603,7 +1616,8 @@ const VideoGenerator: React.FC = () => {
                             onSelect={(item) => {
                                 const url = item.result_url || item.video_url || item.url;
                                 if (url) setVideoUrl(url);
-                                setActiveItem(item); // Added this back to ensure activeItem is set
+                                setActiveItem(item);
+                                document.getElementById('video-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                             }}
                             onDelete={async (id) => {
                                 const { error } = await supabase.from('generations').delete().eq('id', id);
@@ -1637,7 +1651,7 @@ const VideoGenerator: React.FC = () => {
                 </div>
 
             </div>
-        </div>
+        </div >
     );
 };
 

@@ -156,7 +156,7 @@ const FaceGallery: React.FC<FaceGalleryProps> = ({ onSelect, className = "" }) =
                         </button>
                     </div>
 
-                    <div className="w-full max-w-5xl max-h-[90vh] overflow-y-auto custom-scrollbar grid grid-cols-4 min-[480px]:grid-cols-5 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 gap-1.5 p-1">
+                    <div className="w-full max-w-5xl max-h-[90vh] overflow-y-auto custom-scrollbar grid grid-cols-3 min-[380px]:grid-cols-4 min-[480px]:grid-cols-5 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 gap-x-2 gap-y-5 p-2 sm:p-4">
                         {/* Add/Upload Tile */}
                         <div
                             className="relative group rounded-xl overflow-hidden cursor-pointer border border-[#d2ac47]/30 hover:border-[#d2ac47] flex flex-col items-center justify-center bg-[#d2ac47]/5 hover:bg-[#d2ac47]/10 transition-all"
